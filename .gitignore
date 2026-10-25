@@ -1,0 +1,12 @@
+# Secrets
+.env
+
+# Python
+.venv/
+__pycache__/
+
+# Course materials: never committed
+docs/ik/
+
+# Local scratch output (charter renders, etc.)
+tmp/
