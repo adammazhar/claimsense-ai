@@ -1,0 +1,52 @@
+{
+  "$defs": {
+    "ErrorCode": {
+      "description": "Machine-readable error codes shared by all three client systems.",
+      "enum": [
+        "UNAUTHENTICATED",
+        "FORBIDDEN",
+        "NOT_FOUND",
+        "VALIDATION_FAILED",
+        "IDEMPOTENCY_KEY_MISSING",
+        "IDEMPOTENCY_KEY_MISMATCH",
+        "IDEMPOTENCY_CONFLICT",
+        "RATE_LIMITED",
+        "UPSTREAM_UNAVAILABLE"
+      ],
+      "title": "ErrorCode",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The error body every client-system endpoint returns on a non-2xx status.",
+  "properties": {
+    "code": {
+      "$ref": "#/$defs/ErrorCode"
+    },
+    "message": {
+      "maxLength": 500,
+      "minLength": 1,
+      "title": "Message",
+      "type": "string"
+    },
+    "request_id": {
+      "description": "Correlates with the audit record.",
+      "minLength": 1,
+      "title": "Request Id",
+      "type": "string"
+    },
+    "retryable": {
+      "description": "True only for RATE_LIMITED and UPSTREAM_UNAVAILABLE.",
+      "title": "Retryable",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "code",
+    "message",
+    "request_id",
+    "retryable"
+  ],
+  "title": "ErrorResponse",
+  "type": "object"
+}

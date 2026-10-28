@@ -1,0 +1,90 @@
+{
+  "$defs": {
+    "DocumentMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "doc_id": {
+          "pattern": "^DOC-\\d{4}-\\d+$",
+          "title": "Doc Id",
+          "type": "string"
+        },
+        "claim_id": {
+          "pattern": "^CLM-\\d{4}-\\d{4}$",
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/DocumentType"
+        },
+        "received_at": {
+          "format": "date-time",
+          "title": "Received At",
+          "type": "string"
+        },
+        "captured_on": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Capture date from file metadata (photos). Compared with inception in code.",
+          "title": "Captured On"
+        },
+        "sha256": {
+          "description": "Hash of the text; pins the evidence a citation points at.",
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "doc_id",
+        "claim_id",
+        "type",
+        "received_at",
+        "sha256"
+      ],
+      "title": "DocumentMeta",
+      "type": "object"
+    },
+    "DocumentType": {
+      "enum": [
+        "police_report",
+        "repair_estimate",
+        "photos",
+        "insured_statement",
+        "witness_statement",
+        "passenger_statement",
+        "medical_note",
+        "garage_incident_report",
+        "recorded_call_transcript",
+        "body_shop_letter"
+      ],
+      "title": "DocumentType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Response body of GET /documents/{doc_id}.",
+  "properties": {
+    "meta": {
+      "$ref": "#/$defs/DocumentMeta"
+    },
+    "text": {
+      "minLength": 1,
+      "title": "Text",
+      "type": "string"
+    }
+  },
+  "required": [
+    "meta",
+    "text"
+  ],
+  "title": "Document",
+  "type": "object"
+}

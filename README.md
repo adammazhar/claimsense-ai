@@ -9,9 +9,10 @@ All data in this repository is synthetic.
 
 ## Status
 
-Milestone 1 (discovery and scoping) deliverables drafted for client review; no application code yet.
+Milestones 1 and 2 drafted for client review. Contracts, fixtures and checks are code; the agents
+themselves are Milestone 3. Submission 1 checklist: [SUBMISSION-1.md](SUBMISSION-1.md).
 
-| Milestone 1 deliverable | File |
+| Milestone 1: discovery and scoping | File |
 |---|---|
 | Engagement charter, with the three client systems and their integration points | [docs/engagement/charter.md](docs/engagement/charter.md) |
 | Stakeholder map and RACI | [docs/engagement/stakeholders.md](docs/engagement/stakeholders.md) |
@@ -19,25 +20,48 @@ Milestone 1 (discovery and scoping) deliverables drafted for client review; no a
 | Architectural decision log | [DECISIONS.md](DECISIONS.md) |
 | 20 evaluation cases across all four outcomes, including adversarial cases | [evals/cases_v0.yaml](evals/cases_v0.yaml) |
 
+| Milestone 2: SoW, pricing and architecture | File |
+|---|---|
+| Statement of work (2 pages) | [docs/engagement/sow.md](docs/engagement/sow.md) |
+| Architecture diagram, code/model boundary, alternatives | [docs/architecture/architecture.md](docs/architecture/architecture.md) |
+| Pricing model with assumptions, reproduced by a script | [docs/engagement/pricing.md](docs/engagement/pricing.md), [scripts/pricing.py](scripts/pricing.py) |
+| Risk register | [docs/engagement/risk-register.md](docs/engagement/risk-register.md) |
+| Typed contracts for the three client systems, with the idempotency rule | [docs/architecture/contracts.md](docs/architecture/contracts.md), [src/claimsense/contracts/](src/claimsense/contracts/) |
+| Synthetic data shapes: JSON Schemas and fixtures | [data/schemas/](data/schemas/), [data/synthetic/](data/synthetic/) |
+| Cloud account | **Not provisioned yet: pending from IK** (see below) |
+
+## Cloud account: pending
+
+IK provides the AWS account for the capstone, and it has not been provisioned yet. Until it is, the
+AWS components in the architecture are marked "planned, pending IK account", and nothing in the
+build depends on them (D-012, risk R2). The OpenAI key is the existing IK key, kept out of the
+repository. When the account arrives, the created resources will be evidenced here and in
+SUBMISSION-1.md.
+
 ## Known open item: placeholder data
 
 The claims, policies and documents in `evals/cases_v0.yaml`, and every clause ID (`CLS-PER-006`
-and the rest), are placeholders written for Milestone 1. They will be replaced or remapped when the
-instructor supplies the synthetic fixtures and the policy clause corpus. The scenarios and reference
-outcomes are the requirement; the identifiers and field values are not final.
+and the rest), are placeholders written for Milestone 1. The same is true of the fixtures and clause
+wording in `data/synthetic/`, which are generated from those cases. They will be replaced or remapped
+when the instructor supplies the synthetic fixtures and the policy clause corpus. The scenarios and
+reference outcomes are the requirement; the identifiers and field values are not final.
 
-## Checking the evaluation cases
+## Checks
 
 Requires Python 3.12 or later.
 
 ```powershell
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe scripts\check_eval_cases.py
+.\.venv\Scripts\python.exe -m pytest                         # contracts, fixtures, idempotency, pricing, eval checker
+.\.venv\Scripts\python.exe scripts\check_eval_cases.py       # eval-case consistency on its own
+.\.venv\Scripts\python.exe scripts\pricing.py                # reproduce every number in pricing.md
+.\.venv\Scripts\python.exe scripts\build_fixtures.py         # regenerate data/synthetic/ from the eval cases
+.\.venv\Scripts\python.exe scripts\generate_schemas.py       # regenerate data/schemas/ from the contracts
 ```
 
-The script recomputes every deterministic value in the cases (policy term, payable amount,
-total-loss ratio, days since inception, photo dates against inception) and fails if a label
+`check_eval_cases.py` recomputes every deterministic value in the cases (policy term, payable
+amount, total-loss ratio, days since inception, photo dates against inception). It fails if a label
 disagrees or a deterministic field has no check. It also reports how the client's current fraud
 rule (refer when the legacy score is 0.5 or more) performs on the same cases: on v0 it refers two
 claims, one of them wrongly, and catches only one of the four that should go to SIU (recall 25%,

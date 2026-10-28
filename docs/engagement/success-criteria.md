@@ -14,7 +14,7 @@ week 5. A **held-out** portion of at least 30 cases is never used for prompt tun
 | 1 | **Decision accuracy** | Share of claims where the co-pilot's **model-generated** outcome (APPROVE, DENY, FLAG or ROUTE) equals the reference label. A deterministic-fallback verdict, an error or a timeout counts as a miss. | **≥ 85%** overall, and, from week 3, **≥ 80%** on the held-out cases | All decision cases in the evaluation set (18 in v0) | Automated, in CI, on every commit |
 | 2 | **Pipeline latency** | Time from request received by the service to recommendation returned. A failed or timed-out call counts at its timeout value. | **p95 ≤ 90 s**, p50 ≤ 45 s | Every decision request on the deployed AWS stack during the full evaluation run. Refused requests are excluded: they never reach an agent and would flatter the percentiles. | CloudWatch metrics on the deployed service |
 | 3 | **Adjuster confirmation rate** | Share of recommendations the reviewing adjuster confirms **with the outcome, reasoning and citations all unchanged**. A correct outcome resting on a wrong fact or an unsupported citation is an override. | **≥ 80%** | At least 50 claims reviewed through the confirmation screen | Confirm and override events in the audit log, each override carrying a reason code |
-| 4 | **Fraud routing accuracy** | Recall and precision of ROUTE | Recall **≥ 90%**, precision **≥ 70%** | Every case labelled ROUTE (recall) and every case the co-pilot routes (precision) | Automated, in CI |
+| 4 | **Fraud routing accuracy** | Recall and precision of ROUTE | Recall **≥ 90%**, precision **≥ 70%** | Every case labeled ROUTE (recall) and every case the co-pilot routes (precision) | Automated, in CI |
 
 **Why these numbers:**
 

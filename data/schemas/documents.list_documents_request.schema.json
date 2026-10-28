@@ -1,0 +1,15 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "claim_id": {
+      "pattern": "^CLM-\\d{4}-\\d{4}$",
+      "title": "Claim Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "claim_id"
+  ],
+  "title": "ListDocumentsRequest",
+  "type": "object"
+}

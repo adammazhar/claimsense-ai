@@ -1,0 +1,83 @@
+{
+  "$defs": {
+    "RetrievalHit": {
+      "additionalProperties": false,
+      "properties": {
+        "clause_id": {
+          "pattern": "^CLS-[A-Z]{2,3}-\\d{3}$",
+          "title": "Clause Id",
+          "type": "string"
+        },
+        "score": {
+          "title": "Score",
+          "type": "number"
+        },
+        "heading": {
+          "title": "Heading",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "clause_id",
+        "score",
+        "heading",
+        "text"
+      ],
+      "title": "RetrievalHit",
+      "type": "object"
+    },
+    "RetrievalQuery": {
+      "additionalProperties": false,
+      "properties": {
+        "query": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Query",
+          "type": "string"
+        },
+        "form_number": {
+          "pattern": "^SYN-",
+          "title": "Form Number",
+          "type": "string"
+        },
+        "top_k": {
+          "default": 5,
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Top K",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "query",
+        "form_number"
+      ],
+      "title": "RetrievalQuery",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "What retrieval returned. The citation validator checks citations against these IDs.",
+  "properties": {
+    "query": {
+      "$ref": "#/$defs/RetrievalQuery"
+    },
+    "hits": {
+      "items": {
+        "$ref": "#/$defs/RetrievalHit"
+      },
+      "title": "Hits",
+      "type": "array"
+    }
+  },
+  "required": [
+    "query",
+    "hits"
+  ],
+  "title": "RetrievalResult",
+  "type": "object"
+}

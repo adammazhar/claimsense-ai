@@ -1,0 +1,525 @@
+[
+  {
+    "policy_id": "POL-1001",
+    "as_of": "2026-06-14",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0001",
+    "named_insured_name": "Synthetic Insured 0001",
+    "effective_date": "2026-03-01",
+    "expiration_date": "2026-09-01",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2026-03-01",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "collision": {
+        "deductible": "500.00",
+        "limit": null
+      },
+      "comprehensive": {
+        "deductible": "250.00",
+        "limit": null
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "18500.00"
+  },
+  {
+    "policy_id": "POL-1002",
+    "as_of": "2026-04-03",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0002",
+    "named_insured_name": "Synthetic Insured 0002",
+    "effective_date": "2026-01-10",
+    "expiration_date": "2026-07-10",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2026-01-10",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "collision": {
+        "deductible": "1000.00",
+        "limit": null
+      },
+      "comprehensive": {
+        "deductible": "250.00",
+        "limit": null
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "22000.00"
+  },
+  {
+    "policy_id": "POL-1003",
+    "as_of": "2026-05-20",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0003",
+    "named_insured_name": "Synthetic Insured 0003",
+    "effective_date": "2026-05-20",
+    "expiration_date": "2026-11-20",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2026-05-20",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "collision": {
+        "deductible": "1000.00",
+        "limit": null
+      },
+      "comprehensive": {
+        "deductible": "500.00",
+        "limit": null
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "24000.00"
+  },
+  {
+    "policy_id": "POL-1004",
+    "as_of": "2026-06-22",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0004",
+    "named_insured_name": "Synthetic Insured 0004",
+    "effective_date": "2026-02-01",
+    "expiration_date": "2026-08-01",
+    "status_field": "Lapsed",
+    "transactions": [
+      {
+        "on": "2026-02-01",
+        "type": "issued",
+        "note": null
+      },
+      {
+        "on": "2026-04-02",
+        "type": "missed_payment_notice",
+        "note": null
+      },
+      {
+        "on": "2026-04-05",
+        "type": "payment_received",
+        "note": "Within grace period. No cancellation issued."
+      }
+    ],
+    "coverages": {
+      "collision": {
+        "deductible": "500.00",
+        "limit": null
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "12000.00"
+  },
+  {
+    "policy_id": "POL-1005",
+    "as_of": "2026-08-30",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0005",
+    "named_insured_name": "Synthetic Insured 0005",
+    "effective_date": "2026-01-15",
+    "expiration_date": "2027-01-15",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2026-01-15",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "collision": {
+        "deductible": "1000.00",
+        "limit": null
+      },
+      "comprehensive": {
+        "deductible": "500.00",
+        "limit": null
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "61000.00"
+  },
+  {
+    "policy_id": "POL-1006",
+    "as_of": "2026-01-18",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0006",
+    "named_insured_name": "Synthetic Insured 0006",
+    "effective_date": "2025-07-15",
+    "expiration_date": "2026-01-15",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2025-07-15",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "collision": {
+        "deductible": "500.00",
+        "limit": null
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "15500.00"
+  },
+  {
+    "policy_id": "POL-1007",
+    "as_of": "2026-09-10",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0007",
+    "named_insured_name": "Synthetic Insured 0007",
+    "effective_date": "2026-03-10",
+    "expiration_date": "2026-09-10",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2026-03-10",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "collision": {
+        "deductible": "500.00",
+        "limit": null
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "20000.00"
+  },
+  {
+    "policy_id": "POL-1008",
+    "as_of": "2026-05-05",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0008",
+    "named_insured_name": "Synthetic Insured 0008",
+    "effective_date": "2026-02-01",
+    "expiration_date": "2026-08-01",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2026-02-01",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "liability": {
+        "deductible": null,
+        "limit": null
+      },
+      "comprehensive": {
+        "deductible": "500.00",
+        "limit": null
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "9000.00"
+  },
+  {
+    "policy_id": "POL-1009",
+    "as_of": "2026-03-21",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0009",
+    "named_insured_name": "Synthetic Insured 0009",
+    "effective_date": "2026-01-01",
+    "expiration_date": "2026-07-01",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2026-01-01",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "collision": {
+        "deductible": "500.00",
+        "limit": null
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "17000.00"
+  },
+  {
+    "policy_id": "POL-1010",
+    "as_of": "2026-04-11",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0010",
+    "named_insured_name": "Synthetic Insured 0010",
+    "effective_date": "2026-02-15",
+    "expiration_date": "2026-08-15",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2026-02-15",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "collision": {
+        "deductible": "500.00",
+        "limit": null
+      }
+    },
+    "endorsements": [
+      {
+        "type": "excluded_driver",
+        "form_number": "SYN-END-DRV-02",
+        "excluded_driver_name": "Synthetic Driver 010"
+      }
+    ],
+    "vehicle_acv": "14000.00"
+  },
+  {
+    "policy_id": "POL-1011",
+    "as_of": "2026-06-02",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0011",
+    "named_insured_name": "Synthetic Insured 0011",
+    "effective_date": "2026-02-20",
+    "expiration_date": "2026-08-20",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2026-02-20",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "liability": {
+        "deductible": null,
+        "limit": null
+      },
+      "collision": {
+        "deductible": "500.00",
+        "limit": null
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "21000.00"
+  },
+  {
+    "policy_id": "POL-1012",
+    "as_of": "2026-07-19",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0012",
+    "named_insured_name": "Synthetic Insured 0012",
+    "effective_date": "2026-03-05",
+    "expiration_date": "2026-09-05",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2026-03-05",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "collision": {
+        "deductible": "1000.00",
+        "limit": null
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "16000.00"
+  },
+  {
+    "policy_id": "POL-1013",
+    "as_of": "2026-05-09",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0013",
+    "named_insured_name": "Synthetic Insured 0013",
+    "effective_date": "2026-01-25",
+    "expiration_date": "2026-07-25",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2026-01-25",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "comprehensive": {
+        "deductible": "500.00",
+        "limit": null
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "19000.00"
+  },
+  {
+    "policy_id": "POL-1014",
+    "as_of": "2026-07-07",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0014",
+    "named_insured_name": "Synthetic Insured 0014",
+    "effective_date": "2026-04-01",
+    "expiration_date": "2026-10-01",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2026-04-01",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "collision": {
+        "deductible": "500.00",
+        "limit": null
+      },
+      "medical_payments": {
+        "deductible": null,
+        "limit": "5000.00"
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "23000.00"
+  },
+  {
+    "policy_id": "POL-1015",
+    "as_of": "2026-06-28",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0015",
+    "named_insured_name": "Synthetic Insured 0015",
+    "effective_date": "2026-02-10",
+    "expiration_date": "2026-08-10",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2026-02-10",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "collision": {
+        "deductible": "500.00",
+        "limit": null
+      },
+      "medical_payments": {
+        "deductible": null,
+        "limit": "5000.00"
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "26000.00"
+  },
+  {
+    "policy_id": "POL-1016",
+    "as_of": "2026-04-29",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0016",
+    "named_insured_name": "Synthetic Insured 0016",
+    "effective_date": "2026-04-20",
+    "expiration_date": "2026-10-20",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2026-04-20",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "comprehensive": {
+        "deductible": "500.00",
+        "limit": null
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "27500.00"
+  },
+  {
+    "policy_id": "POL-1017",
+    "as_of": "2026-06-06",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0017",
+    "named_insured_name": "Synthetic Insured 0017",
+    "effective_date": "2026-06-01",
+    "expiration_date": "2026-12-01",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2026-06-01",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "comprehensive": {
+        "deductible": "500.00",
+        "limit": null
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "21000.00"
+  },
+  {
+    "policy_id": "POL-1018",
+    "as_of": "2026-07-12",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0018",
+    "named_insured_name": "Synthetic Insured 0018",
+    "effective_date": "2026-03-01",
+    "expiration_date": "2026-09-01",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2026-03-01",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "collision": {
+        "deductible": "500.00",
+        "limit": null
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "19500.00"
+  },
+  {
+    "policy_id": "POL-1019",
+    "as_of": "2026-05-30",
+    "form_number": "SYN-PA-01",
+    "named_insured": "PTY-0019",
+    "named_insured_name": "Synthetic Insured 0019",
+    "effective_date": "2026-03-01",
+    "expiration_date": "2026-09-01",
+    "status_field": "Active",
+    "transactions": [
+      {
+        "on": "2026-03-01",
+        "type": "issued",
+        "note": null
+      }
+    ],
+    "coverages": {
+      "collision": {
+        "deductible": "500.00",
+        "limit": null
+      }
+    },
+    "endorsements": [],
+    "vehicle_acv": "15000.00"
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "additionalProperties": false,
+  "description": "Path and query parameters for GET /policies/{policy_id}?as_of={loss_date}.",
+  "properties": {
+    "policy_id": {
+      "pattern": "^POL-\\d{4}$",
+      "title": "Policy Id",
+      "type": "string"
+    },
+    "as_of": {
+      "format": "date",
+      "title": "As Of",
+      "type": "string"
+    }
+  },
+  "required": [
+    "policy_id",
+    "as_of"
+  ],
+  "title": "GetPolicyRequest",
+  "type": "object"
+}

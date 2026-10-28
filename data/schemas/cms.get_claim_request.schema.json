@@ -1,0 +1,16 @@
+{
+  "additionalProperties": false,
+  "description": "Path parameters for GET /claims/{claim_id} and GET /claims/{claim_id}/assignment.",
+  "properties": {
+    "claim_id": {
+      "pattern": "^CLM-\\d{4}-\\d{4}$",
+      "title": "Claim Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "claim_id"
+  ],
+  "title": "GetClaimRequest",
+  "type": "object"
+}

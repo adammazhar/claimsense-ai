@@ -1,0 +1,11 @@
+[project]
+name = "claimsense"
+version = "0.2.0"
+description = "Claims adjudication co-pilot for a motor insurer (IK FDE capstone)"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "scripts"]
+testpaths = ["tests"]
+# The cache plugin can't write inside a Synology Drive folder; nothing here needs it.
+addopts = "-q -p no:cacheprovider"

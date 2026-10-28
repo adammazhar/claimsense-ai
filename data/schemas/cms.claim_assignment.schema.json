@@ -1,0 +1,34 @@
+{
+  "additionalProperties": false,
+  "description": "Response body of GET /claims/{claim_id}/assignment.",
+  "properties": {
+    "claim_id": {
+      "pattern": "^CLM-\\d{4}-\\d{4}$",
+      "title": "Claim Id",
+      "type": "string"
+    },
+    "adjuster_user_id": {
+      "pattern": "^[a-z]{2,3}-\\d{3}$",
+      "title": "Adjuster User Id",
+      "type": "string"
+    },
+    "desk": {
+      "minLength": 1,
+      "title": "Desk",
+      "type": "string"
+    },
+    "assigned_at": {
+      "format": "date-time",
+      "title": "Assigned At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "claim_id",
+    "adjuster_user_id",
+    "desk",
+    "assigned_at"
+  ],
+  "title": "ClaimAssignment",
+  "type": "object"
+}

@@ -1,0 +1,140 @@
+[
+  {
+    "clause_id": "CLS-PER-006",
+    "form_number": "SYN-PA-01",
+    "form_edition": "2026-01-01",
+    "section": "General provisions",
+    "heading": "Policy period and territory",
+    "text": "This policy applies only to accidents and losses which occur during the policy period. The policy period begins at 12:01 a.m. local time on the effective date and ends at 12:01 a.m. local time on the expiration date shown in the Declarations.",
+    "tags": [
+      "policy_period"
+    ],
+    "supersedes": null
+  },
+  {
+    "clause_id": "CLS-DEC-001",
+    "form_number": "SYN-PA-01",
+    "form_edition": "2026-01-01",
+    "section": "Declarations",
+    "heading": "Coverage applies only where a premium is shown",
+    "text": "Coverage is provided only for those coverages for which a premium is shown in the Declarations for the insured vehicle.",
+    "tags": [
+      "declarations"
+    ],
+    "supersedes": null
+  },
+  {
+    "clause_id": "CLS-COL-001",
+    "form_number": "SYN-PA-01",
+    "form_edition": "2026-01-01",
+    "section": "Part D: Damage to your auto",
+    "heading": "Collision insuring agreement",
+    "text": "We will pay for direct and accidental loss to your covered auto caused by collision with another object or by upset, minus the applicable deductible shown in the Declarations.",
+    "tags": [
+      "collision"
+    ],
+    "supersedes": null
+  },
+  {
+    "clause_id": "CLS-CMP-001",
+    "form_number": "SYN-PA-01",
+    "form_edition": "2026-01-01",
+    "section": "Part D: Damage to your auto",
+    "heading": "Other than collision insuring agreement",
+    "text": "We will pay for direct and accidental loss to your covered auto not caused by collision, including glass breakage, hail, fire and theft, minus the applicable deductible.",
+    "tags": [
+      "comprehensive",
+      "theft"
+    ],
+    "supersedes": null
+  },
+  {
+    "clause_id": "CLS-EXC-003",
+    "form_number": "SYN-PA-01",
+    "form_edition": "2026-01-01",
+    "section": "Part D: Exclusions",
+    "heading": "Public or livery conveyance",
+    "text": "We do not provide coverage for loss to your covered auto while it is being used to carry persons or property for a fee, including use through a ride-hailing application.",
+    "tags": [
+      "exclusion",
+      "livery"
+    ],
+    "supersedes": null
+  },
+  {
+    "clause_id": "CLS-DRV-002",
+    "form_number": "SYN-PA-01",
+    "form_edition": "2026-01-01",
+    "section": "Endorsements",
+    "heading": "Named driver exclusion",
+    "text": "No coverage is provided for any claim arising from an accident or loss that occurs while your covered auto is being operated by a driver named as excluded in this endorsement.",
+    "tags": [
+      "endorsement",
+      "excluded_driver"
+    ],
+    "supersedes": null
+  },
+  {
+    "clause_id": "CLS-BI-001",
+    "form_number": "SYN-PA-01",
+    "form_edition": "2026-01-01",
+    "section": "Part A: Liability",
+    "heading": "Bodily injury liability",
+    "text": "We will pay damages for bodily injury for which an insured becomes legally responsible because of an auto accident. Bodily injury claims are handled by a licensed adjuster.",
+    "tags": [
+      "liability",
+      "injury"
+    ],
+    "supersedes": null
+  },
+  {
+    "clause_id": "CLS-MED-001",
+    "form_number": "SYN-PA-01",
+    "form_edition": "2026-01-01",
+    "section": "Part B: Medical payments",
+    "heading": "Medical payments coverage",
+    "text": "We will pay reasonable expenses for necessary medical services because of bodily injury sustained by an insured in an auto accident, up to the limit shown in the Declarations.",
+    "tags": [
+      "medical_payments",
+      "injury"
+    ],
+    "supersedes": null
+  },
+  {
+    "clause_id": "CLS-TL-001",
+    "form_number": "SYN-PA-01",
+    "form_edition": "2026-01-01",
+    "section": "Part D: Limit of liability",
+    "heading": "Total loss settlement",
+    "text": "Our limit of liability is the lesser of the actual cash value of the damaged property or the amount necessary to repair it. A vehicle may be declared a total loss when repair cost approaches its actual cash value.",
+    "tags": [
+      "total_loss"
+    ],
+    "supersedes": null
+  },
+  {
+    "clause_id": "CLS-DUT-001",
+    "form_number": "SYN-PA-01",
+    "form_edition": "2026-01-01",
+    "section": "Part E: Duties after an accident or loss",
+    "heading": "Duties after loss",
+    "text": "A person seeking coverage must promptly notify us of the loss and, in the event of theft, promptly notify the police. We may require these duties to be met before payment.",
+    "tags": [
+      "duties",
+      "theft"
+    ],
+    "supersedes": null
+  },
+  {
+    "clause_id": "CLS-FRD-001",
+    "form_number": "SYN-PA-01",
+    "form_edition": "2026-01-01",
+    "section": "General provisions",
+    "heading": "Concealment or fraud",
+    "text": "We do not provide coverage for any insured who has made fraudulent statements or engaged in fraudulent conduct in connection with any accident or loss for which coverage is sought.",
+    "tags": [
+      "fraud"
+    ],
+    "supersedes": null
+  }
+]

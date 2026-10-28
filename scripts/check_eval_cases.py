@@ -141,10 +141,10 @@ def main(path: str) -> int:
 
     # Baseline: the legacy rule refers a claim when fraud_score >= the cutoff.
     decision_cases = [c for c in cases if c["expected"]["outcome"] in DECISION_OUTCOMES]
-    labelled = {c["id"] for c in decision_cases if c["expected"]["outcome"] == "ROUTE"}
+    labeled = {c["id"] for c in decision_cases if c["expected"]["outcome"] == "ROUTE"}
     referred = {c["id"] for c in decision_cases if c["claim"]["fraud_score"] >= fraud_cut}
-    hits = labelled & referred
-    recall = len(hits) / len(labelled) if labelled else 0.0
+    hits = labeled & referred
+    recall = len(hits) / len(labeled) if labeled else 0.0
     precision = len(hits) / len(referred) if referred else 0.0
 
     adversarial = sum("adversarial" in c.get("tags", []) for c in cases)
@@ -153,7 +153,7 @@ def main(path: str) -> int:
     print(
         f"legacy fraud rule (score >= {fraud_cut}) on these cases: "
         f"recall {recall:.0%}, precision {precision:.0%} "
-        f"(referred {sorted(referred) or 'none'}; should refer {sorted(labelled)})"
+        f"(referred {sorted(referred) or 'none'}; should refer {sorted(labeled)})"
     )
     if errors:
         print("\nPROBLEMS:")

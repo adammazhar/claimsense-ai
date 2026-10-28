@@ -1,0 +1,47 @@
+{
+  "$defs": {
+    "RecommendationStatus": {
+      "enum": [
+        "draft"
+      ],
+      "title": "RecommendationStatus",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Response of the write: 201 on first create, 200 with the identical body on replay.",
+  "properties": {
+    "recommendation_id": {
+      "format": "uuid",
+      "title": "Recommendation Id",
+      "type": "string"
+    },
+    "claim_id": {
+      "pattern": "^CLM-\\d{4}-\\d{4}$",
+      "title": "Claim Id",
+      "type": "string"
+    },
+    "run_id": {
+      "format": "uuid",
+      "title": "Run Id",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/RecommendationStatus"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "recommendation_id",
+    "claim_id",
+    "run_id",
+    "status",
+    "created_at"
+  ],
+  "title": "DraftRecommendationResponse",
+  "type": "object"
+}

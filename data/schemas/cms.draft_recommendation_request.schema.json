@@ -1,0 +1,190 @@
+{
+  "$defs": {
+    "DeterministicFacts": {
+      "additionalProperties": false,
+      "description": "Values computed in code, never by a model (D-001). Shown separately from judgment.",
+      "properties": {
+        "in_term": {
+          "title": "In Term",
+          "type": "boolean"
+        },
+        "coverage_present": {
+          "title": "Coverage Present",
+          "type": "boolean"
+        },
+        "total_loss_ratio": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Total Loss Ratio"
+        },
+        "total_loss_candidate": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Total Loss Candidate"
+        },
+        "payable": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Set only when the outcome is APPROVE.",
+          "title": "Payable"
+        }
+      },
+      "required": [
+        "in_term",
+        "coverage_present"
+      ],
+      "title": "DeterministicFacts",
+      "type": "object"
+    },
+    "Finding": {
+      "additionalProperties": false,
+      "description": "One model judgment and the evidence it rests on. Every judgment is cited.",
+      "properties": {
+        "statement": {
+          "minLength": 1,
+          "title": "Statement",
+          "type": "string"
+        },
+        "evidence_doc_ids": {
+          "items": {
+            "pattern": "^DOC-\\d{4}-\\d+$",
+            "type": "string"
+          },
+          "title": "Evidence Doc Ids",
+          "type": "array"
+        },
+        "evidence_clause_ids": {
+          "items": {
+            "pattern": "^CLS-[A-Z]{2,3}-\\d{3}$",
+            "type": "string"
+          },
+          "title": "Evidence Clause Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "statement"
+      ],
+      "title": "Finding",
+      "type": "object"
+    },
+    "Outcome": {
+      "description": "The four decision outcomes, precedence DENY > ROUTE > FLAG > APPROVE (D-002).",
+      "enum": [
+        "APPROVE",
+        "DENY",
+        "FLAG",
+        "ROUTE"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "VerdictSource": {
+      "description": "Who produced the outcome. Brief, Milestone 3: model verdicts must be distinguishable.",
+      "enum": [
+        "model",
+        "deterministic_fallback"
+      ],
+      "title": "VerdictSource",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Body of POST /claims/{claim_id}/recommendations. Always a draft; never final (EV-014).",
+  "properties": {
+    "claim_id": {
+      "pattern": "^CLM-\\d{4}-\\d{4}$",
+      "title": "Claim Id",
+      "type": "string"
+    },
+    "run_id": {
+      "format": "uuid",
+      "title": "Run Id",
+      "type": "string"
+    },
+    "outcome": {
+      "$ref": "#/$defs/Outcome"
+    },
+    "source": {
+      "$ref": "#/$defs/VerdictSource"
+    },
+    "reasoning": {
+      "minLength": 1,
+      "title": "Reasoning",
+      "type": "string"
+    },
+    "deterministic": {
+      "$ref": "#/$defs/DeterministicFacts"
+    },
+    "findings": {
+      "items": {
+        "$ref": "#/$defs/Finding"
+      },
+      "minItems": 1,
+      "title": "Findings",
+      "type": "array"
+    },
+    "cited_clause_ids": {
+      "description": "Only clause IDs in the retrieved set survive the citation validator (D-005).",
+      "items": {
+        "pattern": "^CLS-[A-Z]{2,3}-\\d{3}$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Cited Clause Ids",
+      "type": "array"
+    },
+    "model_ids": {
+      "description": "Empty when source is deterministic_fallback.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Model Ids",
+      "type": "array"
+    },
+    "requested_by": {
+      "pattern": "^[a-z]{2,3}-\\d{3}$",
+      "title": "Requested By",
+      "type": "string"
+    }
+  },
+  "required": [
+    "claim_id",
+    "run_id",
+    "outcome",
+    "source",
+    "reasoning",
+    "deterministic",
+    "findings",
+    "cited_clause_ids",
+    "requested_by"
+  ],
+  "title": "DraftRecommendationRequest",
+  "type": "object"
+}

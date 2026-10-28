@@ -1,0 +1,15 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "doc_id": {
+      "pattern": "^DOC-\\d{4}-\\d+$",
+      "title": "Doc Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "doc_id"
+  ],
+  "title": "GetDocumentRequest",
+  "type": "object"
+}

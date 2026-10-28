@@ -1,0 +1,239 @@
+{
+  "$defs": {
+    "Coverage": {
+      "additionalProperties": false,
+      "properties": {
+        "deductible": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deductible"
+        },
+        "limit": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Limit"
+        }
+      },
+      "title": "Coverage",
+      "type": "object"
+    },
+    "CoverageType": {
+      "enum": [
+        "liability",
+        "collision",
+        "comprehensive",
+        "medical_payments"
+      ],
+      "title": "CoverageType",
+      "type": "string"
+    },
+    "Endorsement": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/EndorsementType"
+        },
+        "form_number": {
+          "pattern": "^SYN-",
+          "title": "Form Number",
+          "type": "string"
+        },
+        "excluded_driver_name": {
+          "anyOf": [
+            {
+              "pattern": "^Synthetic [A-Za-z]+ \\d{3,4}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Excluded Driver Name"
+        }
+      },
+      "required": [
+        "type",
+        "form_number"
+      ],
+      "title": "Endorsement",
+      "type": "object"
+    },
+    "EndorsementType": {
+      "enum": [
+        "excluded_driver"
+      ],
+      "title": "EndorsementType",
+      "type": "string"
+    },
+    "PolicyTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "on": {
+          "format": "date",
+          "title": "On",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/TransactionType"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "required": [
+        "on",
+        "type"
+      ],
+      "title": "PolicyTransaction",
+      "type": "object"
+    },
+    "StatusField": {
+      "description": "The PAS's cached status. Display only (D-004): the client's lapsed-policy bug lived here.",
+      "enum": [
+        "Active",
+        "Lapsed",
+        "Canceled"
+      ],
+      "title": "StatusField",
+      "type": "string"
+    },
+    "TransactionType": {
+      "enum": [
+        "issued",
+        "missed_payment_notice",
+        "payment_received",
+        "canceled",
+        "reinstated",
+        "renewed"
+      ],
+      "title": "TransactionType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Response body of GET /policies/{policy_id}?as_of={loss_date}.",
+  "properties": {
+    "policy_id": {
+      "pattern": "^POL-\\d{4}$",
+      "title": "Policy Id",
+      "type": "string"
+    },
+    "as_of": {
+      "format": "date",
+      "title": "As Of",
+      "type": "string"
+    },
+    "form_number": {
+      "description": "Selects the clause wording in the corpus.",
+      "pattern": "^SYN-",
+      "title": "Form Number",
+      "type": "string"
+    },
+    "named_insured": {
+      "pattern": "^PTY-\\d{4}$",
+      "title": "Named Insured",
+      "type": "string"
+    },
+    "named_insured_name": {
+      "pattern": "^Synthetic [A-Za-z]+ \\d{3,4}$",
+      "title": "Named Insured Name",
+      "type": "string"
+    },
+    "effective_date": {
+      "format": "date",
+      "title": "Effective Date",
+      "type": "string"
+    },
+    "expiration_date": {
+      "format": "date",
+      "title": "Expiration Date",
+      "type": "string"
+    },
+    "status_field": {
+      "$ref": "#/$defs/StatusField"
+    },
+    "transactions": {
+      "items": {
+        "$ref": "#/$defs/PolicyTransaction"
+      },
+      "title": "Transactions",
+      "type": "array"
+    },
+    "coverages": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Coverage"
+      },
+      "propertyNames": {
+        "$ref": "#/$defs/CoverageType"
+      },
+      "title": "Coverages",
+      "type": "object"
+    },
+    "endorsements": {
+      "items": {
+        "$ref": "#/$defs/Endorsement"
+      },
+      "title": "Endorsements",
+      "type": "array"
+    },
+    "vehicle_acv": {
+      "anyOf": [
+        {
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "description": "Actual cash value of the insured vehicle, USD.",
+      "title": "Vehicle Acv"
+    }
+  },
+  "required": [
+    "policy_id",
+    "as_of",
+    "form_number",
+    "named_insured",
+    "named_insured_name",
+    "effective_date",
+    "expiration_date",
+    "status_field",
+    "coverages",
+    "vehicle_acv"
+  ],
+  "title": "Policy",
+  "type": "object"
+}

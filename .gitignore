@@ -4,6 +4,8 @@
 # Python
 .venv/
 __pycache__/
+.pytest_cache/
+pytest-cache-files-*/
 
 # Course materials: never committed
 docs/ik/

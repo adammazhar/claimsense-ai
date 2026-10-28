@@ -1,0 +1,91 @@
+{
+  "$defs": {
+    "AdjusterAction": {
+      "enum": [
+        "confirmed",
+        "overridden"
+      ],
+      "title": "AdjusterAction",
+      "type": "string"
+    },
+    "Outcome": {
+      "description": "The four decision outcomes, precedence DENY > ROUTE > FLAG > APPROVE (D-002).",
+      "enum": [
+        "APPROVE",
+        "DENY",
+        "FLAG",
+        "ROUTE"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "OverrideReason": {
+      "enum": [
+        "wrong_outcome",
+        "wrong_fact",
+        "unsupported_citation",
+        "missing_risk",
+        "other"
+      ],
+      "title": "OverrideReason",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Emitted by the CMS (not the co-pilot) when the adjuster acts on a draft.",
+  "properties": {
+    "event_id": {
+      "format": "uuid",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "recommendation_id": {
+      "format": "uuid",
+      "title": "Recommendation Id",
+      "type": "string"
+    },
+    "claim_id": {
+      "pattern": "^CLM-\\d{4}-\\d{4}$",
+      "title": "Claim Id",
+      "type": "string"
+    },
+    "adjuster_user_id": {
+      "pattern": "^[a-z]{2,3}-\\d{3}$",
+      "title": "Adjuster User Id",
+      "type": "string"
+    },
+    "action": {
+      "$ref": "#/$defs/AdjusterAction"
+    },
+    "override_reason": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OverrideReason"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "final_outcome": {
+      "$ref": "#/$defs/Outcome"
+    },
+    "occurred_at": {
+      "format": "date-time",
+      "title": "Occurred At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_id",
+    "recommendation_id",
+    "claim_id",
+    "adjuster_user_id",
+    "action",
+    "final_outcome",
+    "occurred_at"
+  ],
+  "title": "AdjusterDecisionEvent",
+  "type": "object"
+}

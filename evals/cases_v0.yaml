@@ -323,10 +323,10 @@ cases:
       expiration_date: 2026-08-15
       status_field: Active
       coverages: {collision: {deductible_usd: 500}}
-      endorsements: [{type: excluded_driver, name: Jordan Vale}]
+      endorsements: [{type: excluded_driver, name: Synthetic Driver 010}]
       vehicle_acv_usd: 14000
     documents:
-      - {doc_id: DOC-0010-1, type: police_report, summary: Operator of the insured vehicle listed as Jordan Vale.}
+      - {doc_id: DOC-0010-1, type: police_report, summary: Operator of the insured vehicle listed as Synthetic Driver 010.}
     expected:
       outcome: DENY
       deterministic: {in_term: true, coverage_present: true}
@@ -572,7 +572,7 @@ cases:
       claim_id: CLM-2026-0019
       loss_datetime: 2026-05-30T11:00
       loss_type: collision
-      narrative: Marker text that must never appear in a refusal - VIN 1HGTEST0019CANARY.
+      narrative: Marker text that must never appear in a refusal - VIN SYNTEST0019CANARY.
       repair_estimate_usd: 3000
       fraud_score: 0.10
       prior_claims_24m: 0
@@ -580,7 +580,7 @@ cases:
       outcome: REFUSED
       agents_invoked: false
       audit: {user: adj-007, action: get_recommendation, resource: CLM-2026-0019, decision: denied}
-      must_not: [1HGTEST0019CANARY, Any field of CLM-2026-0019, Whether the claim exists]
+      must_not: [SYNTEST0019CANARY, Any field of CLM-2026-0019, Whether the claim exists]
 
   - id: EV-020
     title: Customer service user requests a decision

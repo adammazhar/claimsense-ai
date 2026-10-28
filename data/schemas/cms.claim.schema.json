@@ -1,0 +1,146 @@
+{
+  "$defs": {
+    "LossType": {
+      "enum": [
+        "collision",
+        "comprehensive",
+        "theft"
+      ],
+      "title": "LossType",
+      "type": "string"
+    },
+    "Party": {
+      "additionalProperties": false,
+      "properties": {
+        "party_id": {
+          "pattern": "^PTY-\\d{4}$",
+          "title": "Party Id",
+          "type": "string"
+        },
+        "display_name": {
+          "pattern": "^Synthetic [A-Za-z]+ \\d{3,4}$",
+          "title": "Display Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "party_id",
+        "display_name"
+      ],
+      "title": "Party",
+      "type": "object"
+    },
+    "Vehicle": {
+      "additionalProperties": false,
+      "properties": {
+        "vin": {
+          "pattern": "^SYN[A-Z0-9]{14}$",
+          "title": "Vin",
+          "type": "string"
+        },
+        "year": {
+          "maximum": 2027,
+          "minimum": 1990,
+          "title": "Year",
+          "type": "integer"
+        },
+        "make": {
+          "pattern": "^Synthetic ",
+          "title": "Make",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "vin",
+        "year",
+        "make",
+        "model"
+      ],
+      "title": "Vehicle",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The CMS claim record. Response body of GET /claims/{claim_id}.",
+  "properties": {
+    "claim_id": {
+      "pattern": "^CLM-\\d{4}-\\d{4}$",
+      "title": "Claim Id",
+      "type": "string"
+    },
+    "policy_id": {
+      "pattern": "^POL-\\d{4}$",
+      "title": "Policy Id",
+      "type": "string"
+    },
+    "loss_datetime": {
+      "description": "Local time at the loss location; the policy-period clause (CLS-PER-006) uses local time.",
+      "format": "date-time",
+      "title": "Loss Datetime",
+      "type": "string"
+    },
+    "loss_type": {
+      "$ref": "#/$defs/LossType"
+    },
+    "narrative": {
+      "minLength": 1,
+      "title": "Narrative",
+      "type": "string"
+    },
+    "vehicle": {
+      "$ref": "#/$defs/Vehicle"
+    },
+    "claimant": {
+      "$ref": "#/$defs/Party"
+    },
+    "repair_estimate": {
+      "anyOf": [
+        {
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "description": "USD. Zero when there is no estimate (for example, theft).",
+      "title": "Repair Estimate"
+    },
+    "legacy_fraud_score": {
+      "description": "Input to the risk agent only; never the ROUTE trigger (D-007).",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Legacy Fraud Score",
+      "type": "number"
+    },
+    "prior_claims_24m": {
+      "minimum": 0,
+      "title": "Prior Claims 24M",
+      "type": "integer"
+    },
+    "reported_at": {
+      "format": "date-time",
+      "title": "Reported At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "claim_id",
+    "policy_id",
+    "loss_datetime",
+    "loss_type",
+    "narrative",
+    "vehicle",
+    "claimant",
+    "repair_estimate",
+    "legacy_fraud_score",
+    "prior_claims_24m",
+    "reported_at"
+  ],
+  "title": "Claim",
+  "type": "object"
+}

@@ -1,0 +1,401 @@
+[
+  {
+    "claim_id": "CLM-2026-0001",
+    "policy_id": "POL-1001",
+    "loss_datetime": "2026-06-14T17:40:00",
+    "loss_type": "collision",
+    "narrative": "Hit a deep pothole on Route 9 at about 40 mph. Front right tire and rim damaged, car pulled to the right afterwards.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000001",
+      "year": 2019,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0001",
+      "display_name": "Synthetic Insured 0001"
+    },
+    "repair_estimate": "2400.00",
+    "legacy_fraud_score": 0.12,
+    "prior_claims_24m": 0,
+    "reported_at": "2026-06-15T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0002",
+    "policy_id": "POL-1002",
+    "loss_datetime": "2026-04-03T08:15:00",
+    "loss_type": "comprehensive",
+    "narrative": "Gravel from a truck cracked the windshield on the highway.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000002",
+      "year": 2020,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0002",
+      "display_name": "Synthetic Insured 0002"
+    },
+    "repair_estimate": "650.00",
+    "legacy_fraud_score": 0.08,
+    "prior_claims_24m": 0,
+    "reported_at": "2026-04-04T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0003",
+    "policy_id": "POL-1003",
+    "loss_datetime": "2026-05-20T10:05:00",
+    "loss_type": "collision",
+    "narrative": "Backed into a concrete post in a parking garage. Rear bumper and tailgate damaged.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000003",
+      "year": 2021,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0003",
+      "display_name": "Synthetic Insured 0003"
+    },
+    "repair_estimate": "3750.00",
+    "legacy_fraud_score": 0.41,
+    "prior_claims_24m": 0,
+    "reported_at": "2026-05-21T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0004",
+    "policy_id": "POL-1004",
+    "loss_datetime": "2026-06-22T13:30:00",
+    "loss_type": "collision",
+    "narrative": "Slid into a curb in the rain. Front left wheel and suspension arm damaged.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000004",
+      "year": 2022,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0004",
+      "display_name": "Synthetic Insured 0004"
+    },
+    "repair_estimate": "1850.00",
+    "legacy_fraud_score": 0.15,
+    "prior_claims_24m": 1,
+    "reported_at": "2026-06-23T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0005",
+    "policy_id": "POL-1005",
+    "loss_datetime": "2026-08-30T19:20:00",
+    "loss_type": "collision",
+    "narrative": "Another driver ran a red light and hit my front left corner at an intersection.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000005",
+      "year": 2023,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0005",
+      "display_name": "Synthetic Insured 0005"
+    },
+    "repair_estimate": "3100.00",
+    "legacy_fraud_score": 0.91,
+    "prior_claims_24m": 0,
+    "reported_at": "2026-08-31T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0006",
+    "policy_id": "POL-1006",
+    "loss_datetime": "2026-01-18T14:00:00",
+    "loss_type": "collision",
+    "narrative": "Pothole. Tires, rim and control arm damaged.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000006",
+      "year": 2024,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0006",
+      "display_name": "Synthetic Insured 0006"
+    },
+    "repair_estimate": "4120.00",
+    "legacy_fraud_score": 0.1,
+    "prior_claims_24m": 0,
+    "reported_at": "2026-01-19T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0007",
+    "policy_id": "POL-1007",
+    "loss_datetime": "2026-09-10T15:30:00",
+    "loss_type": "collision",
+    "narrative": "Rear-ended a car that stopped suddenly.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000007",
+      "year": 2018,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0007",
+      "display_name": "Synthetic Insured 0007"
+    },
+    "repair_estimate": "2900.00",
+    "legacy_fraud_score": 0.2,
+    "prior_claims_24m": 0,
+    "reported_at": "2026-09-11T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0008",
+    "policy_id": "POL-1008",
+    "loss_datetime": "2026-05-05T22:10:00",
+    "loss_type": "collision",
+    "narrative": "Lost control on a curve and hit the guardrail.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000008",
+      "year": 2019,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0008",
+      "display_name": "Synthetic Insured 0008"
+    },
+    "repair_estimate": "6400.00",
+    "legacy_fraud_score": 0.18,
+    "prior_claims_24m": 0,
+    "reported_at": "2026-05-06T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0009",
+    "policy_id": "POL-1009",
+    "loss_datetime": "2026-03-21T23:45:00",
+    "loss_type": "collision",
+    "narrative": "Sideswiped a parked car while driving a friend home.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000009",
+      "year": 2020,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0009",
+      "display_name": "Synthetic Insured 0009"
+    },
+    "repair_estimate": "3300.00",
+    "legacy_fraud_score": 0.33,
+    "prior_claims_24m": 0,
+    "reported_at": "2026-03-22T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0010",
+    "policy_id": "POL-1010",
+    "loss_datetime": "2026-04-11T16:00:00",
+    "loss_type": "collision",
+    "narrative": "My car was hit backing out of a driveway.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000010",
+      "year": 2021,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0010",
+      "display_name": "Synthetic Insured 0010"
+    },
+    "repair_estimate": "2700.00",
+    "legacy_fraud_score": 0.26,
+    "prior_claims_24m": 1,
+    "reported_at": "2026-04-12T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0011",
+    "policy_id": "POL-1011",
+    "loss_datetime": "2026-06-02T08:50:00",
+    "loss_type": "collision",
+    "narrative": "Turned left and collided with an oncoming car.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000011",
+      "year": 2022,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0011",
+      "display_name": "Synthetic Insured 0011"
+    },
+    "repair_estimate": "5200.00",
+    "legacy_fraud_score": 0.21,
+    "prior_claims_24m": 0,
+    "reported_at": "2026-06-03T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0012",
+    "policy_id": "POL-1012",
+    "loss_datetime": "2026-07-19T12:10:00",
+    "loss_type": "collision",
+    "narrative": "Car rolled onto its side after swerving to avoid a deer.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000012",
+      "year": 2023,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0012",
+      "display_name": "Synthetic Insured 0012"
+    },
+    "repair_estimate": "14800.00",
+    "legacy_fraud_score": 0.17,
+    "prior_claims_24m": 0,
+    "reported_at": "2026-07-20T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0013",
+    "policy_id": "POL-1013",
+    "loss_datetime": "2026-05-09T02:00:00",
+    "loss_type": "theft",
+    "narrative": "Car stolen from the street outside my apartment overnight. Not recovered.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000013",
+      "year": 2024,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0013",
+      "display_name": "Synthetic Insured 0013"
+    },
+    "repair_estimate": "0.00",
+    "legacy_fraud_score": 0.38,
+    "prior_claims_24m": 0,
+    "reported_at": "2026-05-10T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0014",
+    "policy_id": "POL-1014",
+    "loss_datetime": "2026-07-07T17:15:00",
+    "loss_type": "collision",
+    "narrative": "Rear-ended at low speed in traffic. My passenger hurt her neck.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000014",
+      "year": 2018,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0014",
+      "display_name": "Synthetic Insured 0014"
+    },
+    "repair_estimate": "2200.00",
+    "legacy_fraud_score": 0.14,
+    "prior_claims_24m": 0,
+    "reported_at": "2026-07-08T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0015",
+    "policy_id": "POL-1015",
+    "loss_datetime": "2026-06-28T03:10:00",
+    "loss_type": "collision",
+    "narrative": "Swerved and hit a tree on a back road. I was alone and wasn't hurt.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000015",
+      "year": 2019,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0015",
+      "display_name": "Synthetic Insured 0015"
+    },
+    "repair_estimate": "7600.00",
+    "legacy_fraud_score": 0.22,
+    "prior_claims_24m": 1,
+    "reported_at": "2026-06-29T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0016",
+    "policy_id": "POL-1016",
+    "loss_datetime": "2026-04-29T01:30:00",
+    "loss_type": "theft",
+    "narrative": "Car stolen overnight. Police found it burned two days later.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000016",
+      "year": 2020,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0016",
+      "display_name": "Synthetic Insured 0016"
+    },
+    "repair_estimate": "0.00",
+    "legacy_fraud_score": 0.64,
+    "prior_claims_24m": 3,
+    "reported_at": "2026-04-30T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0017",
+    "policy_id": "POL-1017",
+    "loss_datetime": "2026-06-06T18:00:00",
+    "loss_type": "comprehensive",
+    "narrative": "Hailstorm dented the hood and roof.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000017",
+      "year": 2021,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0017",
+      "display_name": "Synthetic Insured 0017"
+    },
+    "repair_estimate": "4500.00",
+    "legacy_fraud_score": 0.35,
+    "prior_claims_24m": 0,
+    "reported_at": "2026-06-07T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0018",
+    "policy_id": "POL-1018",
+    "loss_datetime": "2026-07-12T16:40:00",
+    "loss_type": "collision",
+    "narrative": "Rear-ended while stopped at a light.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000018",
+      "year": 2022,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0018",
+      "display_name": "Synthetic Insured 0018"
+    },
+    "repair_estimate": "7900.00",
+    "legacy_fraud_score": 0.3,
+    "prior_claims_24m": 0,
+    "reported_at": "2026-07-13T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0019",
+    "policy_id": "POL-1019",
+    "loss_datetime": "2026-05-30T11:00:00",
+    "loss_type": "collision",
+    "narrative": "Marker text that must never appear in a refusal - VIN SYNTEST0019CANARY.",
+    "vehicle": {
+      "vin": "SYNTEST0019CANARY",
+      "year": 2023,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0019",
+      "display_name": "Synthetic Insured 0019"
+    },
+    "repair_estimate": "3000.00",
+    "legacy_fraud_score": 0.1,
+    "prior_claims_24m": 0,
+    "reported_at": "2026-05-31T09:00:00Z"
+  }
+]
