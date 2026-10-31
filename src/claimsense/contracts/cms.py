@@ -67,7 +67,7 @@ class Claim(Contract):
     vehicle: Vehicle
     claimant: Party
     repair_estimate: Money = Field(description="USD. Zero when there is no estimate (for example, theft).")
-    legacy_fraud_score: Score = Field(description="Input to the risk agent only; never the ROUTE trigger (D-007).")
+    legacy_fraud_score: Score = Field(description="Input to the Claim Assessment agent only; never the ROUTE trigger (D-007).")
     prior_claims_24m: int = Field(ge=0)
     reported_at: AwareDatetime
 

@@ -9,11 +9,11 @@ course Google Form. Not graded; required regardless of completeness.
 
 ## 2. Milestone 1 deliverables
 
-- [x] Engagement charter, 2 pages, naming the three client systems and their integration points: `docs/engagement/charter.md`
-- [x] Stakeholder map and RACI (approver, reviewer, daily user, who can block rollout): `docs/engagement/stakeholders.md`
+- [x] Engagement charter, 2 pages: problem, three client systems and integration points, success criteria, four agent roles, top risks: `docs/engagement/charter.md`
+- [x] Stakeholder map with each stakeholder typed user, blocker or enabler; RACI by Week 1–5 deliverable and by decision (approver, reviewer, daily user, who can block rollout): `docs/engagement/stakeholders.md`
 - [x] Four quantified success criteria, plus guardrails: `docs/engagement/success-criteria.md`
-- [x] DECISIONS.md with dated decisions and reasons (D-001 to D-007 for M1)
-- [x] 20 evaluation cases across all four outcomes, including adversarial cases: `evals/cases_v0.yaml`
+- [x] DECISIONS.md with dated decisions and reasons (D-001 to D-007 for M1, D-008 to D-016 since)
+- [x] 22 evaluation cases: 5 per outcome plus 2 refused-access cases, including adversarial cases: `evals/cases_v0.yaml`
 
 ## 3. Milestone 2 deliverables
 

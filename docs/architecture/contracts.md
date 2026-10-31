@@ -145,10 +145,10 @@ The citation validator keeps only IDs in `RetrievalResult.retrieved_ids()`.
 | Location | What it holds |
 |---|---|
 | `data/schemas/*.schema.json` | 16 JSON Schemas, one per published model |
-| `data/synthetic/claims.json` | 19 claims (EV-020 reuses EV-001's claim) |
-| `data/synthetic/assignments.json` | 19 assignments |
-| `data/synthetic/policies.json` | 19 policies |
-| `data/synthetic/documents.json` | 40 documents |
+| `data/synthetic/claims.json` | 21 claims (EV-020 reuses EV-001's claim) |
+| `data/synthetic/assignments.json` | 21 assignments |
+| `data/synthetic/policies.json` | 21 policies |
+| `data/synthetic/documents.json` | 45 documents |
 | `data/synthetic/clauses.json` | 11 clauses, covering every clause ID the eval cases cite |
 
 The fixtures are **generated from `evals/cases_v0.yaml`** by `scripts/build_fixtures.py`, so the

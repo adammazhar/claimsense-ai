@@ -32,10 +32,10 @@ flowchart LR
     end
     subgraph MOD["MODEL JUDGMENT: OpenAI Agents SDK, strict typed output, every judgment cited"]
       direction TB
-      A1["Agent 1: File reader<br/>facts + document citations"]:::model
-      A2["Agent 2: Coverage<br/>clause wording vs facts"]:::model
-      A3["Agent 3: Risk<br/>fraud, total loss, injury"]:::model
-      A4["Agent 4: Drafter<br/>outcome + reasoning"]:::model
+      A1["Agent 1: Document Intake<br/>facts + document citations"]:::model
+      A2["Agent 2: Coverage Check<br/>clause wording vs facts"]:::model
+      A3["Agent 3: Claim Assessment<br/>fraud, total loss, injury"]:::model
+      A4["Agent 4: Decision Draft<br/>outcome + reasoning"]:::model
     end
     DDB[("DynamoDB<br/>audit log,<br/>idempotency keys")]:::infra
     S3[("S3<br/>clause corpus,<br/>fixtures")]:::infra
@@ -117,7 +117,7 @@ and the model must cite what it read. A model never sees a claim the caller isn'
 because the entitlement check runs before the dossier exists.
 
 **The agents have no tools that reach the client systems (D-010).** The deterministic pipeline fetches
-one claim's dossier and hands it over with the figures fixed. The coverage agent's only tool is clause
+one claim's dossier and hands it over with the figures fixed. The Coverage Check agent's only tool is clause
 retrieval, which searches policy wording and returns no claim data. A prompt injection in a document
 (EV-002, EV-008, EV-018) can therefore, at most, search the clause corpus. It cannot fetch another
 claim, change a figure, or mark a draft final.
@@ -137,11 +137,11 @@ model verdict and it counts as a miss in decision accuracy.
 | F5 | Entitlement → adapters | claim_id only, once granted | denied requests never reach F6–F8 |
 | F6–F8 | Adapters ↔ CMS, PAS, document store | Claim, Policy as of loss date, Documents | typed contracts ([contracts.md](contracts.md)); read-only |
 | F9 | Adapters → deterministic facts | validated models | unknown fields are rejected at this edge |
-| F10 | Facts → Agent 1 | dossier for one claim, figures fixed | document text is marked as quoted evidence |
-| F11 | Agent 1 → Agents 2 and 3 | facts, each with doc citations | Agents 2 and 3 run in parallel (R5) |
-| F12–F13 | Agent 2 ↔ retrieval ↔ S3 | query, then clause hits | form-scoped; returns policy wording only |
-| F14 | Agents 2 and 3 → Agent 4 | coverage reading, risk indicators | |
-| F15–F17 | Agent 4, facts, retrieval → validator | draft, deterministic facts, retrieved IDs | validator drops unretrieved citations and applies precedence |
+| F10 | Facts → Agent 1, Document Intake | dossier for one claim, figures fixed | document text is marked as quoted evidence |
+| F11 | Document Intake → Coverage Check and Claim Assessment | facts, each with doc citations | Agents 2 and 3 run in parallel (R5) |
+| F12–F13 | Coverage Check ↔ retrieval ↔ S3 | query, then clause hits | form-scoped; returns policy wording only |
+| F14 | Coverage Check and Claim Assessment → Decision Draft | coverage reading, risk indicators | |
+| F15–F17 | Decision Draft, facts, retrieval → validator | draft, deterministic facts, retrieved IDs | validator drops unretrieved citations and applies precedence |
 | F18 | Validator → write-back | validated draft with `source` | model or deterministic fallback |
 | F19 | Write-back → CMS | `POST /claims/{id}/recommendations` | the only write; Idempotency-Key = claim_id:run_id |
 | F20 | Write-back → adjuster | draft, reasoning, citations, deterministic facts | judgment and computation shown separately |

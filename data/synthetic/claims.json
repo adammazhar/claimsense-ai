@@ -294,6 +294,27 @@
     "reported_at": "2026-07-08T09:00:00Z"
   },
   {
+    "claim_id": "CLM-2026-0021",
+    "policy_id": "POL-1021",
+    "loss_datetime": "2026-08-11T09:20:00",
+    "loss_type": "collision",
+    "narrative": "Skidded on a wet off-ramp and hit the barrier. Front end crushed and both airbags deployed.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000021",
+      "year": 2018,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0021",
+      "display_name": "Synthetic Insured 0021"
+    },
+    "repair_estimate": "9000.00",
+    "legacy_fraud_score": 0.16,
+    "prior_claims_24m": 0,
+    "reported_at": "2026-08-12T09:00:00Z"
+  },
+  {
     "claim_id": "CLM-2026-0015",
     "policy_id": "POL-1015",
     "loss_datetime": "2026-06-28T03:10:00",
@@ -376,6 +397,27 @@
     "legacy_fraud_score": 0.3,
     "prior_claims_24m": 0,
     "reported_at": "2026-07-13T09:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0022",
+    "policy_id": "POL-1022",
+    "loss_datetime": "2026-08-05T21:30:00",
+    "loss_type": "comprehensive",
+    "narrative": "Hit a deer on a county road at night. Front bumper, grille and hood damaged.",
+    "vehicle": {
+      "vin": "SYNTESTVIN0000022",
+      "year": 2019,
+      "make": "Synthetic Motors",
+      "model": "Test Sedan"
+    },
+    "claimant": {
+      "party_id": "PTY-0022",
+      "display_name": "Synthetic Insured 0022"
+    },
+    "repair_estimate": "5600.00",
+    "legacy_fraud_score": 0.18,
+    "prior_claims_24m": 0,
+    "reported_at": "2026-08-06T09:00:00Z"
   },
   {
     "claim_id": "CLM-2026-0019",

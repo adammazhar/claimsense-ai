@@ -18,7 +18,7 @@ themselves are Milestone 3. Submission 1 checklist: [SUBMISSION-1.md](SUBMISSION
 | Stakeholder map and RACI | [docs/engagement/stakeholders.md](docs/engagement/stakeholders.md) |
 | Four quantified success criteria, plus guardrails | [docs/engagement/success-criteria.md](docs/engagement/success-criteria.md) |
 | Architectural decision log | [DECISIONS.md](DECISIONS.md) |
-| 20 evaluation cases across all four outcomes, including adversarial cases | [evals/cases_v0.yaml](evals/cases_v0.yaml) |
+| 22 evaluation cases: 5 per outcome plus 2 refused-access cases, including adversarial cases | [evals/cases_v0.yaml](evals/cases_v0.yaml) |
 
 | Milestone 2: SoW, pricing and architecture | File |
 |---|---|
@@ -64,5 +64,5 @@ py -3.12 -m venv .venv
 amount, total-loss ratio, days since inception, photo dates against inception). It fails if a label
 disagrees or a deterministic field has no check. It also reports how the client's current fraud
 rule (refer when the legacy score is 0.5 or more) performs on the same cases: on v0 it refers two
-claims, one of them wrongly, and catches only one of the four that should go to SIU (recall 25%,
+claims, one of them wrongly, and catches only one of the five that should go to SIU (recall 20%,
 precision 50%).

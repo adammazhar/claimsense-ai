@@ -111,7 +111,7 @@
       "title": "Repair Estimate"
     },
     "legacy_fraud_score": {
-      "description": "Input to the risk agent only; never the ROUTE trigger (D-007).",
+      "description": "Input to the Claim Assessment agent only; never the ROUTE trigger (D-007).",
       "maximum": 1.0,
       "minimum": 0.0,
       "title": "Legacy Fraud Score",

@@ -4,14 +4,14 @@ Each criterion is written as **metric, threshold, population**, so it can be tes
 evaluation set and again at handover. These lines become the acceptance criteria in the week 2
 statement of work and the gate in the week 5 evaluation suite.
 
-The **evaluation set** is the versioned case file in `evals/`: 20 cases now (v0), growing to 150 by
+The **evaluation set** is the versioned case file in `evals/`: 22 cases now (v0: 5 per outcome plus 2 refused-access cases), growing to 150 by
 week 5. A **held-out** portion of at least 30 cases is never used for prompt tuning (see D-006).
 
 ## The four required criteria
 
 | # | Criterion | Metric | Threshold | Population | How it's measured |
 |---|---|---|---|---|---|
-| 1 | **Decision accuracy** | Share of claims where the co-pilot's **model-generated** outcome (APPROVE, DENY, FLAG or ROUTE) equals the reference label. A deterministic-fallback verdict, an error or a timeout counts as a miss. | **≥ 85%** overall, and, from week 3, **≥ 80%** on the held-out cases | All decision cases in the evaluation set (18 in v0) | Automated, in CI, on every commit |
+| 1 | **Decision accuracy** | Share of claims where the co-pilot's **model-generated** outcome (APPROVE, DENY, FLAG or ROUTE) equals the reference label. A deterministic-fallback verdict, an error or a timeout counts as a miss. | **≥ 85%** overall, and, from week 3, **≥ 80%** on the held-out cases | All decision cases in the evaluation set (20 in v0) | Automated, in CI, on every commit |
 | 2 | **Pipeline latency** | Time from request received by the service to recommendation returned. A failed or timed-out call counts at its timeout value. | **p95 ≤ 90 s**, p50 ≤ 45 s | Every decision request on the deployed AWS stack during the full evaluation run. Refused requests are excluded: they never reach an agent and would flatter the percentiles. | CloudWatch metrics on the deployed service |
 | 3 | **Adjuster confirmation rate** | Share of recommendations the reviewing adjuster confirms **with the outcome, reasoning and citations all unchanged**. A correct outcome resting on a wrong fact or an unsupported citation is an override. | **≥ 80%** | At least 50 claims reviewed through the confirmation screen | Confirm and override events in the audit log, each override carrying a reason code |
 | 4 | **Fraud routing accuracy** | Recall and precision of ROUTE | Recall **≥ 90%**, precision **≥ 70%** | Every case labeled ROUTE (recall) and every case the co-pilot routes (precision) | Automated, in CI |
@@ -33,8 +33,8 @@ week 5. A **held-out** portion of at least 30 cases is never used for prompt tun
 4. **90% recall, 70% precision.** Missing fraud costs more than a false referral, so recall carries
    the higher bar. The precision floor protects SIU from being flooded. The baseline to beat is the
    legacy rule in the client's current rule table (refer when `fraud_score >= 0.5`), measured on the
-   same cases; `scripts/check_eval_cases.py` reports it. With 4 ROUTE cases in v0, 90% recall means
-   all 4.
+   same cases; `scripts/check_eval_cases.py` reports it. With 5 ROUTE cases in v0, 90% recall means
+   all 5.
 
 ## Guardrails (must hold at zero; a breach blocks release)
 

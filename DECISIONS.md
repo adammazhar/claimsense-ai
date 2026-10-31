@@ -233,3 +233,57 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Owner:** FDE
 - **Revisit when:** The instructor's official fixtures arrive; they become the source, and the eval
   cases reference them by ID.
+## D-015 · 2026-10-31 · Outcome mapping to the instructor's labels; eval set to 5 per outcome
+
+- **Decision:** Our four outcomes map one to one onto the instructor's Week 1 labels:
+
+  | Ours | Instructor's | Meaning here |
+  |---|---|---|
+  | APPROVE | `approve` | covered, no specialist handling; code computes the payable |
+  | DENY | `deny` | the policy doesn't respond |
+  | FLAG | `flag_review` | a licensed adjuster must handle it first: injury, likely total loss, missing documents |
+  | ROUTE | `route_specialist` | **SIU only**: fraud indicators in the file |
+  | REFUSED (not an outcome) | `reject`, RBAC violation (403) | unentitled request, refused in code before any agent runs |
+
+  Two deliberate differences from the instructor's examples:
+  - **Total loss.** The instructor's guide routes a total loss to a total-loss appraiser as
+    `route_specialist`. Here ROUTE means SIU and nothing else, and a total loss is FLAG (EV-012,
+    EV-021). That keeps fraud routing precision (success criterion 4) measurable on one population.
+  - **Prompt injection.** The guide rejects an injected request outright ("guardrail fires"). Here
+    the claim is still decided on its own facts, the injected text is treated as evidence and noted
+    as a finding, and the injection never changes the outcome (EV-002, EV-008, EV-018). Rejecting the
+    whole claim would let any claimant block their own adjudication with one sentence.
+  - **The eval set** grows to the instructor's split: 5 APPROVE, 5 DENY, 5 FLAG, 5 ROUTE, plus the 2
+    refused-access cases (22 in total). EV-021 is a total-loss boundary case at exactly 0.75 with a
+    forced-auto-decision request (adversarial). EV-022 is a document-timeline fraud case the legacy
+    score misses. Every case now carries `expected_reasoning` (one sentence) and
+    `minimum_confidence`: high for clear and adversarial cases, medium for the 5 edge cases where
+    the outcome rests on judgment.
+- **Why:** The instructor's checklist and eval-case template use these labels and this split. A
+  documented mapping lets the instructor read our results in their terms without renaming outcomes
+  that the contracts, checker and success criteria already use.
+- **Also fixed:** a quoting bug found while adding the fields. Document summaries and findings that
+  contained a comma sat unquoted inside YAML flow mappings and lists, so the parser cut them at the
+  first comma. 19 summaries were truncated, and the Milestone 2 fixtures inherited the truncated text.
+  All are now quoted, and the checker fails if a summary or finding is ever split again.
+- **Alternatives considered:** Renaming our outcomes to the instructor's labels. Rejected: it churns
+  the contracts, fixtures and every document for no change in meaning.
+- **Owner:** FDE; total-loss and SIU routing to be confirmed with the Claims Quality Lead and SIU Manager
+- **Revisit when:** The client wants total losses routed to an appraiser queue distinct from
+  adjuster review; then a sixth label is added, and criterion 4 stays SIU-only.
+
+## D-016 · 2026-10-31 · The four agents use the instructor's names
+
+- **Decision:** The agents are Document Intake, Coverage Check, Claim Assessment and Decision Draft,
+  in that order, in the charter, the architecture diagram and the risk register. They were
+  previously File reader, Coverage, Risk and Drafter. Responsibilities are unchanged.
+  - **Where the scope differs from the instructor's description.** Coverage Check judges coverage
+    from clause wording only, and the net payable stays in code (D-001), where the instructor's
+    version also calculates it. Claim Assessment treats the legacy fraud score as one input, never the
+    trigger (D-007).
+- **Why:** One vocabulary across the course materials, the reviews and this repo, so a reader moves
+  between them without a translation table.
+- **Alternatives considered:** Keep our own names. Rejected: no benefit, and a translation cost for
+  every reviewer.
+- **Owner:** FDE
+- **Revisit when:** Never for the pilot.

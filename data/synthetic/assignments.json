@@ -84,6 +84,12 @@
     "assigned_at": "2026-07-08T10:00:00Z"
   },
   {
+    "claim_id": "CLM-2026-0021",
+    "adjuster_user_id": "adj-003",
+    "desk": "PD-AUTO-1",
+    "assigned_at": "2026-08-12T10:00:00Z"
+  },
+  {
     "claim_id": "CLM-2026-0015",
     "adjuster_user_id": "adj-002",
     "desk": "PD-AUTO-1",
@@ -106,6 +112,12 @@
     "adjuster_user_id": "adj-002",
     "desk": "PD-AUTO-1",
     "assigned_at": "2026-07-13T10:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0022",
+    "adjuster_user_id": "adj-001",
+    "desk": "PD-AUTO-1",
+    "assigned_at": "2026-08-06T10:00:00Z"
   },
   {
     "claim_id": "CLM-2026-0019",

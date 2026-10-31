@@ -11,6 +11,7 @@ Usage:
 
 from __future__ import annotations
 
+import re
 import sys
 from datetime import date, datetime, time
 from pathlib import Path
@@ -24,6 +25,31 @@ CHECKED_FIELDS = {
     "in_term", "coverage_present", "payable_usd", "tl_ratio",
     "total_loss_candidate", "days_since_inception", "photos_before_inception",
 }
+MIN_PER_OUTCOME = 5  # instructor's Week 1 checklist: 5 approve, 5 deny, 5 flag_review, 5 route_specialist
+CONFIDENCE_LEVELS = {"high", "medium"}
+DOCUMENT_KEYS = {"doc_id", "type", "summary", "captured"}
+# A sentence break: end punctuation, space, capital. "a.m. on" and "(D-002)." don't match.
+SENTENCE_BREAK = re.compile(r"[.!?]\s+[A-Z]")
+
+
+def check_common(case: dict) -> list[str]:
+    """Problems any case can have: reasoning, confidence, and YAML that parsed into the wrong shape."""
+    problems: list[str] = []
+    expected = case["expected"]
+    reasoning = expected.get("expected_reasoning")
+    if not isinstance(reasoning, str) or not reasoning.strip():
+        problems.append("expected_reasoning is missing")
+    elif SENTENCE_BREAK.search(reasoning) or not reasoning.rstrip().endswith("."):
+        problems.append("expected_reasoning must be exactly one sentence")
+    if expected.get("minimum_confidence") not in CONFIDENCE_LEVELS:
+        problems.append(f"minimum_confidence must be one of {sorted(CONFIDENCE_LEVELS)}")
+    # An unquoted comma inside a YAML flow mapping or list splits the value silently.
+    for doc in case.get("documents", []):
+        if set(doc) - DOCUMENT_KEYS or not isinstance(doc.get("summary"), str):
+            problems.append(f"{doc.get('doc_id')}: summary was split by YAML; quote it")
+    if not all(isinstance(f, str) for f in expected.get("findings", [])) or len(expected.get("findings", [])) > 1:
+        problems.append("findings must be a single quoted statement")
+    return problems
 
 
 def as_date(value: date | str) -> date:
@@ -123,6 +149,7 @@ def main(path: str) -> int:
         outcome = case["expected"]["outcome"]
         counts[outcome] = counts.get(outcome, 0) + 1
         families |= set(case.get("tags", []))
+        errors += [f"{case['id']}: {p}" for p in check_common(case)]
         if outcome in DECISION_OUTCOMES:
             errors += [f"{case['id']}: {p}" for p in check_case(case, threshold)]
         elif outcome == "REFUSED":
@@ -133,9 +160,9 @@ def main(path: str) -> int:
         else:
             errors.append(f"{case['id']}: unknown outcome {outcome}")
 
-    missing = DECISION_OUTCOMES - counts.keys()
-    if missing:
-        errors.append(f"no cases for outcomes {sorted(missing)}")
+    short = {o: counts.get(o, 0) for o in sorted(DECISION_OUTCOMES) if counts.get(o, 0) < MIN_PER_OUTCOME}
+    if short:
+        errors.append(f"each decision outcome needs at least {MIN_PER_OUTCOME} cases; short: {short}")
     if REQUIRED_ADVERSARIAL - families:
         errors.append(f"no cases for adversarial families {sorted(REQUIRED_ADVERSARIAL - families)}")
 

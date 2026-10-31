@@ -1,7 +1,7 @@
 """Policy clause corpus contracts.
 
 The corpus is not a client system; it is the searchable set of policy form wordings, indexed at
-clause level and keyed by clause ID (D-005). The coverage agent's only tool searches it, and the
+clause level and keyed by clause ID (D-005). The Coverage Check agent's only tool searches it, and the
 citation validator keeps only clause IDs present in the RetrievalResult.
 """
 

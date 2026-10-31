@@ -5,24 +5,19 @@ handover · **FDE:** Adam Mazhar · **Status:** Milestone 1, draft for client si
 
 ## 1. The problem
 
-One adjuster makes every first decision by hand across three systems that don't talk to each other:
-open the claim, find the policy, pull documents, re-key values, check coverage, judge fraud, total
-loss and injury, write the decision. Hours per claim, and the queue waits on one pair of hands. **(1) The adjuster is the integration
-layer:** most handling time goes into assembling the file, not deciding. **(2) Judgment is
-invisible:** adjusters disagree on the same file, and the reasoning lives in inboxes. **(3) Fraud
-referral is a threshold, not a reading:** a 3 a.m. unwitnessed loss with a contradictory medical note
-isn't referred if its legacy score is low. Extending the rule table won't fix this: coverage turns on
-clause wording, and fraud on whether the story holds across documents. Rules read fields; this job
-requires reading the whole file.
+One adjuster makes every first decision by hand across three systems that don't talk to each other,
+taking hours per claim. **(1) The adjuster is the integration layer:** most time goes into assembling
+the file, not deciding. **(2) Judgment is invisible:** adjusters disagree on the same file, and the
+reasoning lives in inboxes. **(3) Fraud referral is a threshold, not a reading:** a 3 a.m. unwitnessed
+loss with a contradictory medical note isn't referred if its score is low. A bigger rule table won't
+fix this: coverage turns on clause wording, and fraud on whether the story holds across documents.
 
 ## 2. Bottleneck hypothesis
 
-A claim moves through five steps: **(1)** notice of loss (CMS) → **(2)** gather the file (document
-store, CMS) → **(3)** check coverage (PAS, then the clause wording) → **(4)** assess risk (documents,
-claim history) → **(5)** first decision (CMS). Hypothesis: steps 2 and 3 dominate handling time,
-because that is where the adjuster crosses all three systems. **To validate in week 1:** time 20
-recent claims by step with the client; if steps 2 and 3 aren't most of it, scope moves to where the
-time goes, recorded in DECISIONS.md.
+Notice of loss (CMS) → gather the file (document store, CMS) → check coverage (PAS, clause wording) →
+assess risk (documents, history) → first decision (CMS). Gathering and coverage dominate handling time,
+because that is where the adjuster crosses all three systems. **Validate in week 1:** time 20 recent
+claims by step; if wrong, scope moves to where the time goes (logged in DECISIONS.md).
 
 ## 3. The three client systems and their integration points
 
@@ -34,34 +29,43 @@ time goes, recorded in DECISIONS.md.
 | **Policy administration (PAS)** | Policy as of the loss date: term, payment and cancellation history, coverages, limits, deductibles, endorsements | Read `GET /policies/{id}?as_of={loss_date}` |
 | **Document store** | Police report, estimate, statements, medical notes, photo metadata | Read `GET /claims/{id}/documents`, `GET /documents/{id}` |
 
-Outside the three systems sit the **identity provider** and the **policy clause corpus** (form
-wordings, searchable by clause ID). All access goes through one engagement-owned service that checks
-token and entitlement before any agent runs and audits every call, granted or refused.
+Also used: **identity provider**, **clause corpus**. One service checks entitlement, audits every call.
 
 ## 4. Target and fixed constraints
 
 Defined in [success-criteria.md](success-criteria.md): reference outcome matched on **≥ 85%** of
-evaluation claims; recommendation in **≤ 90 s at p95**; **≥ 80%** confirmed by the reviewing adjuster
-with outcome, reasoning and citations unchanged; Special Investigations Unit (SIU) routing at **≥ 90%
-recall, ≥ 70% precision**; five zero-tolerance guardrails. **Fixed:** identity, access control, policy
-dates and money stay in code; every model judgment cites its evidence; a licensed adjuster confirms
-every outcome; synthetic data only, no production or personally identifiable data.
+evaluation claims; **≤ 90 s at p95**; **≥ 80%** confirmed by the adjuster with outcome, reasoning and
+citations unchanged; SIU routing at **≥ 90% recall, ≥ 70% precision**; five zero-tolerance guardrails.
+**Fixed:** identity, access, dates and money in code; every judgment cited; an adjuster confirms
+every outcome; synthetic data only.
 
 ## 5. Decision outcomes and first slice
 
-One outcome per claim; precedence DENY > ROUTE > FLAG > APPROVE (D-002). **APPROVE:** policy responds,
-no risk needs specialist handling; code computes the payable amount. **DENY:** policy doesn't respond
-(out of term, coverage not bought, exclusion applies). **FLAG:** likely covered, but an adjuster must
-handle it first (injury, likely total loss, missing documents). **ROUTE:** fraud indicators; refer to
-SIU. An unentitled request is not an outcome: it is refused before any agent runs, with no claim data.
-**First slice:** personal auto physical damage (collision, comprehensive), all four outcomes, read-only
-access plus the one write above; injury and total loss are flagged, not adjudicated. **Out of scope:**
-commercial auto, liability adjudication, payment execution, subrogation, the legacy fraud score itself.
+One outcome per claim, precedence DENY > ROUTE > FLAG > APPROVE (D-002). **APPROVE:** covered, no
+specialist handling; code computes the payable. **DENY:** out of term, coverage not bought, or an
+exclusion applies. **FLAG:** adjuster must handle first (injury, likely total loss, missing documents).
+**ROUTE:** fraud indicators; refer to SIU. An unentitled request is refused before any agent runs.
+**First slice:** personal auto physical damage, read-only plus the one write. **Out of scope:**
+commercial auto, liability adjudication, payment execution, subrogation.
 
-## 6. Open questions for the client
+## 6. Four agent roles (OpenAI Agents SDK)
 
-(1) Handling time per claim, by step? Settles the bottleneck hypothesis. (2) Total-loss threshold?
-Assumed 75% of actual cash value, as in the current rule table. (3) Legacy fraud cutoff? Assumed a
-score of 0.5, as in the current rule table; it is the baseline to beat. (4) Documents required before
-paying a theft or hit-and-run claim? (5) Who may change the clause corpus, and how are form revisions
-versioned? (6) Is the policy status field ever authoritative over term dates? Assumed not (D-004).
+- **Document Intake:** extracts the facts (vehicle, incident, damage, estimate, injuries, police
+  report) from the claim file, each cited to its document.
+- **Coverage Check:** reads the retrieved policy clauses against those facts and decides coverage or
+  exclusion, citing only retrieved clause IDs; dates and money stay in code.
+- **Claim Assessment:** reads the file for fraud indicators and total-loss and injury exposure; the
+  legacy fraud score is one input, never the trigger.
+- **Decision Draft:** combines coverage, risk and the code-computed facts into one cited draft outcome
+  for the adjuster to confirm.
+
+## 7. Top risks (full register: [risk-register.md](risk-register.md))
+
+1. **Fixture and data-access delay** (high): build on our own fixtures; adapters remap later (R1).
+2. **IK AWS account or OpenAI key limits** (high): local Docker stack first; token budgets (R2).
+3. **Model misreads coverage** (medium): DENY precedence in code; citation validator (R3).
+
+## 8. Open questions for the client
+
+(1) Handling time by step? (2) Total-loss threshold (assumed 75% of value)? (3) Legacy fraud cutoff (assumed
+0.5)? (4) Documents required for theft? (5) Who changes the corpus? (6) Is the status field authoritative (D-004)?

@@ -12,7 +12,7 @@ minutes, reasoning recorded, a licensed adjuster accountable for every outcome (
 
 | Milestone (week) | Deliverables | Sign-off |
 |---|---|---|
-| **M1** Discovery (Oct 18–24) | Charter, RACI, 4 success criteria, DECISIONS.md, 20 eval cases | Sat Oct 24, VP Claims |
+| **M1** Discovery (Oct 18–24) | Charter, RACI, 4 success criteria, DECISIONS.md, 22 eval cases | Sat Oct 24, VP Claims |
 | **M2** SoW and design (Oct 25–31) | SoW, architecture, pricing, risk register, typed contracts, synthetic data shapes, cloud account | Sat Oct 31, VP Claims, CISO |
 | **M3** Agents (Nov 1–7) | 4 typed agents, retrieval citing retrieved clauses, one-command container stack, CI eval gate blocking image push | Sat Nov 7, Quality Lead |
 | **M4** Access (Nov 8–14) | Data-access service, auth on every route, access check before any agent, two-user test, audit on every call | Sat Nov 14, CISO |
