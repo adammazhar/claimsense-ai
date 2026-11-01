@@ -21,15 +21,15 @@ claims by step; if wrong, scope moves to where the time goes (logged in DECISION
 
 ## 3. The three client systems and their integration points
 
-| System | What the co-pilot needs from it | Integration point |
-|---|---|---|
-| **Claims management (CMS)** | Claim: loss time, narrative, vehicle, claimant, legacy fraud score, prior claims | Read `GET /claims/{id}` |
-| | Assignment: the source of truth for entitlement | Read `GET /claims/{id}/assignment` |
-| | Draft recommendation, reasoning, citations | **Write (the only one)** `POST /claims/{id}/recommendations`, idempotent on claim + `run_id` |
-| **Policy administration (PAS)** | Policy as of the loss date: term, payment and cancellation history, coverages, limits, deductibles, endorsements | Read `GET /policies/{id}?as_of={loss_date}` |
-| **Document store** | Police report, estimate, statements, medical notes, photo metadata | Read `GET /claims/{id}/documents`, `GET /documents/{id}` |
+| System | Owner | What the co-pilot needs | Access method (integration point) |
+|---|---|---|---|
+| **Claims management (CMS)** | Claims IT, CMS team | Claim: loss time, narrative, vehicle, fraud score, prior claims | REST read `GET /claims/{id}` |
+| | | Assignment: source of truth for entitlement | REST read `GET /claims/{id}/assignment` |
+| | | Draft recommendation, reasoning, citations | **The only write:** `POST /claims/{id}/recommendations`, idempotent on claim + `run_id` |
+| **Policy administration (PAS)** | Claims IT, policy systems | Policy as of the loss date: term, payments, coverages, deductibles, endorsements | REST read `GET /policies/{id}?as_of={loss_date}` |
+| **Document store** | Claims IT, content services | Police report, estimate, statements, medical notes, photo metadata | REST read `GET /claims/{id}/documents`, `GET /documents/{id}` |
 
-Also used: **identity provider**, **clause corpus**. One service checks entitlement, audits every call.
+Also: identity provider; clause corpus (owner: Compliance); one audited service checks entitlement.
 
 ## 4. Target and fixed constraints
 

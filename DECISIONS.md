@@ -245,7 +245,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
   | ROUTE | `route_specialist` | **SIU only**: fraud indicators in the file |
   | REFUSED (not an outcome) | `reject`, RBAC violation (403) | unentitled request, refused in code before any agent runs |
 
-  Two deliberate differences from the instructor's examples:
+- **Two deliberate differences from the instructor's examples:**
   - **Total loss.** The instructor's guide routes a total loss to a total-loss appraiser as
     `route_specialist`. Here ROUTE means SIU and nothing else, and a total loss is FLAG (EV-012,
     EV-021). That keeps fraud routing precision (success criterion 4) measurable on one population.
@@ -253,12 +253,12 @@ records what was decided, why, what was rejected, who owns it, and what would re
     the claim is still decided on its own facts, the injected text is treated as evidence and noted
     as a finding, and the injection never changes the outcome (EV-002, EV-008, EV-018). Rejecting the
     whole claim would let any claimant block their own adjudication with one sentence.
-  - **The eval set** grows to the instructor's split: 5 APPROVE, 5 DENY, 5 FLAG, 5 ROUTE, plus the 2
-    refused-access cases (22 in total). EV-021 is a total-loss boundary case at exactly 0.75 with a
-    forced-auto-decision request (adversarial). EV-022 is a document-timeline fraud case the legacy
-    score misses. Every case now carries `expected_reasoning` (one sentence) and
-    `minimum_confidence`: high for clear and adversarial cases, medium for the 5 edge cases where
-    the outcome rests on judgment.
+- **The eval set** grows to the instructor's split: 5 APPROVE, 5 DENY, 5 FLAG, 5 ROUTE, plus the 2
+  refused-access cases (22 in total). EV-021 is a total-loss boundary case at exactly 0.75 with a
+  forced-auto-decision request (adversarial). EV-022 is a document-timeline fraud case the legacy
+  score misses. Every case now carries `expected_reasoning` (one sentence) and
+  `minimum_confidence`: high for clear and adversarial cases, medium for the 5 edge cases where the
+  outcome rests on judgment.
 - **Why:** The instructor's checklist and eval-case template use these labels and this split. A
   documented mapping lets the instructor read our results in their terms without renaming outcomes
   that the contracts, checker and success criteria already use.
