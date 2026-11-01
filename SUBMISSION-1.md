@@ -3,9 +3,13 @@
 **Due:** Saturday Oct 31, 2026, before the Week 3 class on Sunday Nov 1. Submitted through the
 course Google Form. Not graded; required regardless of completeness.
 
+**Submitted:** Checkpoint 1 submitted on 2026-10-31 via the FDE Spine Google Form, uploading
+`ClaimSense_Checkpoint1_Adam_Mazhar.pdf` (38 pages, 1.82 MB) built from commit `846620f`. Proof is
+kept locally in `submissions/checkpoint-1/`, which is not committed.
+
 ## 1. Capstone repository URL
 
-- [x] https://github.com/adammazhar/claimsense-ai (private; grant the instructors access before submitting)
+- [x] https://github.com/adammazhar/claimsense-ai
 
 ## 2. Milestone 1 deliverables
 
@@ -41,5 +45,5 @@ course Google Form. Not graded; required regardless of completeness.
 
 ## Before submitting
 
-- [ ] Re-run `.\.venv\Scripts\python.exe -m pytest` on the commit being submitted, and note the commit hash in the form.
-- [ ] Grant the instructors read access to the private repository.
+- [x] Re-run `.\.venv\Scripts\python.exe -m pytest` on the commit being submitted: 42 passed on `846620f`.
+- [x] Instructor access: repository made public on 2026-10-31.

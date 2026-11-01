@@ -12,3 +12,6 @@ docs/ik/
 
 # Local scratch output (charter renders, etc.)
 tmp/
+
+# Local proof of submission (uploaded PDFs, form confirmations): never committed
+submissions/
