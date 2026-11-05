@@ -1,0 +1,508 @@
+{
+  "$defs": {
+    "CitedClause": {
+      "additionalProperties": false,
+      "properties": {
+        "clause_id": {
+          "pattern": "^CLS-[A-Z]{2,3}-\\d{3}$",
+          "title": "Clause Id",
+          "type": "string"
+        },
+        "heading": {
+          "title": "Heading",
+          "type": "string"
+        }
+      },
+      "required": [
+        "clause_id",
+        "heading"
+      ],
+      "title": "CitedClause",
+      "type": "object"
+    },
+    "CodeOverride": {
+      "additionalProperties": false,
+      "description": "A place where deterministic code changed the outcome the model drafted.",
+      "properties": {
+        "from_outcome": {
+          "$ref": "#/$defs/Outcome"
+        },
+        "to_outcome": {
+          "$ref": "#/$defs/Outcome"
+        },
+        "rule": {
+          "title": "Rule",
+          "type": "string"
+        }
+      },
+      "required": [
+        "from_outcome",
+        "to_outcome",
+        "rule"
+      ],
+      "title": "CodeOverride",
+      "type": "object"
+    },
+    "Confidence": {
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "CoverageReading": {
+      "enum": [
+        "covered",
+        "does_not_respond",
+        "cannot_determine"
+      ],
+      "title": "CoverageReading",
+      "type": "string"
+    },
+    "DeterministicFacts": {
+      "additionalProperties": false,
+      "description": "Values computed in code, never by a model (D-001). Shown separately from judgment.",
+      "properties": {
+        "in_term": {
+          "title": "In Term",
+          "type": "boolean"
+        },
+        "coverage_present": {
+          "title": "Coverage Present",
+          "type": "boolean"
+        },
+        "total_loss_ratio": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Total Loss Ratio"
+        },
+        "total_loss_candidate": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Total Loss Candidate"
+        },
+        "days_since_inception": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Days Since Inception"
+        },
+        "photos_before_inception": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Photos Before Inception"
+        },
+        "payable": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Set only when the outcome is APPROVE.",
+          "title": "Payable"
+        }
+      },
+      "required": [
+        "in_term",
+        "coverage_present"
+      ],
+      "title": "DeterministicFacts",
+      "type": "object"
+    },
+    "FallbackReason": {
+      "enum": [
+        "model_unavailable",
+        "timeout",
+        "invalid_output",
+        "output_scan_failed"
+      ],
+      "title": "FallbackReason",
+      "type": "string"
+    },
+    "Finding": {
+      "additionalProperties": false,
+      "description": "One model judgment and the evidence it rests on. Every judgment is cited.",
+      "properties": {
+        "statement": {
+          "minLength": 1,
+          "title": "Statement",
+          "type": "string"
+        },
+        "evidence_doc_ids": {
+          "items": {
+            "pattern": "^DOC-\\d{4}-\\d+$",
+            "type": "string"
+          },
+          "title": "Evidence Doc Ids",
+          "type": "array"
+        },
+        "evidence_clause_ids": {
+          "items": {
+            "pattern": "^CLS-[A-Z]{2,3}-\\d{3}$",
+            "type": "string"
+          },
+          "title": "Evidence Clause Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "statement"
+      ],
+      "title": "Finding",
+      "type": "object"
+    },
+    "InjectionFlag": {
+      "additionalProperties": false,
+      "description": "Instruction-like text that code found in untrusted input. It is evidence, never a command.",
+      "properties": {
+        "source": {
+          "description": "A document ID, or 'requester_note'.",
+          "title": "Source",
+          "type": "string"
+        },
+        "quote": {
+          "title": "Quote",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "quote"
+      ],
+      "title": "InjectionFlag",
+      "type": "object"
+    },
+    "ModelJudgment": {
+      "additionalProperties": false,
+      "description": "What the model concluded. Absent on a deterministic fallback.",
+      "properties": {
+        "model_outcome": {
+          "$ref": "#/$defs/Outcome"
+        },
+        "coverage_reading": {
+          "$ref": "#/$defs/CoverageReading"
+        },
+        "coverage_reasoning": {
+          "title": "Coverage Reasoning",
+          "type": "string"
+        },
+        "fraud_indicated": {
+          "title": "Fraud Indicated",
+          "type": "boolean"
+        },
+        "injury_exposure": {
+          "title": "Injury Exposure",
+          "type": "boolean"
+        },
+        "missing_documents": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Missing Documents",
+          "type": "array"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/Finding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "model_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Model Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "model_outcome",
+        "coverage_reading",
+        "coverage_reasoning",
+        "fraud_indicated",
+        "injury_exposure",
+        "missing_documents",
+        "findings",
+        "model_ids"
+      ],
+      "title": "ModelJudgment",
+      "type": "object"
+    },
+    "Outcome": {
+      "description": "The four decision outcomes, precedence DENY > ROUTE > FLAG > APPROVE (D-002).",
+      "enum": [
+        "APPROVE",
+        "DENY",
+        "FLAG",
+        "ROUTE"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "RecommendationStatus": {
+      "enum": [
+        "draft"
+      ],
+      "title": "RecommendationStatus",
+      "type": "string"
+    },
+    "StageUsage": {
+      "additionalProperties": false,
+      "properties": {
+        "stage": {
+          "title": "Stage",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        },
+        "requests": {
+          "title": "Requests",
+          "type": "integer"
+        },
+        "input_tokens": {
+          "title": "Input Tokens",
+          "type": "integer"
+        },
+        "cached_input_tokens": {
+          "title": "Cached Input Tokens",
+          "type": "integer"
+        },
+        "output_tokens": {
+          "title": "Output Tokens",
+          "type": "integer"
+        },
+        "seconds": {
+          "title": "Seconds",
+          "type": "number"
+        }
+      },
+      "required": [
+        "stage",
+        "model",
+        "requests",
+        "input_tokens",
+        "cached_input_tokens",
+        "output_tokens",
+        "seconds"
+      ],
+      "title": "StageUsage",
+      "type": "object"
+    },
+    "VerdictSource": {
+      "description": "Who produced the outcome. Brief, Milestone 3: model verdicts must be distinguishable.",
+      "enum": [
+        "model",
+        "deterministic_fallback"
+      ],
+      "title": "VerdictSource",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "run_id": {
+      "format": "uuid",
+      "title": "Run Id",
+      "type": "string"
+    },
+    "claim_id": {
+      "pattern": "^CLM-\\d{4}-\\d{4}$",
+      "title": "Claim Id",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/RecommendationStatus"
+    },
+    "outcome": {
+      "$ref": "#/$defs/Outcome"
+    },
+    "verdict_source": {
+      "$ref": "#/$defs/VerdictSource"
+    },
+    "fallback_reason": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FallbackReason"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "fallback_stage": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Fallback Stage"
+    },
+    "fallback_error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Exception class only; never its message.",
+      "title": "Fallback Error"
+    },
+    "confidence": {
+      "$ref": "#/$defs/Confidence"
+    },
+    "reasoning": {
+      "title": "Reasoning",
+      "type": "string"
+    },
+    "deterministic": {
+      "$ref": "#/$defs/DeterministicFacts"
+    },
+    "judgment": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ModelJudgment"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "cited_clauses": {
+      "items": {
+        "$ref": "#/$defs/CitedClause"
+      },
+      "title": "Cited Clauses",
+      "type": "array"
+    },
+    "evidence_doc_ids": {
+      "items": {
+        "pattern": "^DOC-\\d{4}-\\d+$",
+        "type": "string"
+      },
+      "title": "Evidence Doc Ids",
+      "type": "array"
+    },
+    "retrieved_clause_ids": {
+      "items": {
+        "pattern": "^CLS-[A-Z]{2,3}-\\d{3}$",
+        "type": "string"
+      },
+      "title": "Retrieved Clause Ids",
+      "type": "array"
+    },
+    "citations_removed": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Citations Removed",
+      "type": "array"
+    },
+    "uncited": {
+      "title": "Uncited",
+      "type": "boolean"
+    },
+    "code_overrides": {
+      "items": {
+        "$ref": "#/$defs/CodeOverride"
+      },
+      "title": "Code Overrides",
+      "type": "array"
+    },
+    "injection_flags": {
+      "items": {
+        "$ref": "#/$defs/InjectionFlag"
+      },
+      "title": "Injection Flags",
+      "type": "array"
+    },
+    "recommendation_id": {
+      "format": "uuid",
+      "title": "Recommendation Id",
+      "type": "string"
+    },
+    "usage": {
+      "items": {
+        "$ref": "#/$defs/StageUsage"
+      },
+      "title": "Usage",
+      "type": "array"
+    },
+    "trace_id": {
+      "title": "Trace Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "run_id",
+    "claim_id",
+    "status",
+    "outcome",
+    "verdict_source",
+    "confidence",
+    "reasoning",
+    "deterministic",
+    "cited_clauses",
+    "evidence_doc_ids",
+    "retrieved_clause_ids",
+    "citations_removed",
+    "uncited",
+    "code_overrides",
+    "injection_flags",
+    "recommendation_id",
+    "usage",
+    "trace_id"
+  ],
+  "title": "RecommendationResponse",
+  "type": "object"
+}

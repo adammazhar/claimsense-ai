@@ -1,0 +1,35 @@
+{
+  "additionalProperties": false,
+  "description": "Body of the co-pilot request. A retry that sends the same run_id gets the original result.",
+  "properties": {
+    "note": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Untrusted free text from the requester.",
+      "title": "Note"
+    },
+    "run_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Run Id"
+    }
+  },
+  "title": "RecommendRequest",
+  "type": "object"
+}

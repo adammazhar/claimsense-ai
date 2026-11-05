@@ -1,0 +1,88 @@
+"""The gate itself: it has to fail when it should. Whether today's labels pass is CI's eval-gate job."""
+
+from __future__ import annotations
+
+import copy
+from pathlib import Path
+
+import pytest
+import yaml
+
+import run_evals
+from claimsense.mock_brain import Fault, MockBrain
+
+CASES = Path(__file__).resolve().parent.parent / "evals" / "cases_v0.yaml"
+
+
+@pytest.fixture
+def cases() -> list[dict]:
+    return yaml.safe_load(CASES.read_text(encoding="utf-8"))["cases"]
+
+
+def by_id(cases: list[dict], case_id: str) -> dict:
+    return next(c for c in cases if c["id"] == case_id)
+
+
+def test_fallback_verdicts_count_as_misses_and_fail_the_gate(run, cases) -> None:
+    report = run(run_evals.evaluate(cases, MockBrain(fault=Fault("unavailable", "document_intake"))))
+    summary = report["summary"]
+    assert summary["decision_accuracy"] == 0.0
+    assert summary["fallback_verdicts"] == 20
+    assert summary["gate"]["passed"] is False
+
+
+def test_a_wrong_outcome_on_one_adversarial_case_fails_the_gate_even_above_the_accuracy_floor(run, cases) -> None:
+    broken = copy.deepcopy(cases)
+    by_id(broken, "EV-008")["expected"]["outcome"] = "FLAG"
+    summary = run(run_evals.evaluate(broken, MockBrain()))["summary"]
+    assert summary["gate"]["passed"] is False
+    assert any("adversarial" in reason for reason in summary["gate"]["reasons"])
+
+
+def test_accuracy_below_the_floor_fails_the_gate(run, cases) -> None:
+    broken = copy.deepcopy(cases)
+    for case_id in ("EV-001", "EV-003", "EV-005", "EV-006"):
+        by_id(broken, case_id)["expected"]["outcome"] = "FLAG"
+    summary = run(run_evals.evaluate(broken, MockBrain()))["summary"]
+    assert summary["decision_accuracy"] <= 0.80
+    assert any("decision accuracy" in reason for reason in summary["gate"]["reasons"])
+
+
+def test_a_failing_access_control_case_fails_the_gate(run, cases) -> None:
+    broken = copy.deepcopy(cases)
+    by_id(broken, "EV-020")["requester"]["user_id"] = "adj-001"  # now entitled, so no refusal comes back
+    summary = run(run_evals.evaluate(broken, MockBrain()))["summary"]
+    assert any("access-control" in reason for reason in summary["gate"]["reasons"])
+
+
+def test_a_partial_run_cannot_pass_the_gate(run, cases) -> None:
+    gate = run(run_evals.evaluate([by_id(cases, "EV-001")], MockBrain(), partial=True))["summary"]["gate"]
+    assert gate["passed"] is False and gate["applies"] is False
+
+
+def test_every_must_not_rule_in_the_cases_has_an_evaluator(cases) -> None:
+    world = {"claims": {"CLM-2026-0019": {"narrative": "n", "vehicle": {"vin": "v"}, "policy_id": "p",
+                                          "claimant": {"display_name": "d"}},
+                        "CLM-2026-0001": {"narrative": "n", "vehicle": {"vin": "v"}, "policy_id": "p",
+                                          "claimant": {"display_name": "d"}}},
+             "refusal_for_missing_claim": '{"a": 1}'}
+    for case in cases:
+        for rule in case["expected"].get("must_not", []):
+            problem = run_evals.check_must_not(rule, case, 200, {}, '{"a": 1}', world)
+            assert not (problem or "").startswith("no evaluator"), rule
+
+
+def test_an_unknown_must_not_rule_is_a_failure_not_a_silent_pass(cases) -> None:
+    problem = run_evals.check_must_not("A rule nobody wrote code for", cases[0], 200, {}, "{}", {"claims": {}})
+    assert problem.startswith("no evaluator")
+
+
+def test_attributing_an_injected_claim_is_not_asserting_it() -> None:
+    assert run_evals._asserted(r"fraud review passed", ["The fraud review passed."])
+    assert not run_evals._asserted(r"fraud review passed", ["The letter claims the fraud review passed."])
+
+
+def test_cost_comes_from_token_counts() -> None:
+    results = [{"usage": [{"model": "gpt-4o", "requests": 1, "input_tokens": 1_000_000, "cached_input_tokens": 0,
+                           "output_tokens": 100_000}]}]
+    assert run_evals.usage_summary(results)["total_cost_usd"] == 3.5

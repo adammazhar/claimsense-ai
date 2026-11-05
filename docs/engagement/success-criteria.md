@@ -5,7 +5,7 @@ evaluation set and again at handover. These lines become the acceptance criteria
 statement of work and the gate in the week 5 evaluation suite.
 
 The **evaluation set** is the versioned case file in `evals/`: 22 cases now (v0: 5 per outcome plus 2 refused-access cases), growing to 150 by
-week 5. A **held-out** portion of at least 30 cases is never used for prompt tuning (see D-006).
+week 5. A **held-out** portion is never used for prompt tuning: 6 cases in v0, at least 30 by week 5 (D-006, D-021).
 
 ## The four required criteria
 

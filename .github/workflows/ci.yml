@@ -1,0 +1,80 @@
+# Change control: tests -> eval gate -> image. The image job needs the gate, so a failing gate means
+# no build and no push. CI runs on the mock brain: no key, no network, no flakes (D-018, D-022).
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Eval cases are internally consistent
+        run: python scripts/check_eval_cases.py
+      - name: Generated files are up to date
+        run: |
+          python scripts/build_fixtures.py --check
+          python scripts/generate_schemas.py --check
+      - run: python -m pytest
+
+  eval-gate:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Run the eval gate on the mock brain
+        run: python scripts/run_evals.py --brain mock --out eval-report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-report
+          path: eval-report.json
+
+  build-and-push-image:
+    needs: eval-gate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/claimsense-ai
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start the stack with one command, and wait for every healthcheck
+        run: docker compose up --build --detach --wait
+      - name: Smoke test a recommendation through the running containers
+        run: |
+          curl --fail-with-body --silent --show-error -X POST \
+            -H "X-User-Id: adj-001" -H "Content-Type: application/json" -d '{}' \
+            http://localhost:8000/v1/claims/CLM-2026-0001/recommendation | python -m json.tool
+      - name: Stop the stack
+        if: always()
+        run: docker compose down
+      - name: Log in to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push the image (main only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          docker tag claimsense:local "$IMAGE:${GITHUB_SHA}"
+          docker tag claimsense:local "$IMAGE:latest"
+          docker push "$IMAGE:${GITHUB_SHA}"
+          docker push "$IMAGE:latest"
