@@ -29,6 +29,7 @@ of judgment here. It would fail the gate.
 | Mock run, all four outcomes | [mock-run.txt](mock-run.txt), [mock-run-report.json](mock-run-report.json) |
 | Live run on the IK key, 22 cases, with usage and cost | [live-run.txt](live-run.txt), [live-run-report.json](live-run-report.json) |
 | Green CI run | [run 41951459823](https://github.com/adammazhar/claimsense-ai/actions/runs/41951459823), [PR #1](https://github.com/adammazhar/claimsense-ai/pull/1) |
+| First push from `main` (failed, see below) | [run 41951989045](https://github.com/adammazhar/claimsense-ai/actions/runs/41951989045) |
 | Blocked-push run | [run 41951516237](https://github.com/adammazhar/claimsense-ai/actions/runs/41951516237), [PR #2, closed](https://github.com/adammazhar/claimsense-ai/pull/2) |
 | Trace of one full run | [trace-live-EV-015.json](trace-live-EV-015.json) (live, ROUTE), [trace-mock-EV-018.json](trace-mock-EV-018.json) (mock, injected letter) |
 | The stack from one command | [docker-stack-run.txt](docker-stack-run.txt) |
@@ -118,6 +119,11 @@ GATE: FAILED
 **The limit of this proof:** it shows the job dependency works on a pull request. The push step's own
 `main` condition is only exercised when `main` is pushed. Branch protection isn't on, so the gate blocks
 the push but doesn't stop a person merging over a red check (D-022).
+
+**That limit turned out to matter.** The first push from `main`, after merging PR #1, failed:
+[run 41951989045](https://github.com/adammazhar/claimsense-ai/actions/runs/41951989045). Tests and the
+gate passed, and the layers uploaded, but the registry answered `denied`. The follow-up pull request
+changes how the pushed image is built (D-022). Its result is in the Actions history for `main`.
 
 ## Reproduce
 

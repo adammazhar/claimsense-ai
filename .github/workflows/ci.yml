@@ -74,7 +74,6 @@ jobs:
       - name: Push the image (main only)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          docker tag claimsense:local "$IMAGE:${GITHUB_SHA}"
-          docker tag claimsense:local "$IMAGE:latest"
+          docker build --provenance=false --sbom=false -t "$IMAGE:${GITHUB_SHA}" -t "$IMAGE:latest" .
           docker push "$IMAGE:${GITHUB_SHA}"
           docker push "$IMAGE:latest"

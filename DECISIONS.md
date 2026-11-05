@@ -398,6 +398,10 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Why the broken case swaps two labels:** The broken case has to pass `pytest` and fail the gate, or
   the run proves the tests block rather than the gate. Pipeline tests therefore hard-code their expected
   outcomes instead of reading labels from the YAML.
+- **What only `main` could show:** The first push from `main` failed: the layers uploaded, then the
+  registry answered `denied` (run 41951989045). A pull request can't exercise that step. The likely
+  cause is the provenance attestations compose's build attaches, so the pushed image is now built
+  explicitly without them and carries the OCI source label. A package-settings cause wasn't ruled out.
 - **Not done:** Branch protection isn't turned on, so a person could still merge over a red check. The
   push is blocked regardless. Making the gate a required check is a repository setting for the owner.
 - **Alternatives considered:** Copying the course's `eval-gate.yml` as is. Rejected: it gates merges but
