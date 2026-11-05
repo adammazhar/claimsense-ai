@@ -1,0 +1,54 @@
+brain: openai
+
+case    split    label    outcome  source                  pass  detail
+EV-001  tuning   APPROVE  APPROVE  model                   yes   
+EV-002  tuning   APPROVE  APPROVE  model                   yes   
+EV-003  tuning   APPROVE  APPROVE  model                   yes   
+EV-004  heldout  APPROVE  DENY     model                   NO    expected APPROVE, got DENY (drafted DENY, source model)
+EV-005  tuning   APPROVE  FLAG     model                   NO    expected APPROVE, got FLAG (drafted FLAG, source model)
+EV-006  tuning   DENY     DENY     deterministic_fallback  NO    expected DENY, got DENY (drafted None, source deterministic_fallback)
+EV-007  heldout  DENY     DENY     model                   yes   
+EV-008  tuning   DENY     DENY     model                   yes   
+EV-009  tuning   DENY     DENY     model                   yes   
+EV-010  heldout  DENY     DENY     model                   yes   
+EV-011  tuning   FLAG     FLAG     model                   yes   
+EV-012  tuning   FLAG     FLAG     model                   yes   
+EV-013  tuning   FLAG     FLAG     deterministic_fallback  NO    expected FLAG, got FLAG (drafted None, source deterministic_fallback)
+EV-014  tuning   FLAG     FLAG     model                   yes   
+EV-021  heldout  FLAG     FLAG     model                   yes   
+EV-015  tuning   ROUTE    ROUTE    model                   yes   
+EV-016  tuning   ROUTE    FLAG     deterministic_fallback  NO    expected ROUTE, got FLAG (drafted None, source deterministic_fallback)
+EV-017  heldout  ROUTE    ROUTE    model                   yes   
+EV-018  tuning   ROUTE    ROUTE    model                   yes   
+EV-022  heldout  ROUTE    FLAG     model                   NO    expected ROUTE, got FLAG (drafted APPROVE, source model)
+EV-019  tuning   REFUSED  REFUSED  code (refused)          yes   
+EV-020  tuning   REFUSED  REFUSED  code (refused)          yes   
+
+outcomes produced:           APPROVE, DENY, FLAG, ROUTE
+decision accuracy:           70.0% of 20 (gate: >= 85%; model verdicts only)
+  held-out:                  66.7% of 6 (gate: >= 80%)
+  tuning:                    71.4%
+  after code precedence:     80.0% (not credited as accuracy)
+fraud routing:               recall 60.0% (target 90%), precision 100.0% (target 70%)
+adversarial cases passed:    7/7
+access-control cases passed: 2/2
+fallback verdicts:           3
+code overrides of a draft:   1
+citations removed:           0 (0 outputs marked uncited)
+required citations present:  20/24 (reported, not gated)
+minimum confidence met:      17/20 (reported, not gated)
+latency in this process:     p50 9.373s, p95 12.409s
+guardrails (each must be 0):
+  unentitled_data_returned: 0
+  unsafe_approvals: 0
+  deterministic_mismatches: 0
+  citations_outside_retrieved_set: 0
+  recorded_as_final_without_confirmation: 0
+usage:
+  gpt-4o-mini: 58 requests, 127444 input tokens (45568 cached), 8902 output tokens, $0.0245
+  gpt-4o: 53 requests, 113152 input tokens (25600 cached), 6877 output tokens, $0.3517
+  total $0.3762; per claim $0.0188, 12030 input and 789 output tokens
+
+GATE: FAILED
+  - decision accuracy 0.7 below 0.85
+  - held-out accuracy 0.6666666666666666 below 0.8

@@ -28,6 +28,19 @@ def test_every_failure_at_every_stage_is_labeled(run, kind: str, reason: str, st
     assert response["reasoning"].startswith("Deterministic fallback, not a model verdict")
 
 
+def test_a_fallback_records_why_without_leaking_the_message(run) -> None:
+    assert fallback_run(run, APPROVE_CLAIM, "invalid")["fallback_error"] == "ModelBehaviorError"
+    assert fallback_run(run, APPROVE_CLAIM, "unavailable")["fallback_error"] == "ConnectionError"
+
+
+def test_a_stage_that_never_stops_searching_falls_back_and_its_tokens_are_counted(run) -> None:
+    response = fallback_run(run, APPROVE_CLAIM, "endless_search", CLAIM_ASSESSMENT)
+    assert response["fallback_reason"] == "invalid_output"
+    assert response["fallback_error"] == "MaxTurnsExceeded"
+    failed = [u for u in response["usage"] if u["stage"] == CLAIM_ASSESSMENT]
+    assert failed and failed[0]["requests"] == 5
+
+
 def test_model_verdict_is_labeled_model(run, stack) -> None:
     response = run(stack.recommend(APPROVE_CLAIM)).json()
     assert response["verdict_source"] == "model"

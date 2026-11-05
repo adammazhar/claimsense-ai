@@ -6,6 +6,11 @@ every judgment cited. Green is the **licensed adjuster**, who confirms every out
 are the **client's systems**, simulated with synthetic fixtures in this pilot. Every AWS component is
 **planned, pending the IK account** (D-012); until then the same containers run locally.
 
+**What runs today (Milestone 3):** all four agents, retrieval, the guardrails, the fallback and the
+idempotent write, in containers, started by `docker compose up --build`. Identity is a placeholder
+header until Milestone 4 (D-023). The audit log is in memory, and retrieval is local BM25 over the
+fixture corpus rather than S3 (D-019).
+
 ![ClaimSense architecture](architecture.png)
 
 ```mermaid
@@ -65,6 +70,7 @@ flowchart LR
   A1 -->|"F11 facts, cited"| A2
   A1 -->|"F11 facts, cited"| A3
   A2 <-->|"F12 clause query / hits with clause IDs"| RET
+  A3 <-->|"F12 clause query / hits with clause IDs"| RET
   RET <-->|"F13 read corpus"| S3
   A2 -->|"F14 coverage reading"| A4
   A3 -->|"F14 risk indicators"| A4
@@ -117,14 +123,14 @@ and the model must cite what it read. A model never sees a claim the caller isn'
 because the entitlement check runs before the dossier exists.
 
 **The agents have no tools that reach the client systems (D-010).** The deterministic pipeline fetches
-one claim's dossier and hands it over with the figures fixed. The Coverage Check agent's only tool is clause
+one claim's dossier and hands it over with the figures fixed. The only tool, held by Coverage Check and Claim Assessment, is clause
 retrieval, which searches policy wording and returns no claim data. A prompt injection in a document
 (EV-002, EV-008, EV-018) can therefore, at most, search the clause corpus. It cannot fetch another
 claim, change a figure, or mark a draft final.
 
 **Fallback is labeled.** If an agent times out or returns output that fails its schema, the assembler
 returns a deterministic fallback outcome, which can only be DENY on a term or coverage failure or FLAG
-for adjuster handling. It is labeled `source: deterministic_fallback`, so it is never mistaken for a
+for adjuster handling. It is labeled `verdict_source: deterministic_fallback`, so it is never mistaken for a
 model verdict and it counts as a miss in decision accuracy.
 
 ## Data flows
@@ -139,10 +145,10 @@ model verdict and it counts as a miss in decision accuracy.
 | F9 | Adapters → deterministic facts | validated models | unknown fields are rejected at this edge |
 | F10 | Facts → Agent 1, Document Intake | dossier for one claim, figures fixed | document text is marked as quoted evidence |
 | F11 | Document Intake → Coverage Check and Claim Assessment | facts, each with doc citations | Agents 2 and 3 run in parallel (R5) |
-| F12–F13 | Coverage Check ↔ retrieval ↔ S3 | query, then clause hits | form-scoped; returns policy wording only |
+| F12–F13 | Coverage Check and Claim Assessment ↔ retrieval ↔ S3 | query, then clause hits | form-scoped; returns policy wording only |
 | F14 | Coverage Check and Claim Assessment → Decision Draft | coverage reading, risk indicators | |
 | F15–F17 | Decision Draft, facts, retrieval → validator | draft, deterministic facts, retrieved IDs | validator drops unretrieved citations and applies precedence |
-| F18 | Validator → write-back | validated draft with `source` | model or deterministic fallback |
+| F18 | Validator → write-back | validated draft with `verdict_source` | model or deterministic fallback |
 | F19 | Write-back → CMS | `POST /claims/{id}/recommendations` | the only write; Idempotency-Key = claim_id:run_id |
 | F20 | Write-back → adjuster | draft, reasoning, citations, deterministic facts | judgment and computation shown separately |
 | F21 | Adjuster → CMS | confirm or override, with reason | the CMS emits `AdjusterDecisionEvent`; criterion 3 and the bonus are counted here |

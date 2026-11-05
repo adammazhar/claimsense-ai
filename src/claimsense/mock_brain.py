@@ -231,7 +231,10 @@ def _message(text: str) -> ResponseOutputMessage:
 
 @dataclass
 class Fault:
-    """A failure to force at one stage. kind: unavailable, timeout, invalid, invent_citation, foreign_claim."""
+    """A failure to force at one stage.
+
+    kind: unavailable, timeout, invalid, endless_search, invent_citation, foreign_claim.
+    """
 
     kind: str
     stage: str = DECISION_DRAFT
@@ -252,6 +255,10 @@ class MockModel(Model):
             await asyncio.sleep(3600)
         if fault and fault.kind == "invalid":
             return self._respond([_message('{"not": "the schema"}')])
+        if fault and fault.kind == "endless_search":
+            call = ResponseFunctionToolCall(id="fc_0", call_id=f"call_{len(self.calls)}", name="search_clauses",
+                                            arguments=json.dumps({"query": "collision"}), type="function_call")
+            return self._respond([call])
         file = parse_claim_file(input)
         queries = _QUERIES.get(self.stage)
         if queries and not _tool_outputs(input):
@@ -270,7 +277,7 @@ class MockModel(Model):
 
     @staticmethod
     def _respond(output: list) -> ModelResponse:
-        return ModelResponse(output=output, usage=Usage(requests=1), response_id=None)
+        return ModelResponse(output=output, usage=Usage(requests=1, input_tokens=10, output_tokens=1), response_id=None)
 
     def stream_response(self, *args, **kwargs) -> AsyncIterator:
         raise NotImplementedError("the pipeline does not stream the mock brain")

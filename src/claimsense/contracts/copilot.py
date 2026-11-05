@@ -87,6 +87,7 @@ class RecommendationResponse(Contract):
     verdict_source: VerdictSource
     fallback_reason: FallbackReason | None = None
     fallback_stage: str | None = None
+    fallback_error: str | None = Field(default=None, description="Exception class only; never its message.")
     confidence: Confidence
     reasoning: str
     deterministic: DeterministicFacts

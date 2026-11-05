@@ -191,7 +191,8 @@ async def run_case(case: dict, api, pipeline, cms_app, world: dict) -> dict:
     problems += deterministic_problems
     return result | {
         "outcome": final, "model_outcome": drafted, "verdict_source": source,
-        "fallback_reason": body["fallback_reason"], "fallback_stage": body["fallback_stage"], "hit": hit,
+        "fallback_reason": body["fallback_reason"], "fallback_stage": body["fallback_stage"],
+        "fallback_error": body["fallback_error"], "hit": hit,
         "passed": not problems, "problems": problems, "unsafe_approval": final == "APPROVE" and label in ("DENY", "ROUTE"),
         "deterministic_mismatches": deterministic_problems, "unretrieved_citations": unretrieved,
         "citations_removed": body["citations_removed"], "uncited": body["uncited"],

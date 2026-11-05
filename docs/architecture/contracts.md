@@ -59,13 +59,17 @@ truth for entitlement.
 **`DraftRecommendationRequest`, the only write:**
 - **`claim_id` and `run_id`** (a UUID), which together are the idempotency key.
 - **`outcome`:** APPROVE, DENY, FLAG or ROUTE.
-- **`source`:** `model` or `deterministic_fallback`, so model verdicts are distinguishable (brief,
-  Milestone 3).
+- **`verdict_source`:** `model` or `deterministic_fallback`, so model verdicts are distinguishable
+  (brief, Milestone 3).
+- **`confidence`:** high, medium or low.
 - **`reasoning`.**
-- **`deterministic`:** in term, coverage present, total-loss ratio, total-loss candidate, payable.
+- **`deterministic`:** in term, coverage present, total-loss ratio, total-loss candidate, days since
+  inception, photos before inception, payable.
   These are computed in code and shown apart from the judgment.
-- **`findings`:** each one must cite at least one document or clause.
-- **`cited_clause_ids`:** at least one, and only from the retrieved set.
+- **`findings`:** each one must cite at least one document or clause. A model verdict needs at least
+  one, or must be marked uncited.
+- **`cited_clause_ids`:** only from the retrieved set. May be empty only when `uncited` is true.
+- **`uncited`:** true if the validator removed a citation or none remain (D-019).
 - **`model_ids` and `requested_by`.**
 
 There is **no status field in the request**: the co-pilot can only create a `draft`, which is how
@@ -92,6 +96,26 @@ these events (D-011).
 The reference behavior is `IdempotencyStore` in
 [`idempotency.py`](../../src/claimsense/contracts/idempotency.py), tested in
 `tests/test_idempotency.py`. The deployed version is a DynamoDB conditional write (planned, D-012).
+
+## The co-pilot API: `copilot.py`
+
+`POST /v1/claims/{claim_id}/recommendation`, with the header `X-User-Id` (a Milestone 3 placeholder,
+D-023) and an optional body `RecommendRequest {note, run_id}`. Retrying with the same `run_id` returns
+the original result without rerunning the agents, after rechecking entitlement.
+
+| Status | Meaning |
+|---|---|
+| 200 | `RecommendationResponse` |
+| 401 | no identity supplied |
+| 403 | not entitled; the same body whether or not the claim exists |
+| 409 | this `run_id` is already held by the CMS with a different body |
+| 503 | a client system failed or broke its contract; no decision was made |
+
+`RecommendationResponse` keeps attribution visible in every response: `deterministic` comes from code,
+`judgment` comes from the model and is null on a fallback, `verdict_source` with `fallback_reason`,
+`fallback_stage` and `fallback_error` says which produced the verdict, and `code_overrides` records
+every place code changed what the model drafted. It also carries `citations_removed`, `uncited`,
+`injection_flags`, per-stage `usage` and a `trace_id`.
 
 ## Policy administration system (PAS): `pas.py`
 
@@ -144,7 +168,7 @@ The citation validator keeps only IDs in `RetrievalResult.retrieved_ids()`.
 
 | Location | What it holds |
 |---|---|
-| `data/schemas/*.schema.json` | 16 JSON Schemas, one per published model |
+| `data/schemas/*.schema.json` | 18 JSON Schemas, one per published model |
 | `data/synthetic/claims.json` | 21 claims (EV-020 reuses EV-001's claim) |
 | `data/synthetic/assignments.json` | 21 assignments |
 | `data/synthetic/policies.json` | 21 policies |

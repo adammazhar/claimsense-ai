@@ -1,0 +1,738 @@
+[
+ {
+  "span_id": "span_e4e77912a9184fe292bdcd68",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:48:03.077814+00:00",
+  "ended_at": "2026-11-05T01:48:03.081047+00:00",
+  "data": {
+   "type": "custom",
+   "name": "fetch_claim_file",
+   "data": {
+    "claim_id": "CLM-2026-0015"
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_32956129252a432fa57c905b",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:48:03.081047+00:00",
+  "ended_at": "2026-11-05T01:48:03.082044+00:00",
+  "data": {
+   "type": "custom",
+   "name": "deterministic_facts",
+   "data": {
+    "in_term": true,
+    "coverage_present": true,
+    "total_loss_ratio": 0.2923,
+    "total_loss_candidate": false,
+    "days_since_inception": 138,
+    "photos_before_inception": null,
+    "payable": null
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_236d5d68c3dc428a982515dd",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:48:03.082044+00:00",
+  "ended_at": "2026-11-05T01:48:03.082044+00:00",
+  "data": {
+   "type": "custom",
+   "name": "input_scan",
+   "data": {
+    "flags": []
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_ff552aa809354452896b21fb",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:48:03.082044+00:00",
+  "ended_at": "2026-11-05T01:48:03.082044+00:00",
+  "data": {
+   "type": "custom",
+   "name": "seed_retrieval",
+   "data": {
+    "queries": [
+     "policy period effective expiration date",
+     "coverage premium shown declarations",
+     "collision upset"
+    ],
+    "retrieved": [
+     "CLS-PER-006",
+     "CLS-DEC-001",
+     "CLS-MED-001",
+     "CLS-COL-001",
+     "CLS-CMP-001"
+    ]
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_e6f4e9538dd2470da14748a1",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:48:03.082044+00:00",
+  "ended_at": "2026-11-05T01:48:05.629827+00:00",
+  "data": {
+   "type": "custom",
+   "name": "task",
+   "data": {
+    "sdk_span_type": "task",
+    "name": "Agent workflow",
+    "usage": {
+     "input_tokens": 1417,
+     "output_tokens": 249,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0,
+     "requests": 1,
+     "total_tokens": 1666
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_cc06042b1106455989ed757e",
+  "parent_id": "span_01382a6d2b5149d2bf5c2a87",
+  "started_at": "2026-11-05T01:48:03.083053+00:00",
+  "ended_at": "2026-11-05T01:48:05.628828+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 1,
+    "agent_name": "Document Intake",
+    "usage": {
+     "input_tokens": 1417,
+     "output_tokens": 249,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_01382a6d2b5149d2bf5c2a87",
+  "parent_id": "span_e6f4e9538dd2470da14748a1",
+  "started_at": "2026-11-05T01:48:03.083053+00:00",
+  "ended_at": "2026-11-05T01:48:05.629827+00:00",
+  "data": {
+   "type": "agent",
+   "name": "Document Intake",
+   "handoffs": [],
+   "tools": [],
+   "output_type": "IntakeOutput"
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_7859cbc16581430eb017ec82",
+  "parent_id": "span_cc06042b1106455989ed757e",
+  "started_at": "2026-11-05T01:48:03.085067+00:00",
+  "ended_at": "2026-11-05T01:48:05.627832+00:00",
+  "data": {
+   "type": "response",
+   "response_id": "resp_0240ec395c535db8006aebe05420f087d2bd3da3ebd24f48a1",
+   "usage": {
+    "requests": 1,
+    "input_tokens": 1417,
+    "output_tokens": 249,
+    "total_tokens": 1666,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cached_tokens": 0,
+     "cache_write_tokens_details": null
+    },
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_89f441af63c14d609bb1ec53",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:48:05.629827+00:00",
+  "ended_at": "2026-11-05T01:48:08.526435+00:00",
+  "data": {
+   "type": "custom",
+   "name": "task",
+   "data": {
+    "sdk_span_type": "task",
+    "name": "Agent workflow",
+    "usage": {
+     "input_tokens": 4036,
+     "output_tokens": 183,
+     "cached_input_tokens": 1792,
+     "cache_write_input_tokens": 0,
+     "requests": 2,
+     "total_tokens": 4219
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_3044280430c341d98a42bacb",
+  "parent_id": "span_e228a026dc4742d7a29b929e",
+  "started_at": "2026-11-05T01:48:05.630827+00:00",
+  "ended_at": "2026-11-05T01:48:06.826195+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 1,
+    "agent_name": "Coverage Check",
+    "usage": {
+     "input_tokens": 1830,
+     "output_tokens": 70,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_e228a026dc4742d7a29b929e",
+  "parent_id": "span_89f441af63c14d609bb1ec53",
+  "started_at": "2026-11-05T01:48:05.630827+00:00",
+  "ended_at": "2026-11-05T01:48:08.525037+00:00",
+  "data": {
+   "type": "agent",
+   "name": "Coverage Check",
+   "handoffs": [],
+   "tools": [
+    "search_clauses"
+   ],
+   "output_type": "CoverageOutput"
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_8b6378ff8a5a481b971ee9ff",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:48:05.631827+00:00",
+  "ended_at": "2026-11-05T01:48:11.395693+00:00",
+  "data": {
+   "type": "custom",
+   "name": "task",
+   "data": {
+    "sdk_span_type": "task",
+    "name": "Agent workflow",
+    "usage": {
+     "input_tokens": 8519,
+     "output_tokens": 331,
+     "cached_input_tokens": 5120,
+     "cache_write_input_tokens": 0,
+     "requests": 3,
+     "total_tokens": 8850
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_eebc92b675bc43f99a68c7c1",
+  "parent_id": "span_980dfc26ac214c918b9868ce",
+  "started_at": "2026-11-05T01:48:05.632826+00:00",
+  "ended_at": "2026-11-05T01:48:07.559521+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 1,
+    "agent_name": "Claim Assessment",
+    "usage": {
+     "input_tokens": 2090,
+     "output_tokens": 110,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_980dfc26ac214c918b9868ce",
+  "parent_id": "span_8b6378ff8a5a481b971ee9ff",
+  "started_at": "2026-11-05T01:48:05.632826+00:00",
+  "ended_at": "2026-11-05T01:48:11.395693+00:00",
+  "data": {
+   "type": "agent",
+   "name": "Claim Assessment",
+   "handoffs": [],
+   "tools": [
+    "search_clauses"
+   ],
+   "output_type": "AssessmentOutput"
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_455bb9b581f545d09f54a40a",
+  "parent_id": "span_3044280430c341d98a42bacb",
+  "started_at": "2026-11-05T01:48:05.635823+00:00",
+  "ended_at": "2026-11-05T01:48:06.822168+00:00",
+  "data": {
+   "type": "response",
+   "response_id": "resp_05118cedef79a867006aebe056b0c487d2a1f5a911f2cc8a06",
+   "usage": {
+    "requests": 1,
+    "input_tokens": 1830,
+    "output_tokens": 70,
+    "total_tokens": 1900,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cached_tokens": 0,
+     "cache_write_tokens_details": null
+    },
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_009dc40777564b81a1d6803f",
+  "parent_id": "span_eebc92b675bc43f99a68c7c1",
+  "started_at": "2026-11-05T01:48:05.636823+00:00",
+  "ended_at": "2026-11-05T01:48:07.552781+00:00",
+  "data": {
+   "type": "response",
+   "response_id": "resp_01fdd0bbe722cf10006aebe056c10c87d2aaf6ea5578edd82f",
+   "usage": {
+    "requests": 1,
+    "input_tokens": 2090,
+    "output_tokens": 110,
+    "total_tokens": 2200,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cached_tokens": 0,
+     "cache_write_tokens_details": null
+    },
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_4e73a203d9944897ad5d4c0f",
+  "parent_id": "span_3044280430c341d98a42bacb",
+  "started_at": "2026-11-05T01:48:06.823235+00:00",
+  "ended_at": "2026-11-05T01:48:06.826195+00:00",
+  "data": {
+   "type": "function",
+   "name": "search_clauses",
+   "output": "[{\"clause_id\": \"CLS-COL-001\", \"heading\": \"Collision insuring agreement\", \"text\": \"We will pay for direct and accidental loss to your covered auto caused by collision with another object or by upset, minus the applicable deductible shown in the Declarations.\"}, {\"clause_id\": \"CLS-CMP-001\", \"heading\": \"Other than collision insuring agreement\", \"text\": \"We will pay for direct and accidental loss to your covered auto not caused by collision, including glass breakage, hail, fire and theft, minus the applicable deductible.\"}]",
+   "mcp_data": null
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_0159a07a81054a4c9bc44126",
+  "parent_id": "span_3044280430c341d98a42bacb",
+  "started_at": "2026-11-05T01:48:06.823235+00:00",
+  "ended_at": "2026-11-05T01:48:06.826195+00:00",
+  "data": {
+   "type": "function",
+   "name": "search_clauses",
+   "output": "[{\"clause_id\": \"CLS-DRV-002\", \"heading\": \"Named driver exclusion\", \"text\": \"No coverage is provided for any claim arising from an accident or loss that occurs while your covered auto is being operated by a driver named as excluded in this endorsement.\"}, {\"clause_id\": \"CLS-EXC-003\", \"heading\": \"Public or livery conveyance\", \"text\": \"We do not provide coverage for loss to your covered auto while it is being used to carry persons or property for a fee, including use through a ride-hailing application.\"}]",
+   "mcp_data": null
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_1d46606cc2214932b8c5f048",
+  "parent_id": "span_3044280430c341d98a42bacb",
+  "started_at": "2026-11-05T01:48:06.824247+00:00",
+  "ended_at": "2026-11-05T01:48:06.826195+00:00",
+  "data": {
+   "type": "function",
+   "name": "search_clauses",
+   "output": "[{\"clause_id\": \"CLS-DRV-002\", \"heading\": \"Named driver exclusion\", \"text\": \"No coverage is provided for any claim arising from an accident or loss that occurs while your covered auto is being operated by a driver named as excluded in this endorsement.\"}]",
+   "mcp_data": null
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_ac1044ed7b7446d5998b1929",
+  "parent_id": "span_e228a026dc4742d7a29b929e",
+  "started_at": "2026-11-05T01:48:06.826195+00:00",
+  "ended_at": "2026-11-05T01:48:08.525037+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 2,
+    "agent_name": "Coverage Check",
+    "usage": {
+     "input_tokens": 2206,
+     "output_tokens": 113,
+     "cached_input_tokens": 1792,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_fcadfabab4174a9da8343278",
+  "parent_id": "span_ac1044ed7b7446d5998b1929",
+  "started_at": "2026-11-05T01:48:06.828198+00:00",
+  "ended_at": "2026-11-05T01:48:08.523928+00:00",
+  "data": {
+   "type": "response",
+   "response_id": "resp_05118cedef79a867006aebe057e03887d280c16513ec5cc475",
+   "usage": {
+    "requests": 1,
+    "input_tokens": 2206,
+    "output_tokens": 113,
+    "total_tokens": 2319,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cached_tokens": 1792,
+     "cache_write_tokens_details": null
+    },
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_7ab54771cda540d99785258e",
+  "parent_id": "span_eebc92b675bc43f99a68c7c1",
+  "started_at": "2026-11-05T01:48:07.554780+00:00",
+  "ended_at": "2026-11-05T01:48:07.558449+00:00",
+  "data": {
+   "type": "function",
+   "name": "search_clauses",
+   "output": "[{\"clause_id\": \"CLS-FRD-001\", \"heading\": \"Concealment or fraud\", \"text\": \"We do not provide coverage for any insured who has made fraudulent statements or engaged in fraudulent conduct in connection with any accident or loss for which coverage is sought.\"}]",
+   "mcp_data": null
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_50f339b974ac4c9faf2de369",
+  "parent_id": "span_eebc92b675bc43f99a68c7c1",
+  "started_at": "2026-11-05T01:48:07.554780+00:00",
+  "ended_at": "2026-11-05T01:48:07.558449+00:00",
+  "data": {
+   "type": "function",
+   "name": "search_clauses",
+   "output": "[{\"clause_id\": \"CLS-BI-001\", \"heading\": \"Bodily injury liability\", \"text\": \"We will pay damages for bodily injury for which an insured becomes legally responsible because of an auto accident. Bodily injury claims are handled by a licensed adjuster.\"}, {\"clause_id\": \"CLS-MED-001\", \"heading\": \"Medical payments coverage\", \"text\": \"We will pay reasonable expenses for necessary medical services because of bodily injury sustained by an insured in an auto accident, up to the limit shown in the Declarations.\"}, {\"clause_id\": \"CLS-TL-001\", \"heading\": \"Total loss settlement\", \"text\": \"Our limit of liability is the lesser of the actual cash value of the damaged property or the amount necessary to repair it. A vehicle may be declared a total loss when repair cost approaches its actual cash value.\"}]",
+   "mcp_data": null
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_a16eef55d93847f68363c823",
+  "parent_id": "span_eebc92b675bc43f99a68c7c1",
+  "started_at": "2026-11-05T01:48:07.556112+00:00",
+  "ended_at": "2026-11-05T01:48:07.558449+00:00",
+  "data": {
+   "type": "function",
+   "name": "search_clauses",
+   "output": "[{\"clause_id\": \"CLS-MED-001\", \"heading\": \"Medical payments coverage\", \"text\": \"We will pay reasonable expenses for necessary medical services because of bodily injury sustained by an insured in an auto accident, up to the limit shown in the Declarations.\"}]",
+   "mcp_data": null
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_c1ff247225c64e809976bd4b",
+  "parent_id": "span_eebc92b675bc43f99a68c7c1",
+  "started_at": "2026-11-05T01:48:07.556112+00:00",
+  "ended_at": "2026-11-05T01:48:07.558449+00:00",
+  "data": {
+   "type": "function",
+   "name": "search_clauses",
+   "output": "[{\"clause_id\": \"CLS-TL-001\", \"heading\": \"Total loss settlement\", \"text\": \"Our limit of liability is the lesser of the actual cash value of the damaged property or the amount necessary to repair it. A vehicle may be declared a total loss when repair cost approaches its actual cash value.\"}, {\"clause_id\": \"CLS-DUT-001\", \"heading\": \"Duties after loss\", \"text\": \"A person seeking coverage must promptly notify us of the loss and, in the event of theft, promptly notify the police. We may require these duties to be met before payment.\"}, {\"clause_id\": \"CLS-DRV-002\", \"heading\": \"Named driver exclusion\", \"text\": \"No coverage is provided for any claim arising from an accident or loss that occurs while your covered auto is being operated by a driver named as excluded in this endorsement.\"}, {\"clause_id\": \"CLS-FRD-001\", \"heading\": \"Concealment or fraud\", \"text\": \"We do not provide coverage for any insured who has made fraudulent statements or engaged in fraudulent conduct in connection with any accident or loss for which coverage is sought.\"}, {\"clause_id\": \"CLS-COL-001\", \"heading\": \"Collision insuring agreement\", \"text\": \"We will pay for direct and accidental loss to your covered auto caused by collision with another object or by upset, minus the applicable deductible shown in the Declarations.\"}]",
+   "mcp_data": null
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_74169c70a6624199b95f2c38",
+  "parent_id": "span_eebc92b675bc43f99a68c7c1",
+  "started_at": "2026-11-05T01:48:07.556112+00:00",
+  "ended_at": "2026-11-05T01:48:07.558449+00:00",
+  "data": {
+   "type": "function",
+   "name": "search_clauses",
+   "output": "[{\"clause_id\": \"CLS-DUT-001\", \"heading\": \"Duties after loss\", \"text\": \"A person seeking coverage must promptly notify us of the loss and, in the event of theft, promptly notify the police. We may require these duties to be met before payment.\"}, {\"clause_id\": \"CLS-TL-001\", \"heading\": \"Total loss settlement\", \"text\": \"Our limit of liability is the lesser of the actual cash value of the damaged property or the amount necessary to repair it. A vehicle may be declared a total loss when repair cost approaches its actual cash value.\"}, {\"clause_id\": \"CLS-DRV-002\", \"heading\": \"Named driver exclusion\", \"text\": \"No coverage is provided for any claim arising from an accident or loss that occurs while your covered auto is being operated by a driver named as excluded in this endorsement.\"}, {\"clause_id\": \"CLS-FRD-001\", \"heading\": \"Concealment or fraud\", \"text\": \"We do not provide coverage for any insured who has made fraudulent statements or engaged in fraudulent conduct in connection with any accident or loss for which coverage is sought.\"}, {\"clause_id\": \"CLS-COL-001\", \"heading\": \"Collision insuring agreement\", \"text\": \"We will pay for direct and accidental loss to your covered auto caused by collision with another object or by upset, minus the applicable deductible shown in the Declarations.\"}]",
+   "mcp_data": null
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_189b308ab6844573acad2dfa",
+  "parent_id": "span_980dfc26ac214c918b9868ce",
+  "started_at": "2026-11-05T01:48:07.559521+00:00",
+  "ended_at": "2026-11-05T01:48:09.157227+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 2,
+    "agent_name": "Claim Assessment",
+    "usage": {
+     "input_tokens": 3130,
+     "output_tokens": 52,
+     "cached_input_tokens": 2048,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_da4129e86cb14913952be07a",
+  "parent_id": "span_189b308ab6844573acad2dfa",
+  "started_at": "2026-11-05T01:48:07.560549+00:00",
+  "ended_at": "2026-11-05T01:48:09.152330+00:00",
+  "data": {
+   "type": "response",
+   "response_id": "resp_01fdd0bbe722cf10006aebe058a38c87d2bfb4248b8605b6aa",
+   "usage": {
+    "requests": 1,
+    "input_tokens": 3130,
+    "output_tokens": 52,
+    "total_tokens": 3182,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cached_tokens": 2048,
+     "cache_write_tokens_details": null
+    },
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_7f872d8d19ff4279b6e085e7",
+  "parent_id": "span_189b308ab6844573acad2dfa",
+  "started_at": "2026-11-05T01:48:09.154341+00:00",
+  "ended_at": "2026-11-05T01:48:09.157227+00:00",
+  "data": {
+   "type": "function",
+   "name": "search_clauses",
+   "output": "[{\"clause_id\": \"CLS-BI-001\", \"heading\": \"Bodily injury liability\", \"text\": \"We will pay damages for bodily injury for which an insured becomes legally responsible because of an auto accident. Bodily injury claims are handled by a licensed adjuster.\"}, {\"clause_id\": \"CLS-MED-001\", \"heading\": \"Medical payments coverage\", \"text\": \"We will pay reasonable expenses for necessary medical services because of bodily injury sustained by an insured in an auto accident, up to the limit shown in the Declarations.\"}]",
+   "mcp_data": null
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_0394bc23d0f34474afa126e8",
+  "parent_id": "span_189b308ab6844573acad2dfa",
+  "started_at": "2026-11-05T01:48:09.155348+00:00",
+  "ended_at": "2026-11-05T01:48:09.157227+00:00",
+  "data": {
+   "type": "function",
+   "name": "search_clauses",
+   "output": "[]",
+   "mcp_data": null
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_ecf86e8b68ea432db33ff50d",
+  "parent_id": "span_980dfc26ac214c918b9868ce",
+  "started_at": "2026-11-05T01:48:09.157227+00:00",
+  "ended_at": "2026-11-05T01:48:11.395693+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 3,
+    "agent_name": "Claim Assessment",
+    "usage": {
+     "input_tokens": 3299,
+     "output_tokens": 169,
+     "cached_input_tokens": 3072,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_d2b9b6808a8f46e3a36cc11a",
+  "parent_id": "span_ecf86e8b68ea432db33ff50d",
+  "started_at": "2026-11-05T01:48:09.159226+00:00",
+  "ended_at": "2026-11-05T01:48:11.392627+00:00",
+  "data": {
+   "type": "response",
+   "response_id": "resp_01fdd0bbe722cf10006aebe05a381087d2906466bbe3246f38",
+   "usage": {
+    "requests": 1,
+    "input_tokens": 3299,
+    "output_tokens": 169,
+    "total_tokens": 3468,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cached_tokens": 3072,
+     "cache_write_tokens_details": null
+    },
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_39b47b8251864a16a1a04d06",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:48:11.396668+00:00",
+  "ended_at": "2026-11-05T01:48:13.861458+00:00",
+  "data": {
+   "type": "custom",
+   "name": "task",
+   "data": {
+    "sdk_span_type": "task",
+    "name": "Agent workflow",
+    "usage": {
+     "input_tokens": 2558,
+     "output_tokens": 266,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0,
+     "requests": 1,
+     "total_tokens": 2824
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_29a0540278a74eb7aab85717",
+  "parent_id": "span_dc8a4286db324518b7bf2ee8",
+  "started_at": "2026-11-05T01:48:11.397719+00:00",
+  "ended_at": "2026-11-05T01:48:13.861458+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 1,
+    "agent_name": "Decision Draft",
+    "usage": {
+     "input_tokens": 2558,
+     "output_tokens": 266,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_dc8a4286db324518b7bf2ee8",
+  "parent_id": "span_39b47b8251864a16a1a04d06",
+  "started_at": "2026-11-05T01:48:11.397719+00:00",
+  "ended_at": "2026-11-05T01:48:13.861458+00:00",
+  "data": {
+   "type": "agent",
+   "name": "Decision Draft",
+   "handoffs": [],
+   "tools": [],
+   "output_type": "DraftOutput"
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_896e1de7c59249a1903bcddd",
+  "parent_id": "span_29a0540278a74eb7aab85717",
+  "started_at": "2026-11-05T01:48:11.399629+00:00",
+  "ended_at": "2026-11-05T01:48:13.860460+00:00",
+  "data": {
+   "type": "response",
+   "response_id": "resp_03014ffd4c35d9e2006aebe05c749c87d28b1e951e8cf25f69",
+   "usage": {
+    "requests": 1,
+    "input_tokens": 2558,
+    "output_tokens": 266,
+    "total_tokens": 2824,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cached_tokens": 0,
+     "cache_write_tokens_details": null
+    },
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_36fde27d8d8041d9b89e2a9b",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:48:13.861458+00:00",
+  "ended_at": "2026-11-05T01:48:13.861458+00:00",
+  "data": {
+   "type": "custom",
+   "name": "output_scan",
+   "data": {
+    "foreign_claim_ids": []
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_0346a5fae2204435a4b02611",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:48:13.861458+00:00",
+  "ended_at": "2026-11-05T01:48:13.861458+00:00",
+  "data": {
+   "type": "custom",
+   "name": "precedence",
+   "data": {
+    "drafted": "ROUTE",
+    "required": "ROUTE",
+    "final": "ROUTE",
+    "cited": [
+     "CLS-COL-001",
+     "CLS-FRD-001",
+     "CLS-BI-001"
+    ],
+    "removed": [],
+    "uncited": false
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_eb50c294f7b540d1bb36d0bb",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:48:13.862458+00:00",
+  "ended_at": "2026-11-05T01:48:13.863456+00:00",
+  "data": {
+   "type": "custom",
+   "name": "write_draft",
+   "data": {
+    "claim_id": "CLM-2026-0015",
+    "run_id": "f448bdd9-bfdb-441a-bc1b-48994a086861"
+   }
+  },
+  "error": null
+ }
+]

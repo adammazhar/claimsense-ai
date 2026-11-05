@@ -82,9 +82,9 @@ class Refused(Exception):
 
 
 class StageFailure(Exception):
-    def __init__(self, stage: str, reason: FallbackReason) -> None:
+    def __init__(self, stage: str, reason: FallbackReason, error: str | None = None) -> None:
         super().__init__(f"{stage}: {reason.value}")
-        self.stage, self.reason = stage, reason
+        self.stage, self.reason, self.error = stage, reason, error
 
 
 @dataclass
@@ -160,7 +160,7 @@ class Pipeline:
             self._scan_output(run, claim_id)
         except StageFailure as failure:
             return await self._finish_fallback(trace_id, user_id, claim, policy, facts, flags, log, usage, run_id,
-                                               failure.stage, failure.reason)
+                                               failure.stage, failure.reason, failure.error)
         return await self._finish_model(trace_id, user_id, claim, policy, facts, flags, log, usage, run_id, run,
                                         doc_ids)
 
@@ -215,17 +215,27 @@ class Pipeline:
             result = await asyncio.wait_for(
                 Runner.run(agent, prompt, context=context, max_turns=MAX_AGENT_TURNS), self.stage_timeout)
         except TimeoutError as exc:
-            raise StageFailure(stage, FallbackReason.TIMEOUT) from exc
+            raise StageFailure(stage, FallbackReason.TIMEOUT, type(exc).__name__) from exc
         except (ModelBehaviorError, ModelRefusalError, MaxTurnsExceeded, ValidationError) as exc:
-            raise StageFailure(stage, FallbackReason.INVALID_OUTPUT) from exc
+            self._record_failed_usage(exc, stage, started, usage)
+            raise StageFailure(stage, FallbackReason.INVALID_OUTPUT, type(exc).__name__) from exc
         except Exception as exc:  # any provider, network or key failure: the model is unavailable
-            raise StageFailure(stage, FallbackReason.MODEL_UNAVAILABLE) from exc
-        used = result.context_wrapper.usage
+            self._record_failed_usage(exc, stage, started, usage)
+            raise StageFailure(stage, FallbackReason.MODEL_UNAVAILABLE, type(exc).__name__) from exc
+        self._record_usage(result.context_wrapper.usage, stage, started, usage)
+        return result.final_output
+
+    def _record_usage(self, used, stage: str, started: float, usage: list[StageUsage]) -> None:
         usage.append(StageUsage(
             stage=stage, model=self.brain.model_id(stage), requests=used.requests, input_tokens=used.input_tokens,
             cached_input_tokens=used.input_tokens_details.cached_tokens, output_tokens=used.output_tokens,
             seconds=round(time.perf_counter() - started, 3)))
-        return result.final_output
+
+    def _record_failed_usage(self, exc: Exception, stage: str, started: float, usage: list[StageUsage]) -> None:
+        """A failed stage still spent tokens. Count them whenever the SDK reports them."""
+        run_data = getattr(exc, "run_data", None)
+        if run_data is not None:
+            self._record_usage(run_data.context_wrapper.usage, stage, started, usage)
 
     def _scan_output(self, run: ModelRun, claim_id: str) -> None:
         """A model output that names another claim never reaches anyone (R4)."""
@@ -277,9 +287,9 @@ class Pipeline:
             uncited, overrides, judgment, model_ids, None, None)
 
     async def _finish_fallback(self, trace_id, user_id, claim, policy, facts, flags, log, usage, run_id,
-                               stage: str, reason: FallbackReason) -> RecommendationResponse:
+                               stage: str, reason: FallbackReason, error: str | None) -> RecommendationResponse:
         """No model verdict: DENY on a term or coverage failure, otherwise FLAG for an adjuster. Never more."""
-        with custom_span("deterministic_fallback", {"stage": stage, "reason": reason.value}):
+        with custom_span("deterministic_fallback", {"stage": stage, "reason": reason.value, "error": error}):
             if not facts.in_term:
                 outcome, why, wanted = Outcome.DENY, "the policy was not in force at the loss", "CLS-PER"
             elif not facts.coverage_present:
@@ -291,7 +301,7 @@ class Pipeline:
                      f"Code can only establish that {why}. No judgment was made about this file.")
         return await self._write_and_respond(
             trace_id, user_id, claim, log, usage, run_id, flags, facts, outcome, VerdictSource.DETERMINISTIC_FALLBACK,
-            Confidence.LOW, reasoning, [], cited, [], not cited, [], None, [], reason, stage)
+            Confidence.LOW, reasoning, [], cited, [], not cited, [], None, [], reason, stage, error)
 
     @staticmethod
     def _clean_findings(findings: list[CitedFinding], retrieved: list[str], doc_ids: set[str]) -> list[Finding]:
@@ -313,7 +323,8 @@ class Pipeline:
 
     async def _write_and_respond(self, trace_id, user_id, claim, log, usage, run_id, flags, facts, outcome, source,
                                  confidence, reasoning, findings, cited, removed, uncited, overrides, judgment,
-                                 model_ids, fallback_reason, fallback_stage) -> RecommendationResponse:
+                                 model_ids, fallback_reason, fallback_stage,
+                                 fallback_error=None) -> RecommendationResponse:
         body = DraftRecommendationRequest(
             claim_id=claim.claim_id, run_id=run_id, outcome=outcome, verdict_source=source, confidence=confidence,
             reasoning=reasoning, deterministic=facts, findings=findings, cited_clause_ids=cited, uncited=uncited,
@@ -323,6 +334,7 @@ class Pipeline:
         return RecommendationResponse(
             run_id=run_id, claim_id=claim.claim_id, status=RecommendationStatus.DRAFT, outcome=outcome,
             verdict_source=source, fallback_reason=fallback_reason, fallback_stage=fallback_stage,
+            fallback_error=fallback_error,
             confidence=confidence, reasoning=reasoning, deterministic=facts, judgment=judgment,
             cited_clauses=[CitedClause(clause_id=c, heading=self.index.clauses[c].heading) for c in cited],
             evidence_doc_ids=list(dict.fromkeys(d for f in findings for d in f.evidence_doc_ids)),

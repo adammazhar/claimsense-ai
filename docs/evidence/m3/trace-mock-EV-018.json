@@ -1,0 +1,439 @@
+[
+ {
+  "span_id": "span_ad188fb47d1f4cdd9c53fb36",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:51:49.556025+00:00",
+  "ended_at": "2026-11-05T01:51:49.558064+00:00",
+  "data": {
+   "type": "custom",
+   "name": "fetch_claim_file",
+   "data": {
+    "claim_id": "CLM-2026-0018"
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_aca4d75c03024545b3b57660",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:51:49.558064+00:00",
+  "ended_at": "2026-11-05T01:51:49.558064+00:00",
+  "data": {
+   "type": "custom",
+   "name": "deterministic_facts",
+   "data": {
+    "in_term": true,
+    "coverage_present": true,
+    "total_loss_ratio": 0.4051,
+    "total_loss_candidate": false,
+    "days_since_inception": 133,
+    "photos_before_inception": null,
+    "payable": null
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_96dcfaf8bc974e0abc7eac0e",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:51:49.558064+00:00",
+  "ended_at": "2026-11-05T01:51:49.558064+00:00",
+  "data": {
+   "type": "custom",
+   "name": "input_scan",
+   "data": {
+    "flags": [
+     "DOC-0018-3"
+    ]
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_721f666971dd449f98fd1a62",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:51:49.558064+00:00",
+  "ended_at": "2026-11-05T01:51:49.558064+00:00",
+  "data": {
+   "type": "custom",
+   "name": "seed_retrieval",
+   "data": {
+    "queries": [
+     "policy period effective expiration date",
+     "coverage premium shown declarations",
+     "collision upset"
+    ],
+    "retrieved": [
+     "CLS-PER-006",
+     "CLS-DEC-001",
+     "CLS-MED-001",
+     "CLS-COL-001",
+     "CLS-CMP-001"
+    ]
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_e7105003a33143d9a2ab6c58",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:51:49.558064+00:00",
+  "ended_at": "2026-11-05T01:51:49.560024+00:00",
+  "data": {
+   "type": "custom",
+   "name": "task",
+   "data": {
+    "sdk_span_type": "task",
+    "name": "Agent workflow",
+    "usage": {
+     "input_tokens": 10,
+     "output_tokens": 1,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0,
+     "requests": 1,
+     "total_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_a47bfe4db4e144fcab9c62df",
+  "parent_id": "span_4de7816fbc494f5b91d1bee8",
+  "started_at": "2026-11-05T01:51:49.559066+00:00",
+  "ended_at": "2026-11-05T01:51:49.560024+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 1,
+    "agent_name": "Document Intake",
+    "usage": {
+     "input_tokens": 10,
+     "output_tokens": 1,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_4de7816fbc494f5b91d1bee8",
+  "parent_id": "span_e7105003a33143d9a2ab6c58",
+  "started_at": "2026-11-05T01:51:49.559066+00:00",
+  "ended_at": "2026-11-05T01:51:49.560024+00:00",
+  "data": {
+   "type": "agent",
+   "name": "Document Intake",
+   "handoffs": [],
+   "tools": [],
+   "output_type": "IntakeOutput"
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_8f82d2311a104c67a5b80e84",
+  "parent_id": "span_f6107cbaa378458bbdfe5396",
+  "started_at": "2026-11-05T01:51:49.561023+00:00",
+  "ended_at": "2026-11-05T01:51:49.566039+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 1,
+    "agent_name": "Coverage Check",
+    "usage": {
+     "input_tokens": 10,
+     "output_tokens": 1,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_f6107cbaa378458bbdfe5396",
+  "parent_id": "span_89d53c9b6b6d43d2a367b2f7",
+  "started_at": "2026-11-05T01:51:49.561023+00:00",
+  "ended_at": "2026-11-05T01:51:49.568035+00:00",
+  "data": {
+   "type": "agent",
+   "name": "Coverage Check",
+   "handoffs": [],
+   "tools": [
+    "search_clauses"
+   ],
+   "output_type": "CoverageOutput"
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_89d53c9b6b6d43d2a367b2f7",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:51:49.561023+00:00",
+  "ended_at": "2026-11-05T01:51:49.568035+00:00",
+  "data": {
+   "type": "custom",
+   "name": "task",
+   "data": {
+    "sdk_span_type": "task",
+    "name": "Agent workflow",
+    "usage": {
+     "input_tokens": 20,
+     "output_tokens": 2,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0,
+     "requests": 2,
+     "total_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_749eebba06dc4533be5cb59b",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:51:49.561023+00:00",
+  "ended_at": "2026-11-05T01:51:49.568035+00:00",
+  "data": {
+   "type": "custom",
+   "name": "task",
+   "data": {
+    "sdk_span_type": "task",
+    "name": "Agent workflow",
+    "usage": {
+     "input_tokens": 20,
+     "output_tokens": 2,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0,
+     "requests": 2,
+     "total_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_855848713bff4b18b7ed7182",
+  "parent_id": "span_d3e94610d4e942b785151081",
+  "started_at": "2026-11-05T01:51:49.562023+00:00",
+  "ended_at": "2026-11-05T01:51:49.566039+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 1,
+    "agent_name": "Claim Assessment",
+    "usage": {
+     "input_tokens": 10,
+     "output_tokens": 1,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_d3e94610d4e942b785151081",
+  "parent_id": "span_749eebba06dc4533be5cb59b",
+  "started_at": "2026-11-05T01:51:49.562023+00:00",
+  "ended_at": "2026-11-05T01:51:49.568035+00:00",
+  "data": {
+   "type": "agent",
+   "name": "Claim Assessment",
+   "handoffs": [],
+   "tools": [
+    "search_clauses"
+   ],
+   "output_type": "AssessmentOutput"
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_1096f4a2e2894a2f9b57b069",
+  "parent_id": "span_8f82d2311a104c67a5b80e84",
+  "started_at": "2026-11-05T01:51:49.564039+00:00",
+  "ended_at": "2026-11-05T01:51:49.565037+00:00",
+  "data": {
+   "type": "function",
+   "name": "search_clauses",
+   "output": "[{\"clause_id\": \"CLS-COL-001\", \"heading\": \"Collision insuring agreement\", \"text\": \"We will pay for direct and accidental loss to your covered auto caused by collision with another object or by upset, minus the applicable deductible shown in the Declarations.\"}, {\"clause_id\": \"CLS-CMP-001\", \"heading\": \"Other than collision insuring agreement\", \"text\": \"We will pay for direct and accidental loss to your covered auto not caused by collision, including glass breakage, hail, fire and theft, minus the applicable deductible.\"}]",
+   "mcp_data": null
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_b2bd7e13acc042dba3de9986",
+  "parent_id": "span_855848713bff4b18b7ed7182",
+  "started_at": "2026-11-05T01:51:49.564039+00:00",
+  "ended_at": "2026-11-05T01:51:49.565037+00:00",
+  "data": {
+   "type": "function",
+   "name": "search_clauses",
+   "output": "[{\"clause_id\": \"CLS-FRD-001\", \"heading\": \"Concealment or fraud\", \"text\": \"We do not provide coverage for any insured who has made fraudulent statements or engaged in fraudulent conduct in connection with any accident or loss for which coverage is sought.\"}]",
+   "mcp_data": null
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_9b8d6a09e3f04c4f9c346ccc",
+  "parent_id": "span_f6107cbaa378458bbdfe5396",
+  "started_at": "2026-11-05T01:51:49.566039+00:00",
+  "ended_at": "2026-11-05T01:51:49.568035+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 2,
+    "agent_name": "Coverage Check",
+    "usage": {
+     "input_tokens": 10,
+     "output_tokens": 1,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_b131aa51517a424583d686da",
+  "parent_id": "span_d3e94610d4e942b785151081",
+  "started_at": "2026-11-05T01:51:49.566039+00:00",
+  "ended_at": "2026-11-05T01:51:49.568035+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 2,
+    "agent_name": "Claim Assessment",
+    "usage": {
+     "input_tokens": 10,
+     "output_tokens": 1,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_aac72df5f3954d87ab46749b",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:51:49.568035+00:00",
+  "ended_at": "2026-11-05T01:51:49.570035+00:00",
+  "data": {
+   "type": "custom",
+   "name": "task",
+   "data": {
+    "sdk_span_type": "task",
+    "name": "Agent workflow",
+    "usage": {
+     "input_tokens": 10,
+     "output_tokens": 1,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0,
+     "requests": 1,
+     "total_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_fe5e2c2e207b4f7d86bd4dc5",
+  "parent_id": "span_4f170957bc9d4722a7623d23",
+  "started_at": "2026-11-05T01:51:49.569038+00:00",
+  "ended_at": "2026-11-05T01:51:49.570035+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 1,
+    "agent_name": "Decision Draft",
+    "usage": {
+     "input_tokens": 10,
+     "output_tokens": 1,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_4f170957bc9d4722a7623d23",
+  "parent_id": "span_aac72df5f3954d87ab46749b",
+  "started_at": "2026-11-05T01:51:49.569038+00:00",
+  "ended_at": "2026-11-05T01:51:49.570035+00:00",
+  "data": {
+   "type": "agent",
+   "name": "Decision Draft",
+   "handoffs": [],
+   "tools": [],
+   "output_type": "DraftOutput"
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_9c88afe6dc824b6993ab82f1",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:51:49.570035+00:00",
+  "ended_at": "2026-11-05T01:51:49.570035+00:00",
+  "data": {
+   "type": "custom",
+   "name": "output_scan",
+   "data": {
+    "foreign_claim_ids": []
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_57f46ad9c21e4c2e939e137e",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:51:49.570035+00:00",
+  "ended_at": "2026-11-05T01:51:49.570035+00:00",
+  "data": {
+   "type": "custom",
+   "name": "precedence",
+   "data": {
+    "drafted": "ROUTE",
+    "required": "ROUTE",
+    "final": "ROUTE",
+    "cited": [
+     "CLS-PER-006",
+     "CLS-COL-001",
+     "CLS-FRD-001"
+    ],
+    "removed": [],
+    "uncited": false
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_ee34cb814680475a9412271f",
+  "parent_id": null,
+  "started_at": "2026-11-05T01:51:49.570035+00:00",
+  "ended_at": "2026-11-05T01:51:49.571035+00:00",
+  "data": {
+   "type": "custom",
+   "name": "write_draft",
+   "data": {
+    "claim_id": "CLM-2026-0018",
+    "run_id": "6b130802-19b7-44e9-af9f-ded89289ebbf"
+   }
+  },
+  "error": null
+ }
+]

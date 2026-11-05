@@ -384,6 +384,19 @@
       "default": null,
       "title": "Fallback Stage"
     },
+    "fallback_error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Exception class only; never its message.",
+      "title": "Fallback Error"
+    },
     "confidence": {
       "$ref": "#/$defs/Confidence"
     },

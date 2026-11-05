@@ -237,7 +237,7 @@ discovered at the end.
 1. Desk volume of 1,200 personal auto physical-damage claims a month.
 2. 2.5 adjuster hours saved per claim, at a $55 loaded hourly cost.
 3. Production pilot starts within 30 days of handover, or the bonus lapses.
-4. OpenAI token prices and tokens per claim, re-measured in week 3.
+4. OpenAI token prices and tokens per claim, re-measured in week 3. First measurement (2026-11-04, D-017): about 12,000 input and 800 output tokens per claim, about $0.019 per claim, against the 24,000 and 3,000 assumed here. The inputs in `scripts/pricing.py` stay as they are, which is conservative.
 5. AWS run cost of $1,500 for five weeks, re-measured once the IK account exists (D-012).
 6. The rate card and the cost anchors in sections 1 and 2, re-checked against CALC and Levels.fyi
    before signing.
