@@ -1,0 +1,55 @@
+# The whole stack, from one command:  docker compose up --build
+# The co-pilot is the only published port; the mock client systems stay on the internal network.
+# BRAIN defaults to the mock, which needs no key and costs nothing. BRAIN=openai uses OPENAI_API_KEY
+# from the environment or .env, which compose reads at startup. The key is never baked into the image.
+
+x-service: &service
+  image: claimsense:local
+  build: .
+  restart: "no"
+
+x-healthcheck: &healthcheck
+  interval: 3s
+  timeout: 3s
+  retries: 20
+  start_period: 2s
+
+services:
+  cms:
+    <<: *service
+    command: ["uvicorn", "claimsense.mock_services:create_cms_app", "--factory", "--host", "0.0.0.0", "--port", "8001"]
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8001/health')"]
+
+  pas:
+    <<: *service
+    command: ["uvicorn", "claimsense.mock_services:create_pas_app", "--factory", "--host", "0.0.0.0", "--port", "8002"]
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8002/health')"]
+
+  documents:
+    <<: *service
+    command: ["uvicorn", "claimsense.mock_services:create_documents_app", "--factory", "--host", "0.0.0.0", "--port", "8003"]
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8003/health')"]
+
+  copilot:
+    <<: *service
+    environment:
+      BRAIN: ${BRAIN:-mock}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      CMS_URL: http://cms:8001
+      PAS_URL: http://pas:8002
+      DOCS_URL: http://documents:8003
+    ports:
+      - "8000:8000"
+    depends_on:
+      cms: {condition: service_healthy}
+      pas: {condition: service_healthy}
+      documents: {condition: service_healthy}
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/health')"]

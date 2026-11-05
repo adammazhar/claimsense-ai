@@ -1,0 +1,19 @@
+$ docker compose up --build --detach --wait
+(all four containers healthy; only the co-pilot port is published)
+
+GET /health -> {'status': 'ok', 'brain': 'mock'}
+POST /v1/claims/CLM-2026-0001/recommendation  X-User-Id: adj-001
+  -> 200 outcome=APPROVE verdict_source=model status=draft cited=['CLS-PER-006', 'CLS-COL-001'] payable=1900.00
+POST /v1/claims/CLM-2026-0006/recommendation  X-User-Id: adj-001
+  -> 200 outcome=DENY verdict_source=model status=draft cited=['CLS-PER-006'] payable=None
+POST /v1/claims/CLM-2026-0011/recommendation  X-User-Id: adj-001
+  -> 200 outcome=FLAG verdict_source=model status=draft cited=['CLS-PER-006', 'CLS-COL-001', 'CLS-BI-001'] payable=None
+POST /v1/claims/CLM-2026-0015/recommendation  X-User-Id: adj-002
+  -> 200 outcome=ROUTE verdict_source=model status=draft cited=['CLS-PER-006', 'CLS-COL-001', 'CLS-FRD-001'] payable=None
+POST /v1/claims/CLM-2026-0019/recommendation  X-User-Id: adj-007  (not the assignee)
+  -> 403 {"code": "FORBIDDEN", "message": "not entitled to this claim", "retryable": false}
+POST /v1/claims/CLM-2026-9999/recommendation  X-User-Id: adj-007  (no such claim)
+  -> 403 {"code": "FORBIDDEN", "message": "not entitled to this claim", "retryable": false}
+POST /v1/claims/CLM-2026-0001/recommendation  (no identity)
+  -> 401 UNAUTHENTICATED
+GET http://localhost:8001/health -> not reachable from the host (ConnectTimeout)

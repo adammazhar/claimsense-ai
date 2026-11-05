@@ -27,6 +27,7 @@ CHECKED_FIELDS = {
 }
 MIN_PER_OUTCOME = 5  # instructor's Week 1 checklist: 5 approve, 5 deny, 5 flag_review, 5 route_specialist
 CONFIDENCE_LEVELS = {"high", "medium"}
+SPLITS = {"tuning", "heldout"}
 DOCUMENT_KEYS = {"doc_id", "type", "summary", "captured"}
 # A sentence break: end punctuation, space, capital. "a.m. on" and "(D-002)." don't match.
 SENTENCE_BREAK = re.compile(r"[.!?]\s+[A-Z]")
@@ -43,6 +44,8 @@ def check_common(case: dict) -> list[str]:
         problems.append("expected_reasoning must be exactly one sentence")
     if expected.get("minimum_confidence") not in CONFIDENCE_LEVELS:
         problems.append(f"minimum_confidence must be one of {sorted(CONFIDENCE_LEVELS)}")
+    if case.get("split") not in SPLITS:
+        problems.append(f"split must be one of {sorted(SPLITS)}")
     # An unquoted comma inside a YAML flow mapping or list splits the value silently.
     for doc in case.get("documents", []):
         if set(doc) - DOCUMENT_KEYS or not isinstance(doc.get("summary"), str):

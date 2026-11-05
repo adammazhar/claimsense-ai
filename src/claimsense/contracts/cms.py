@@ -97,6 +97,12 @@ class VerdictSource(StrEnum):
     DETERMINISTIC_FALLBACK = "deterministic_fallback"
 
 
+class Confidence(StrEnum):
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+
+
 class DeterministicFacts(Contract):
     """Values computed in code, never by a model (D-001). Shown separately from judgment."""
 
@@ -104,6 +110,8 @@ class DeterministicFacts(Contract):
     coverage_present: bool
     total_loss_ratio: float | None = Field(default=None, ge=0)
     total_loss_candidate: bool | None = None
+    days_since_inception: int | None = None
+    photos_before_inception: bool | None = None
     payable: Money | None = Field(default=None, description="Set only when the outcome is APPROVE.")
 
 
@@ -127,15 +135,27 @@ class DraftRecommendationRequest(Contract):
     claim_id: ClaimId
     run_id: UUID
     outcome: Outcome
-    source: VerdictSource
+    verdict_source: VerdictSource
+    confidence: Confidence
     reasoning: str = Field(min_length=1)
     deterministic: DeterministicFacts
-    findings: list[Finding] = Field(min_length=1)
+    findings: list[Finding]
     cited_clause_ids: list[ClauseId] = Field(
-        min_length=1, description="Only clause IDs in the retrieved set survive the citation validator (D-005)."
+        description="Only clause IDs in the retrieved set survive the citation validator (D-005)."
     )
-    model_ids: list[str] = Field(default_factory=list, description="Empty when source is deterministic_fallback.")
+    uncited: bool = Field(description="True if the validator removed a citation, or none remain (D-019).")
+    model_ids: list[str] = Field(description="Empty when verdict_source is deterministic_fallback.")
     requested_by: UserId
+
+    @model_validator(mode="after")
+    def _grounded(self) -> DraftRecommendationRequest:
+        if not self.cited_clause_ids and not self.uncited:
+            raise ValueError("a recommendation with no surviving citation must be marked uncited")
+        if self.verdict_source is VerdictSource.MODEL and not self.findings and not self.uncited:
+            raise ValueError("a model verdict must carry cited findings or be marked uncited")
+        if self.verdict_source is VerdictSource.DETERMINISTIC_FALLBACK and self.model_ids:
+            raise ValueError("a deterministic fallback must not name a model")
+        return self
 
 
 class RecommendationStatus(StrEnum):

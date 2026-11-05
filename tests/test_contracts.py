@@ -22,7 +22,7 @@ from test_fixtures import load
 
 def draft(**overrides) -> dict:
     body = {
-        "claim_id": "CLM-2026-0001", "run_id": str(uuid4()), "outcome": "APPROVE", "source": "model",
+        "claim_id": "CLM-2026-0001", "run_id": str(uuid4()), "outcome": "APPROVE", "verdict_source": "model", "confidence": "high", "uncited": False,
         "reasoning": "Pothole damage consistent with the estimate and photos.",
         "deterministic": {"in_term": True, "coverage_present": True, "total_loss_ratio": 0.13, "payable": "1900.00"},
         "findings": [{"statement": "Damage matches the narrative.", "evidence_doc_ids": ["DOC-0001-2"]}],
@@ -74,6 +74,13 @@ def test_draft_cannot_be_final_and_must_cite() -> None:
         DraftRecommendationRequest.model_validate(draft(status="final"))
     with pytest.raises(ValidationError):
         DraftRecommendationRequest.model_validate(draft(cited_clause_ids=[]))
+    DraftRecommendationRequest.model_validate(draft(cited_clause_ids=[], uncited=True))
+
+
+def test_fallback_cannot_name_a_model() -> None:
+    with pytest.raises(ValidationError):
+        DraftRecommendationRequest.model_validate(draft(verdict_source="deterministic_fallback"))
+    DraftRecommendationRequest.model_validate(draft(verdict_source="deterministic_fallback", model_ids=[]))
 
 
 def test_override_requires_a_reason() -> None:

@@ -1,5 +1,14 @@
 {
   "$defs": {
+    "Confidence": {
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
     "DeterministicFacts": {
       "additionalProperties": false,
       "description": "Values computed in code, never by a model (D-001). Shown separately from judgment.",
@@ -36,6 +45,30 @@
           ],
           "default": null,
           "title": "Total Loss Candidate"
+        },
+        "days_since_inception": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Days Since Inception"
+        },
+        "photos_before_inception": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Photos Before Inception"
         },
         "payable": {
           "anyOf": [
@@ -131,8 +164,11 @@
     "outcome": {
       "$ref": "#/$defs/Outcome"
     },
-    "source": {
+    "verdict_source": {
       "$ref": "#/$defs/VerdictSource"
+    },
+    "confidence": {
+      "$ref": "#/$defs/Confidence"
     },
     "reasoning": {
       "minLength": 1,
@@ -146,7 +182,6 @@
       "items": {
         "$ref": "#/$defs/Finding"
       },
-      "minItems": 1,
       "title": "Findings",
       "type": "array"
     },
@@ -156,12 +191,16 @@
         "pattern": "^CLS-[A-Z]{2,3}-\\d{3}$",
         "type": "string"
       },
-      "minItems": 1,
       "title": "Cited Clause Ids",
       "type": "array"
     },
+    "uncited": {
+      "description": "True if the validator removed a citation, or none remain (D-019).",
+      "title": "Uncited",
+      "type": "boolean"
+    },
     "model_ids": {
-      "description": "Empty when source is deterministic_fallback.",
+      "description": "Empty when verdict_source is deterministic_fallback.",
       "items": {
         "type": "string"
       },
@@ -178,11 +217,14 @@
     "claim_id",
     "run_id",
     "outcome",
-    "source",
+    "verdict_source",
+    "confidence",
     "reasoning",
     "deterministic",
     "findings",
     "cited_clause_ids",
+    "uncited",
+    "model_ids",
     "requested_by"
   ],
   "title": "DraftRecommendationRequest",
