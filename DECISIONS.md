@@ -407,6 +407,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Not done:** Branch protection isn't turned on, so a person could still merge over a red check. The
   push is blocked regardless. Making the gate a required check is a repository setting for the owner.
 - **Amended 2026-11-07 by D-026 and D-029:** a live-model gate runs before the push, and the push uses the gated build instead of rebuilding.
+- **Amended 2026-11-07 by D-030:** branch protection is now on, so the "Not done" item below is done.
 - **Alternatives considered:** Copying the course's `eval-gate.yml` as is. Rejected: it gates merges but
   not image pushes, which this milestone requires.
 - **Owner:** FDE
@@ -469,14 +470,16 @@ records what was decided, why, what was rejected, who owns it, and what would re
   ROUTE, and CLM-2024-2749, labeled APPROVE) were both drafted FLAG, because the model treated a police
   report as required for a collision. Our rule requires one only for a theft. It is reported, not fixed.
 - **Owner:** FDE
-- **Revisit when:** The instructor supplies labels, or the policy corpus states which documents a
-  collision needs.
+- **Raised with the client** on 2026-11-07 as charter open question 7: must a collision have a police
+  report on file before payment?
+- **Revisit when:** The instructor supplies labels, or the client answers question 7.
 
 ## D-026 · 2026-11-07 · A live-model gate in CI; Claim Assessment moves to gpt-4o
 
 - **Decision:** CI gains `live-eval-gate`, which runs the full suite against the real models with the
   `OPENAI_API_KEY` repository secret. It runs on pushes to `main` and on manual dispatch, never on pull
-  requests, to control cost. The mock gate still runs on every pull request. A missing or rejected key
+  requests, to control cost. (Amended by D-030: it now also runs on pull requests that change more than
+  documentation, and it is skipped for documentation-only changes.) The mock gate still runs on every pull request. A missing or rejected key
   fails the run before any case runs: the runner checks the key against each routed model, which costs
   nothing. Thresholds are unchanged: 85% overall, 80% held-out, all adversarial and access-control
   cases, no guardrail breach, and now no fallback (D-024).
@@ -549,3 +552,33 @@ records what was decided, why, what was rejected, who owns it, and what would re
   dependencies instead.
 - **Owner:** FDE
 - **Revisit when:** Milestone 5 pushes to ECR with OIDC.
+
+## D-030 · 2026-11-07 · Branch protection on `main`; the live gate runs on code changes, including pull requests
+
+- **Decision:**
+  - **Branch protection on `main`:** a pull request is required, with no approvals, because the
+    engagement has one engineer. `tests`, `eval-gate` and `live-eval-gate` must pass. The rule is
+    enforced for admins too, so no one pushes to `main` directly. Force pushes and deletion are off.
+    Branches don't have to be up to date before merging, because that would force extra paid
+    live runs.
+  - **Documentation-only changes skip the live gate.** A new `changes` job compares the pull request
+    or push with its base. If every changed file is under `docs/` or ends in `.md`, the live gate is
+    skipped. Any other change runs it, whether code, prompts, evals, data, the Dockerfile or the
+    workflow, and so does a manual dispatch or a push with no usable base. A docs-only push to `main`
+    therefore pushes no image.
+  - **The live gate now also runs on pull requests that change code.** That amends D-026.
+- **Why:** GitHub reports a skipped job as passed, even for a required check ("It will not prevent a
+  pull request from merging, even if it is a required check", GitHub's Actions docs). With the live gate
+  skipped on every pull request, requiring it would have blocked nothing. The engagement lead chose to
+  run it on code pull requests over a dispatch-verified check or leaving it unrequired. Docs-only
+  changes can't change a verdict, so paying for a live run on them buys nothing.
+- **Cost:** about $0.74 per push to a pull request that changes code, and again for the push to `main`
+  when it merges.
+- **Risk accepted:** a pull request from a fork gets no secrets, so its live gate fails red. That is
+  acceptable for a single-engineer repository.
+- **Alternatives considered:** (a) `paths-ignore` on the whole workflow. Rejected: docs pull requests
+  would skip the tests too, and no required check would report at all. (b) A free pull-request check
+  that passes only after a manual dispatch passed on the same commit. Rejected by the engagement lead
+  as more moving parts.
+- **Owner:** FDE; the repository owner for the settings
+- **Revisit when:** A second engineer joins (require one approval), or live-run cost matters at volume.

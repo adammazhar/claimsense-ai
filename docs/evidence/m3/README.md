@@ -19,7 +19,8 @@ First captured 2026-11-04 and updated 2026-11-07. All data is synthetic.
 
 - **The mock gate** runs on every pull request. It proves the pipeline, guardrails and gate work, not
   judgment (D-018).
-- **The live gate** runs in CI on every push to `main` and on manual dispatch, against the real models,
+- **The live gate** runs in CI on every pull request and push to `main` that changes more than
+  documentation, and on manual dispatch (D-030). It runs against the real models,
   inside the exact image that is then pushed (D-026, D-029). It fails on any fallback, and on a missing
   or rejected key.
 - **The blind set** is the instructor's synthetic claims, converted and labeled by us and run once. No
@@ -117,7 +118,8 @@ same code as live run 5.
 **Both misses were drafted FLAG for the same reason.** The model treated a police report as required
 before paying a collision. Our rule requires one only for a theft. One of the two files says a report
 was filed but has none on file. Whether a collision needs a police report on file is a question for
-the client's claims manual. It is recorded, not tuned (D-025).
+the client's claims manual. It is recorded, not tuned (D-025), and is now open question 7 in the
+[charter](../../engagement/charter.md).
 
 ## The image in GHCR
 
@@ -161,8 +163,9 @@ invalid key:  GATE: FAILED - OpenAI rejected the key or a routed model (Authenti
 
 Live run 2 above is also a real red gate: one unsafe approval failed it at 90.9% accuracy.
 
-**Not done:** branch protection is off, so a person can still merge over a red check. The push is
-blocked regardless (D-022).
+**Branch protection is on** since 2026-11-07 (D-030). A pull request is required, and `tests`, `eval-gate`
+and `live-eval-gate` must pass before a merge, admins included. The live gate runs on any pull request
+that changes more than documentation, so a red live gate now blocks the merge as well as the push.
 
 ## Reproduce
 

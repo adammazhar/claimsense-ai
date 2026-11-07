@@ -2,8 +2,10 @@
 # -> push that same image. Each job needs the one before, so a red gate means no push (D-022).
 #
 # The mock gate runs on every pull request: fast, free, no key. It proves the plumbing, not judgment
-# (D-018). The live gate runs the real models on pushes to main and on manual runs, to control cost.
-# It fails on any fallback verdict, and on a missing or rejected key (D-024, D-026).
+# (D-018). The live gate runs the real models on any pull request, push to main or manual run that
+# changes more than documentation (docs/** and *.md), and is a required check (D-030). It fails on any
+# fallback verdict, and on a missing or rejected key (D-024, D-026). A docs-only push to main runs no
+# live gate, so it pushes no image.
 name: ci
 
 on:
@@ -20,6 +22,38 @@ env:
   CLAIMSENSE_MODEL_TIER: routed  # D-026
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Does this change touch more than documentation?
+        id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          # Documentation is docs/** and any *.md file. Everything else (code, prompts, evals, data,
+          # the Dockerfile, this workflow) runs the live gate. With no usable base, it runs too.
+          if [ "$EVENT" = "workflow_dispatch" ] || [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ] \
+              || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            echo "No usable base to compare with: the live gate runs."
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files="$(git diff --name-only "$BASE" "$GITHUB_SHA")"
+          echo "Changed files:"; echo "$files"
+          others="$(echo "$files" | grep -vE '^docs/|\.md$' | grep -c . || true)"
+          if [ "$others" -gt 0 ]; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Documentation only: the live gate is skipped."
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          fi
+
   tests:
     runs-on: ubuntu-latest
     steps:
@@ -83,8 +117,8 @@ jobs:
           retention-days: 1
 
   live-eval-gate:
-    needs: build-image
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: [build-image, changes]
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
