@@ -1,6 +1,6 @@
 # ClaimSense AI evaluation cases, v0 (Milestone 1)
 #
-# 22 cases: 5 APPROVE, 5 DENY, 5 FLAG, 5 ROUTE, plus 2 access-control cases that must be
+# 24 cases: 6 APPROVE, 5 DENY, 5 FLAG, 6 ROUTE, plus 2 access-control cases that must be
 # refused before any agent runs. All data is synthetic. No real people, policies or vehicles.
 #
 # PLACEHOLDERS: the claims, policies and documents below, and every clause ID (CLS-PER-006 etc.),
@@ -686,6 +686,75 @@ cases:
       findings: ["The estimate is dated 2026-08-01, four days before the 2026-08-05 loss it claims to repair, which contradicts the insured's statement."]
 
   # -------------------------------------------------- ACCESS CONTROL (refused before any agent)
+  # ------------------------------------------------- held-out replacements (2026-11-07, D-027)
+  # Written and committed before any code change they could measure. Never adjusted afterward.
+
+  - id: EV-023
+    split: heldout
+    title: Storm limb falls on a parked car, a prior claim and a middling score
+    tags: [baseline, score_threshold]
+    requester: {user_id: adj-002, role: adjuster, assigned: true}
+    claim:
+      claim_id: CLM-2026-0023
+      loss_datetime: 2026-07-19T06:15
+      loss_type: comprehensive
+      narrative: A large limb from the neighbor's oak came down in the overnight storm and landed on my parked car. Roof and rear window damaged.
+      repair_estimate_usd: 4200
+      fraud_score: 0.44
+      prior_claims_24m: 1
+    policy:
+      policy_id: POL-1023
+      effective_date: 2026-04-10
+      expiration_date: 2026-10-10
+      status_field: Active
+      coverages: {collision: {deductible_usd: 500}, comprehensive: {deductible_usd: 250}}
+      vehicle_acv_usd: 21000
+    documents:
+      - {doc_id: DOC-0023-1, type: photos, summary: "Limb resting on the roof, rear window shattered, captured 2026-07-19."}
+      - {doc_id: DOC-0023-2, type: repair_estimate, summary: "Roof panel, rear glass and headliner, total 4,200."}
+      - {doc_id: DOC-0023-3, type: witness_statement, summary: "Neighbor heard the limb fall during the storm at about 5 a.m. and saw it on the car at first light."}
+    expected:
+      outcome: APPROVE
+      expected_reasoning: "A storm limb on a parked car is a comprehensive loss in term, and the photos, estimate and neighbor's account agree, so a prior claim and a middling score don't justify more than approval."
+      minimum_confidence: medium
+      deterministic: {in_term: true, coverage_present: true, payable_usd: 3950, tl_ratio: 0.2}
+      must_cite: [CLS-CMP-001]
+      findings: ["Photos, estimate and the neighbor's account agree on storm damage to a parked car."]
+      must_not: [ROUTE based on the score alone]
+
+  - id: EV-024
+    split: heldout
+    title: The other driver the insured names says the collision never happened
+    tags: [fraud_narrative, score_threshold]
+    requester: {user_id: adj-001, role: adjuster, assigned: true}
+    claim:
+      claim_id: CLM-2026-0024
+      loss_datetime: 2026-08-12T14:05
+      loss_type: collision
+      narrative: A delivery van backed out of a loading bay on Main Street and hit my driver-side doors. The van driver gave me his details.
+      repair_estimate_usd: 6800
+      fraud_score: 0.21
+      prior_claims_24m: 0
+    policy:
+      policy_id: POL-1024
+      effective_date: 2026-03-20
+      expiration_date: 2026-09-20
+      status_field: Active
+      coverages: {collision: {deductible_usd: 500}}
+      vehicle_acv_usd: 24000
+    documents:
+      - {doc_id: DOC-0024-1, type: insured_statement, summary: "Names the van driver as the other party and says he admitted backing into the car."}
+      - {doc_id: DOC-0024-2, type: witness_statement, summary: "The named van driver says he made no deliveries on Main Street on 2026-08-12, his van has no damage, and he has never met the insured."}
+      - {doc_id: DOC-0024-3, type: repair_estimate, summary: "Both driver-side doors and B-pillar trim, total 6,800."}
+      - {doc_id: DOC-0024-4, type: photos, summary: "Driver-side door damage, captured 2026-08-13."}
+    expected:
+      outcome: ROUTE
+      expected_reasoning: "The only other party the insured names denies the collision took place, so the accounts contradict on whether the loss happened at all, which the legacy score of 0.21 would have missed."
+      minimum_confidence: medium
+      deterministic: {in_term: true, coverage_present: true, tl_ratio: 0.28}
+      must_cite: [CLS-FRD-001]
+      findings: ["The named other driver denies being there or any collision; the insured's account depends on him."]
+
   - id: EV-019
     split: tuning
     title: Adjuster requests a claim that isn't assigned to them

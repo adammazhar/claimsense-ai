@@ -493,5 +493,82 @@
       "sha256": "4e4905b54a45a2f3fb329027267657374b1d3f7dd3c0387c60735d0f58010517"
     },
     "text": "Matches the narrative, and says the car was undamaged before the deer strike."
+  },
+  {
+    "meta": {
+      "doc_id": "DOC-0023-1",
+      "claim_id": "CLM-2026-0023",
+      "type": "photos",
+      "received_at": "2026-07-20T11:00:00Z",
+      "captured_on": "2026-07-19",
+      "sha256": "2600d1c930e550733b8ee3491878c7f0b52756e2966a874d5bbe9cc756042391"
+    },
+    "text": "Limb resting on the roof, rear window shattered, captured 2026-07-19."
+  },
+  {
+    "meta": {
+      "doc_id": "DOC-0023-2",
+      "claim_id": "CLM-2026-0023",
+      "type": "repair_estimate",
+      "received_at": "2026-07-20T11:00:00Z",
+      "captured_on": null,
+      "sha256": "17101cb89a4d0fd1d37fbad316efdd631bc7ccc0826ac93c782c4f8428b46f03"
+    },
+    "text": "Roof panel, rear glass and headliner, total 4,200."
+  },
+  {
+    "meta": {
+      "doc_id": "DOC-0023-3",
+      "claim_id": "CLM-2026-0023",
+      "type": "witness_statement",
+      "received_at": "2026-07-20T11:00:00Z",
+      "captured_on": null,
+      "sha256": "e3b81431c22259b5c39c4df72c8739f63eb6c152215644068e1d3867c063881e"
+    },
+    "text": "Neighbor heard the limb fall during the storm at about 5 a.m. and saw it on the car at first light."
+  },
+  {
+    "meta": {
+      "doc_id": "DOC-0024-1",
+      "claim_id": "CLM-2026-0024",
+      "type": "insured_statement",
+      "received_at": "2026-08-13T11:00:00Z",
+      "captured_on": null,
+      "sha256": "21c5310367ae9bf343447e25283ef027f63c28963f6a5a306c56f27ffa2a6d11"
+    },
+    "text": "Names the van driver as the other party and says he admitted backing into the car."
+  },
+  {
+    "meta": {
+      "doc_id": "DOC-0024-2",
+      "claim_id": "CLM-2026-0024",
+      "type": "witness_statement",
+      "received_at": "2026-08-13T11:00:00Z",
+      "captured_on": null,
+      "sha256": "71050ab19502b375ae45892354edc717e5e0c859a6222213a01fa79ecdeb4761"
+    },
+    "text": "The named van driver says he made no deliveries on Main Street on 2026-08-12, his van has no damage, and he has never met the insured."
+  },
+  {
+    "meta": {
+      "doc_id": "DOC-0024-3",
+      "claim_id": "CLM-2026-0024",
+      "type": "repair_estimate",
+      "received_at": "2026-08-13T11:00:00Z",
+      "captured_on": null,
+      "sha256": "6546433b26e92115f0bfd399971eb3e8e375d44dc8fec2aff2e222f927273f3a"
+    },
+    "text": "Both driver-side doors and B-pillar trim, total 6,800."
+  },
+  {
+    "meta": {
+      "doc_id": "DOC-0024-4",
+      "claim_id": "CLM-2026-0024",
+      "type": "photos",
+      "received_at": "2026-08-13T11:00:00Z",
+      "captured_on": "2026-08-13",
+      "sha256": "4c012ee501843e4b84686c9d70525d295458eb45abd73bfd13e7d7006c4365f5"
+    },
+    "text": "Driver-side door damage, captured 2026-08-13."
   }
 ]

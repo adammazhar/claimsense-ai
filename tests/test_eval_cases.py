@@ -18,9 +18,10 @@ def test_eval_checker_passes() -> None:
 
 
 def test_five_cases_per_outcome_plus_refusals() -> None:
+    """At least five per outcome (the brief); EV-023 and EV-024 add a sixth APPROVE and ROUTE (D-027)."""
     cases = yaml.safe_load(CASES.read_text(encoding="utf-8"))["cases"]
     counts = collections.Counter(c["expected"]["outcome"] for c in cases)
-    assert counts == {"APPROVE": 5, "DENY": 5, "FLAG": 5, "ROUTE": 5, "REFUSED": 2}
+    assert counts == {"APPROVE": 6, "DENY": 5, "FLAG": 5, "ROUTE": 6, "REFUSED": 2}
 
 
 def test_unquoted_comma_in_a_summary_is_caught(tmp_path: Path) -> None:
