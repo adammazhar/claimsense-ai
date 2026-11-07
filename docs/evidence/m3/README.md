@@ -15,7 +15,7 @@ First captured 2026-11-04 and updated 2026-11-07. All data is synthetic.
 | Guardrail breaches | 0 | 0 | **0** | 0 | 0 |
 | Fallback verdicts | 0 | 3 | **0** | 0 | 0 (gated since D-024) |
 | Cost of the run | $0 | $0.38 | **$0.73** | $0.40 | |
-| Gate | passed | would fail | **passed** | report-only | |
+| Gate | passed | would fail | **passed**, and passed again in CI on `main` | report-only | |
 
 - **The mock gate** runs on every pull request. It proves the pipeline, guardrails and gate work, not
   judgment (D-018).
@@ -36,7 +36,9 @@ First captured 2026-11-04 and updated 2026-11-07. All data is synthetic.
 | Mock run, all four outcomes | [mock-run.txt](mock-run.txt), [mock-run-report.json](mock-run-report.json) |
 | Live run that passes the gate (2026-11-07), with usage and cost | [live-run-2.txt](live-run-2.txt), [live-run-2-report.json](live-run-2-report.json) |
 | First live run (2026-11-04), kept as it was | [live-run.txt](live-run.txt), [live-run-report.json](live-run-report.json) |
-| Live gate and GHCR push from `main` | _added when `main` runs_ |
+| **Live gate and GHCR push from `main`** | [run 42406249709](https://github.com/adammazhar/claimsense-ai/actions/runs/42406249709), after merging [PR #3](https://github.com/adammazhar/claimsense-ai/pull/3): all five jobs passed, live gate 100% of 22, image pushed as `ghcr.io/adammazhar/claimsense-ai@sha256:60ac5f4fb3455fc51d6b805935aa36116aefeb2686c23a89158da4d5a1d7943a` |
+| Live gate in CI before the merge (manual dispatch on the branch) | [run 42405384290](https://github.com/adammazhar/claimsense-ai/actions/runs/42405384290): live gate 100% of 22; push skipped off `main` |
+| PR #3 checks (tests, mock gate, image build) | [run 42405228638](https://github.com/adammazhar/claimsense-ai/actions/runs/42405228638) |
 | Green PR run (mock gate) | [run 41951459823](https://github.com/adammazhar/claimsense-ai/actions/runs/41951459823), [PR #1](https://github.com/adammazhar/claimsense-ai/pull/1) |
 | Blocked-push run | [run 41951516237](https://github.com/adammazhar/claimsense-ai/actions/runs/41951516237), [PR #2, closed](https://github.com/adammazhar/claimsense-ai/pull/2) |
 | First push from `main` (failed, `denied`) | [run 41951989045](https://github.com/adammazhar/claimsense-ai/actions/runs/41951989045) |
@@ -91,7 +93,9 @@ a better result: the last row is the first run that passed.
   | Four injection cases, three times | $0.41 |
   | Blind set, once | $0.40 |
 
-  The CI run on `main` adds about $0.73 per push. Spend before 2026-11-07 was about $0.41.
+  CI live-gate runs added $0.74 each: the dispatch before the merge and the push to `main`, so today's
+  total is about **$5.49**, plus this evidence update's own run on `main`. Spend before 2026-11-07 was
+  about $0.41.
 - **Latency on the passing run:** p50 and p95 are in [live-run-2.txt](live-run-2.txt). They were
   measured on a laptop in process, against the 90-second target; success criterion 2 is measured on
   the deployed stack.
@@ -114,6 +118,15 @@ same code as live run 5.
 before paying a collision. Our rule requires one only for a theft. One of the two files says a report
 was filed but has none on file. Whether a collision needs a police report on file is a question for
 the client's claims manual. It is recorded, not tuned (D-025).
+
+## The image in GHCR
+
+- **The push from `main` worked** ([run 42406249709](https://github.com/adammazhar/claimsense-ai/actions/runs/42406249709)), which fixes the `denied` push of
+  2026-11-04.
+- **The pushed image is the gated build.** In `push-image`, the gated image ID and the registry's
+  manifest digest are both `sha256:60ac5f4fb3455fc51d6b805935aa36116aefeb2686c23a89158da4d5a1d7943a`, and the job fails if they differ (D-029). The runner uses the
+  containerd image store, so the image ID is the manifest digest.
+- **Tags:** the commit SHA `365b28f...` and `latest`. The package is readable without logging in.
 
 ## How the block was proved
 
