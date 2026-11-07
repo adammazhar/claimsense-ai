@@ -69,3 +69,4 @@ commercial auto, liability adjudication, payment execution, subrogation.
 
 (1) Handling time by step? (2) Total-loss threshold (assumed 75% of value)? (3) Legacy fraud cutoff (assumed
 0.5)? (4) Documents required for theft? (5) Who changes the corpus? (6) Is the status field authoritative (D-004)?
+(7) Must a collision have a police report on file before payment (D-025)?
