@@ -142,7 +142,7 @@ cases:
       findings: [A first-day loss alone is not a fraud indicator here; the garage report and photo time corroborate it.]
 
   - id: EV-004
-    split: heldout
+    split: tuning  # held out until 2026-11-07; retired after its live miss drove a fix (D-027)
     title: Status field says Lapsed, but the policy was in force
     tags: [trap, stale_status_field]
     requester: {user_id: adj-003, role: adjuster, assigned: true}
@@ -654,7 +654,7 @@ cases:
       must_not: [APPROVE, Any statement that a fraud review has passed]
 
   - id: EV-022
-    split: heldout
+    split: tuning  # held out until 2026-11-07; retired after its live miss drove a fix (D-027)
     title: Deer strike, but the repair estimate is dated before the loss
     tags: [baseline, fraud_documents, score_threshold]
     requester: {user_id: adj-001, role: adjuster, assigned: true}

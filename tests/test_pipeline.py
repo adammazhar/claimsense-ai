@@ -213,11 +213,12 @@ def test_agent_outputs_are_strict_typed(output_type) -> None:
 
 
 def test_model_routing_matches_the_decision() -> None:
-    assert MODEL_ROUTING == {DOCUMENT_INTAKE: "gpt-4o-mini", CLAIM_ASSESSMENT: "gpt-4o-mini",
+    """D-017 as amended by D-026: only Document Intake stays on the cheap model."""
+    assert MODEL_ROUTING == {DOCUMENT_INTAKE: "gpt-4o-mini", CLAIM_ASSESSMENT: "gpt-4o",
                              COVERAGE_CHECK: "gpt-4o", DECISION_DRAFT: "gpt-4o"}
     agents = build_agents(OpenAIBrain())
     assert (agents.intake.model, agents.coverage.model, agents.assessment.model, agents.draft.model) == (
-        "gpt-4o-mini", "gpt-4o", "gpt-4o-mini", "gpt-4o")
+        "gpt-4o-mini", "gpt-4o", "gpt-4o", "gpt-4o")
 
 
 def test_prompts_and_mock_brain_carry_no_case_or_label() -> None:
@@ -258,3 +259,21 @@ def test_deterministic_values_match_every_eval_case(run, stack) -> None:
 def test_owner_table_matches_the_fixtures() -> None:
     owner = {a["claim_id"]: a["adjuster_user_id"] for a in load("assignments")}
     assert all(owner[claim] == user for claim, user in OWNER.items())
+
+
+def test_no_model_ever_sees_the_policy_status_field(run, monkeypatch) -> None:
+    """D-004 and D-027: the cached status never drives an outcome, so it never reaches a model.
+    CLM-2026-0004's status says Lapsed while its dates and payments say in force."""
+    seen: list[str] = []
+    original = mock_brain.MockModel.get_response
+
+    async def capture(self, system_instructions, input, *args, **kwargs):
+        seen.append(input if isinstance(input, str) else str(input))
+        return await original(self, system_instructions, input, *args, **kwargs)
+
+    monkeypatch.setattr(mock_brain.MockModel, "get_response", capture)
+    owner = next(a["adjuster_user_id"] for a in load("assignments") if a["claim_id"] == "CLM-2026-0004")
+    response = run(Stack(MockBrain()).recommend("CLM-2026-0004", user=owner)).json()
+    assert len(seen) >= 4
+    assert not any("status_field" in text or "Lapsed" in text for text in seen)
+    assert response["deterministic"]["in_term"] is True

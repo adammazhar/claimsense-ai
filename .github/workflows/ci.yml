@@ -1,14 +1,23 @@
-# Change control: tests -> eval gate -> image. The image job needs the gate, so a failing gate means
-# no build and no push. CI runs on the mock brain: no key, no network, no flakes (D-018, D-022).
+# Change control: tests -> mock eval gate -> build the image once -> live eval gate inside that image
+# -> push that same image. Each job needs the one before, so a red gate means no push (D-022).
+#
+# The mock gate runs on every pull request: fast, free, no key. It proves the plumbing, not judgment
+# (D-018). The live gate runs the real models on pushes to main and on manual runs, to control cost.
+# It fails on any fallback verdict, and on a missing or rejected key (D-024, D-026).
 name: ci
 
 on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/claimsense-ai
+  CLAIMSENSE_MODEL_TIER: routed  # D-026
 
 jobs:
   tests:
@@ -44,36 +53,119 @@ jobs:
           name: eval-report
           path: eval-report.json
 
-  build-and-push-image:
+  build-image:
     needs: eval-gate
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    env:
-      IMAGE: ghcr.io/${{ github.repository_owner }}/claimsense-ai
+    outputs:
+      image_id: ${{ steps.image.outputs.id }}
     steps:
       - uses: actions/checkout@v4
-      - name: Start the stack with one command, and wait for every healthcheck
-        run: docker compose up --build --detach --wait
+      - name: Build the image, once. Every later job uses this build
+        run: docker build --provenance=false --sbom=false -t claimsense:local .
+      - id: image
+        run: echo "id=$(docker image inspect --format '{{.Id}}' claimsense:local)" >> "$GITHUB_OUTPUT"
+      - name: Start the stack from that image, and wait for every healthcheck
+        run: docker compose up --no-build --detach --wait
       - name: Smoke test a recommendation through the running containers
         run: |
           curl --fail-with-body --silent --show-error -X POST \
             -H "X-User-Id: adj-001" -H "Content-Type: application/json" -d '{}' \
-            http://localhost:8000/v1/claims/CLM-2026-0001/recommendation | python -m json.tool
+            http://localhost:8000/v1/claims/CLM-2026-0001/recommendation | python3 -m json.tool
       - name: Stop the stack
         if: always()
         run: docker compose down
-      - name: Log in to GHCR
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: docker/login-action@v3
+      - name: Save the image for the gate and the push
+        run: docker save claimsense:local | gzip > image.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: image
+          path: image.tar.gz
+          retention-days: 1
+
+  live-eval-gate:
+    needs: build-image
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: image
+      - name: Load the built image, and check it is the same build
+        run: |
+          gunzip -c image.tar.gz | docker load
+          test "$(docker image inspect --format '{{.Id}}' claimsense:local)" = "${{ needs.build-image.outputs.image_id }}"
+      - name: Run the eval gate on the real models, inside that image
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          mkdir -p out && chmod 777 out
+          # The code under test is the image's own src and data. Only the harness is mounted, and its
+          # one extra dependency installs into the throwaway container, never into the image.
+          docker run --rm -e OPENAI_API_KEY -e CLAIMSENSE_MODEL_TIER \
+            -v "$PWD/scripts:/app/scripts:ro" -v "$PWD/evals:/app/evals:ro" -v "$PWD/out:/app/out" \
+            claimsense:local sh -c 'pip install --user --quiet --no-cache-dir --disable-pip-version-check PyYAML==6.0.3 \
+              && python scripts/run_evals.py --brain openai --out out/live-eval-report.json 2>/dev/null' \
+            | tee out/live-run.txt
+      - name: Report accuracy and cost
+        if: always()
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, pathlib
+          path = pathlib.Path("out/live-eval-report.json")
+          if not path.exists():
+              print("Live gate: no report. See the log: no key, a rejected key, or a crash.")
+              raise SystemExit
+          s = json.loads(path.read_text())["summary"]
+          u = s["usage"]
+          print(f"Live gate ({s['model_tier']}): {'PASSED' if s['gate']['passed'] else 'FAILED'}")
+          print(f"- decision accuracy {s['decision_accuracy']:.1%}, held-out {s['heldout_accuracy']:.1%}")
+          print(f"- fallback verdicts {s['fallback_verdicts']}, adversarial {s['adversarial']}, access {s['access_control']}")
+          print(f"- cost ${u['total_cost_usd']:.4f} for {u['claims']} claims (${u['cost_per_claim_usd']:.4f} each)")
+          for reason in s["gate"]["reasons"]:
+              print(f"- {reason}")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-eval-report
+          path: out/
+
+  push-image:
+    needs: [build-image, live-eval-gate]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: image
+      - name: Load the gated image, and check it is the same build
+        run: |
+          gunzip -c image.tar.gz | docker load
+          test "$(docker image inspect --format '{{.Id}}' claimsense:local)" = "${{ needs.build-image.outputs.image_id }}"
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push the image (main only)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Push that image. No second build
         run: |
-          docker build --provenance=false --sbom=false -t "$IMAGE:${GITHUB_SHA}" -t "$IMAGE:latest" .
-          docker push "$IMAGE:${GITHUB_SHA}"
+          docker tag claimsense:local "$IMAGE:$GITHUB_SHA"
+          docker tag claimsense:local "$IMAGE:latest"
+          docker push "$IMAGE:$GITHUB_SHA"
           docker push "$IMAGE:latest"
+      - name: Check the registry holds the gated build
+        run: |
+          # The image ID is the config digest (classic store) or the manifest digest (containerd store).
+          gated="${{ needs.build-image.outputs.image_id }}"
+          manifest="$(docker buildx imagetools inspect --raw "$IMAGE:$GITHUB_SHA")"
+          config="$(echo "$manifest" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("config", {}).get("digest", ""))')"
+          digest="$(docker buildx imagetools inspect "$IMAGE:$GITHUB_SHA" --format '{{.Manifest.Digest}}')"
+          echo "gated image ID:  $gated"
+          echo "pushed config:   $config"
+          echo "pushed manifest: $digest"
+          test "$gated" = "$config" || test "$gated" = "$digest"
+          echo "Pushed \`$IMAGE@$digest\` (tags \`$GITHUB_SHA\`, \`latest\`): the build that passed both gates, image ID \`$gated\`." >> "$GITHUB_STEP_SUMMARY"

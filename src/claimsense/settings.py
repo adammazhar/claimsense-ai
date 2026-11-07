@@ -15,12 +15,25 @@ CLAIM_ASSESSMENT = "claim_assessment"
 DECISION_DRAFT = "decision_draft"
 
 # Model routing (D-017): the cheap model reads, the strong model decides what the wording means.
-MODEL_ROUTING = {
-    DOCUMENT_INTAKE: "gpt-4o-mini",
-    COVERAGE_CHECK: "gpt-4o",
-    CLAIM_ASSESSMENT: "gpt-4o-mini",
-    DECISION_DRAFT: "gpt-4o",
+# CLAIMSENSE_MODEL_TIER picks a tier; "routed" is the default (D-026).
+MODEL_TIERS = {
+    "routed": {
+        DOCUMENT_INTAKE: "gpt-4o-mini",
+        COVERAGE_CHECK: "gpt-4o",
+        CLAIM_ASSESSMENT: "gpt-4o",  # was gpt-4o-mini; missed fraud on 2026-11-07 (D-026)
+        DECISION_DRAFT: "gpt-4o",
+    },
+    "mini": {
+        DOCUMENT_INTAKE: "gpt-4o-mini",
+        COVERAGE_CHECK: "gpt-4o-mini",
+        CLAIM_ASSESSMENT: "gpt-4o-mini",
+        DECISION_DRAFT: "gpt-4o-mini",
+    },
 }
+MODEL_TIER = os.environ.get("CLAIMSENSE_MODEL_TIER", "routed")
+if MODEL_TIER not in MODEL_TIERS:
+    raise ValueError(f"CLAIMSENSE_MODEL_TIER must be one of {sorted(MODEL_TIERS)}, not {MODEL_TIER!r}")
+MODEL_ROUTING = MODEL_TIERS[MODEL_TIER]
 
 # USD per million tokens. From public trackers, because OpenAI's own page refused automated reads;
 # re-check against the OpenAI price sheet before quoting. Cost reports ignore the cached-input
@@ -33,6 +46,9 @@ PRICE_PER_MILLION = {
 TOTAL_LOSS_THRESHOLD = "0.75"  # share of actual cash value; charter open question 2
 STAGE_TIMEOUT_SECONDS = float(os.environ.get("STAGE_TIMEOUT_SECONDS", "30"))
 MAX_AGENT_TURNS = 5
+# Searches one stage may make. Once spent, the tool is withdrawn, so the next turn must be the answer.
+# Three search turns plus the answer fit inside MAX_AGENT_TURNS (D-024).
+MAX_SEARCHES_PER_STAGE = 3
 RETRIEVAL_TOP_K = 5
 SEED_TOP_K = 2
 

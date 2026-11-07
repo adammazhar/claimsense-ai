@@ -5,7 +5,13 @@ from __future__ import annotations
 import pytest
 
 from claimsense.mock_brain import Fault, MockBrain, OpenAIBrain
-from claimsense.settings import CLAIM_ASSESSMENT, COVERAGE_CHECK, DECISION_DRAFT, DOCUMENT_INTAKE
+from claimsense.settings import (
+    CLAIM_ASSESSMENT,
+    COVERAGE_CHECK,
+    DECISION_DRAFT,
+    DOCUMENT_INTAKE,
+    MAX_SEARCHES_PER_STAGE,
+)
 from conftest import APPROVE_CLAIM, DENY_CLAIM, ROUTE_CLAIM, Stack
 
 STAGES = [DOCUMENT_INTAKE, COVERAGE_CHECK, CLAIM_ASSESSMENT, DECISION_DRAFT]
@@ -34,11 +40,22 @@ def test_a_fallback_records_why_without_leaking_the_message(run) -> None:
 
 
 def test_a_stage_that_never_stops_searching_falls_back_and_its_tokens_are_counted(run) -> None:
+    """Calling the tool after it was withdrawn is a model error: it falls back, and is counted."""
     response = fallback_run(run, APPROVE_CLAIM, "endless_search", CLAIM_ASSESSMENT)
     assert response["fallback_reason"] == "invalid_output"
-    assert response["fallback_error"] == "MaxTurnsExceeded"
+    assert response["fallback_error"] == "ModelBehaviorError"
     failed = [u for u in response["usage"] if u["stage"] == CLAIM_ASSESSMENT]
-    assert failed and failed[0]["requests"] == 5
+    assert failed and failed[0]["requests"] == MAX_SEARCHES_PER_STAGE + 1
+
+
+@pytest.mark.parametrize("stage", [COVERAGE_CHECK, CLAIM_ASSESSMENT])
+def test_a_stage_that_searches_every_turn_still_answers_once_its_budget_is_spent(run, stage: str) -> None:
+    """The live failure (D-024): gpt-4o-mini kept searching until the turn limit. The budget withdraws
+    the tool, so the model's next turn is its answer and the verdict stays the model's."""
+    response = fallback_run(run, APPROVE_CLAIM, "eager_search", stage)
+    assert response["verdict_source"] == "model", response.get("fallback_error")
+    searched = [u for u in response["usage"] if u["stage"] == stage]
+    assert searched[0]["requests"] == MAX_SEARCHES_PER_STAGE + 1
 
 
 def test_model_verdict_is_labeled_model(run, stack) -> None:

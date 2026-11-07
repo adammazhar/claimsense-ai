@@ -15,3 +15,6 @@ tmp/
 
 # Local proof of submission (uploaded PDFs, form confirmations): never committed
 submissions/
+
+# Blind eval set built from the instructor's CSVs: his data verbatim, never committed
+evals/blind_ik.yaml
