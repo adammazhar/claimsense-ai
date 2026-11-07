@@ -1,0 +1,623 @@
+[
+ {
+  "span_id": "span_ee9d06ec64944d8ab85dd494",
+  "parent_id": null,
+  "started_at": "2026-11-07T19:07:44.051142+00:00",
+  "ended_at": "2026-11-07T19:07:44.054141+00:00",
+  "data": {
+   "type": "custom",
+   "name": "fetch_claim_file",
+   "data": {
+    "claim_id": "CLM-2026-0024"
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_a9852ce8795b432eabd29046",
+  "parent_id": null,
+  "started_at": "2026-11-07T19:07:44.054141+00:00",
+  "ended_at": "2026-11-07T19:07:44.054141+00:00",
+  "data": {
+   "type": "custom",
+   "name": "deterministic_facts",
+   "data": {
+    "in_term": true,
+    "coverage_present": true,
+    "total_loss_ratio": 0.2833,
+    "total_loss_candidate": false,
+    "days_since_inception": 145,
+    "photos_before_inception": false,
+    "payable": null
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_91c9ddfa04a54090870e1c48",
+  "parent_id": null,
+  "started_at": "2026-11-07T19:07:44.054141+00:00",
+  "ended_at": "2026-11-07T19:07:44.054141+00:00",
+  "data": {
+   "type": "custom",
+   "name": "input_scan",
+   "data": {
+    "flags": []
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_275e6233729c456488048e90",
+  "parent_id": null,
+  "started_at": "2026-11-07T19:07:44.054141+00:00",
+  "ended_at": "2026-11-07T19:07:44.054141+00:00",
+  "data": {
+   "type": "custom",
+   "name": "seed_retrieval",
+   "data": {
+    "queries": [
+     "policy period effective expiration date",
+     "coverage premium shown declarations",
+     "collision upset"
+    ],
+    "retrieved": [
+     "CLS-PER-006",
+     "CLS-DEC-001",
+     "CLS-MED-001",
+     "CLS-COL-001",
+     "CLS-CMP-001"
+    ]
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_5c0ee3a2677f4b0db7a861c3",
+  "parent_id": "span_b09436f5adac4113ab4e8575",
+  "started_at": "2026-11-07T19:07:44.055242+00:00",
+  "ended_at": "2026-11-07T19:07:48.407370+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 1,
+    "agent_name": "Document Intake",
+    "usage": {
+     "input_tokens": 1530,
+     "output_tokens": 300,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_b09436f5adac4113ab4e8575",
+  "parent_id": "span_733b0e6cd96c4d6ba6489452",
+  "started_at": "2026-11-07T19:07:44.055242+00:00",
+  "ended_at": "2026-11-07T19:07:48.408363+00:00",
+  "data": {
+   "type": "agent",
+   "name": "Document Intake",
+   "handoffs": [],
+   "tools": [],
+   "output_type": "IntakeOutput"
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_733b0e6cd96c4d6ba6489452",
+  "parent_id": null,
+  "started_at": "2026-11-07T19:07:44.055242+00:00",
+  "ended_at": "2026-11-07T19:07:48.408363+00:00",
+  "data": {
+   "type": "custom",
+   "name": "task",
+   "data": {
+    "sdk_span_type": "task",
+    "name": "Agent workflow",
+    "usage": {
+     "input_tokens": 1530,
+     "output_tokens": 300,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0,
+     "requests": 1,
+     "total_tokens": 1830
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_b4de47cca796481d96001419",
+  "parent_id": "span_5c0ee3a2677f4b0db7a861c3",
+  "started_at": "2026-11-07T19:07:44.057233+00:00",
+  "ended_at": "2026-11-07T19:07:48.407370+00:00",
+  "data": {
+   "type": "response",
+   "response_id": "resp_0d9bfaf2c4d09715006aef7700526487d2a8baca1e38db519b",
+   "usage": {
+    "requests": 1,
+    "input_tokens": 1530,
+    "output_tokens": 300,
+    "total_tokens": 1830,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cached_tokens": 0,
+     "cache_write_tokens_details": null
+    },
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_5b932360a1ca4d13abb73afd",
+  "parent_id": null,
+  "started_at": "2026-11-07T19:07:48.408363+00:00",
+  "ended_at": "2026-11-07T19:07:50.418934+00:00",
+  "data": {
+   "type": "custom",
+   "name": "task",
+   "data": {
+    "sdk_span_type": "task",
+    "name": "Agent workflow",
+    "usage": {
+     "input_tokens": 4304,
+     "output_tokens": 158,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0,
+     "requests": 2,
+     "total_tokens": 4462
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_ef97b223ca984684919cfedb",
+  "parent_id": "span_b2f2a0cbfeea4a47b366a05b",
+  "started_at": "2026-11-07T19:07:48.409360+00:00",
+  "ended_at": "2026-11-07T19:07:49.272871+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 1,
+    "agent_name": "Coverage Check",
+    "usage": {
+     "input_tokens": 1999,
+     "output_tokens": 70,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_b2f2a0cbfeea4a47b366a05b",
+  "parent_id": "span_5b932360a1ca4d13abb73afd",
+  "started_at": "2026-11-07T19:07:48.409360+00:00",
+  "ended_at": "2026-11-07T19:07:50.418934+00:00",
+  "data": {
+   "type": "agent",
+   "name": "Coverage Check",
+   "handoffs": [],
+   "tools": [],
+   "output_type": "CoverageOutput"
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_1cfd8d8530d64f30a1f855a6",
+  "parent_id": null,
+  "started_at": "2026-11-07T19:07:48.409360+00:00",
+  "ended_at": "2026-11-07T19:07:50.584038+00:00",
+  "data": {
+   "type": "custom",
+   "name": "task",
+   "data": {
+    "sdk_span_type": "task",
+    "name": "Agent workflow",
+    "usage": {
+     "input_tokens": 5328,
+     "output_tokens": 153,
+     "cached_input_tokens": 2304,
+     "cache_write_input_tokens": 0,
+     "requests": 2,
+     "total_tokens": 5481
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_14e7b8996b5c469883bf3bff",
+  "parent_id": "span_e1627ac3c605446ebf028959",
+  "started_at": "2026-11-07T19:07:48.410347+00:00",
+  "ended_at": "2026-11-07T19:07:49.407645+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 1,
+    "agent_name": "Claim Assessment",
+    "usage": {
+     "input_tokens": 2455,
+     "output_tokens": 56,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_e1627ac3c605446ebf028959",
+  "parent_id": "span_1cfd8d8530d64f30a1f855a6",
+  "started_at": "2026-11-07T19:07:48.410347+00:00",
+  "ended_at": "2026-11-07T19:07:50.584038+00:00",
+  "data": {
+   "type": "agent",
+   "name": "Claim Assessment",
+   "handoffs": [],
+   "tools": [
+    "search_clauses"
+   ],
+   "output_type": "AssessmentOutput"
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_e5877854fb154019b646b7d4",
+  "parent_id": "span_ef97b223ca984684919cfedb",
+  "started_at": "2026-11-07T19:07:48.412364+00:00",
+  "ended_at": "2026-11-07T19:07:49.266807+00:00",
+  "data": {
+   "type": "response",
+   "response_id": "resp_0c4384c963a2d6e4006aef7704abd887d2b59ed8f2c965d353",
+   "usage": {
+    "requests": 1,
+    "input_tokens": 1999,
+    "output_tokens": 70,
+    "total_tokens": 2069,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cached_tokens": 0,
+     "cache_write_tokens_details": null
+    },
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_99319cc6ab5b4186833a75ce",
+  "parent_id": "span_14e7b8996b5c469883bf3bff",
+  "started_at": "2026-11-07T19:07:48.414253+00:00",
+  "ended_at": "2026-11-07T19:07:49.402996+00:00",
+  "data": {
+   "type": "response",
+   "response_id": "resp_0bec5d1aaf0da385006aef7704c64c87d2a6e24fca7fafb4e1",
+   "usage": {
+    "requests": 1,
+    "input_tokens": 2455,
+    "output_tokens": 56,
+    "total_tokens": 2511,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cached_tokens": 0,
+     "cache_write_tokens_details": null
+    },
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_76fd457a7a1a42cea5c4a0f9",
+  "parent_id": "span_ef97b223ca984684919cfedb",
+  "started_at": "2026-11-07T19:07:49.268811+00:00",
+  "ended_at": "2026-11-07T19:07:49.271942+00:00",
+  "data": {
+   "type": "function",
+   "name": "search_clauses",
+   "output": "[{\"clause_id\": \"CLS-COL-001\", \"heading\": \"Collision insuring agreement\", \"text\": \"We will pay for direct and accidental loss to your covered auto caused by collision with another object or by upset, minus the applicable deductible shown in the Declarations.\"}, {\"clause_id\": \"CLS-CMP-001\", \"heading\": \"Other than collision insuring agreement\", \"text\": \"We will pay for direct and accidental loss to your covered auto not caused by collision, including glass breakage, hail, fire and theft, minus the applicable deductible.\"}]",
+   "mcp_data": null
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_037e6ca728c54c45b418cca6",
+  "parent_id": "span_ef97b223ca984684919cfedb",
+  "started_at": "2026-11-07T19:07:49.268811+00:00",
+  "ended_at": "2026-11-07T19:07:49.272871+00:00",
+  "data": {
+   "type": "function",
+   "name": "search_clauses",
+   "output": "[{\"clause_id\": \"CLS-DRV-002\", \"heading\": \"Named driver exclusion\", \"text\": \"No coverage is provided for any claim arising from an accident or loss that occurs while your covered auto is being operated by a driver named as excluded in this endorsement.\"}, {\"clause_id\": \"CLS-EXC-003\", \"heading\": \"Public or livery conveyance\", \"text\": \"We do not provide coverage for loss to your covered auto while it is being used to carry persons or property for a fee, including use through a ride-hailing application.\"}]",
+   "mcp_data": null
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_af728de6c3434af382d633be",
+  "parent_id": "span_ef97b223ca984684919cfedb",
+  "started_at": "2026-11-07T19:07:49.269812+00:00",
+  "ended_at": "2026-11-07T19:07:49.272871+00:00",
+  "data": {
+   "type": "function",
+   "name": "search_clauses",
+   "output": "[{\"clause_id\": \"CLS-DRV-002\", \"heading\": \"Named driver exclusion\", \"text\": \"No coverage is provided for any claim arising from an accident or loss that occurs while your covered auto is being operated by a driver named as excluded in this endorsement.\"}]",
+   "mcp_data": null
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_d2e0ae535c1c45739403c57a",
+  "parent_id": "span_b2f2a0cbfeea4a47b366a05b",
+  "started_at": "2026-11-07T19:07:49.272871+00:00",
+  "ended_at": "2026-11-07T19:07:50.417937+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 2,
+    "agent_name": "Coverage Check",
+    "usage": {
+     "input_tokens": 2305,
+     "output_tokens": 88,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_d65fa76d8b3542728768420d",
+  "parent_id": "span_d2e0ae535c1c45739403c57a",
+  "started_at": "2026-11-07T19:07:49.274885+00:00",
+  "ended_at": "2026-11-07T19:07:50.416931+00:00",
+  "data": {
+   "type": "response",
+   "response_id": "resp_0c4384c963a2d6e4006aef7705994087d29ef794b59c2ef675",
+   "usage": {
+    "requests": 1,
+    "input_tokens": 2305,
+    "output_tokens": 88,
+    "total_tokens": 2393,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cached_tokens": 0,
+     "cache_write_tokens_details": null
+    },
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_2937357047834a0ab170630d",
+  "parent_id": "span_14e7b8996b5c469883bf3bff",
+  "started_at": "2026-11-07T19:07:49.403995+00:00",
+  "ended_at": "2026-11-07T19:07:49.407645+00:00",
+  "data": {
+   "type": "function",
+   "name": "search_clauses",
+   "output": "[{\"clause_id\": \"CLS-FRD-001\", \"heading\": \"Concealment or fraud\", \"text\": \"We do not provide coverage for any insured who has made fraudulent statements or engaged in fraudulent conduct in connection with any accident or loss for which coverage is sought.\"}]",
+   "mcp_data": null
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_d8e50472dead46cbb2a160c4",
+  "parent_id": "span_14e7b8996b5c469883bf3bff",
+  "started_at": "2026-11-07T19:07:49.404994+00:00",
+  "ended_at": "2026-11-07T19:07:49.407645+00:00",
+  "data": {
+   "type": "function",
+   "name": "search_clauses",
+   "output": "[{\"clause_id\": \"CLS-DUT-001\", \"heading\": \"Duties after loss\", \"text\": \"A person seeking coverage must promptly notify us of the loss and, in the event of theft, promptly notify the police. We may require these duties to be met before payment.\"}, {\"clause_id\": \"CLS-TL-001\", \"heading\": \"Total loss settlement\", \"text\": \"Our limit of liability is the lesser of the actual cash value of the damaged property or the amount necessary to repair it. A vehicle may be declared a total loss when repair cost approaches its actual cash value.\"}, {\"clause_id\": \"CLS-DRV-002\", \"heading\": \"Named driver exclusion\", \"text\": \"No coverage is provided for any claim arising from an accident or loss that occurs while your covered auto is being operated by a driver named as excluded in this endorsement.\"}, {\"clause_id\": \"CLS-FRD-001\", \"heading\": \"Concealment or fraud\", \"text\": \"We do not provide coverage for any insured who has made fraudulent statements or engaged in fraudulent conduct in connection with any accident or loss for which coverage is sought.\"}, {\"clause_id\": \"CLS-COL-001\", \"heading\": \"Collision insuring agreement\", \"text\": \"We will pay for direct and accidental loss to your covered auto caused by collision with another object or by upset, minus the applicable deductible shown in the Declarations.\"}]",
+   "mcp_data": null
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_e1d03f82f90c4f5eac902fce",
+  "parent_id": "span_e1627ac3c605446ebf028959",
+  "started_at": "2026-11-07T19:07:49.407645+00:00",
+  "ended_at": "2026-11-07T19:07:50.584038+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 2,
+    "agent_name": "Claim Assessment",
+    "usage": {
+     "input_tokens": 2873,
+     "output_tokens": 97,
+     "cached_input_tokens": 2304,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_a432030a94b443f7b99457f5",
+  "parent_id": "span_e1d03f82f90c4f5eac902fce",
+  "started_at": "2026-11-07T19:07:49.409662+00:00",
+  "ended_at": "2026-11-07T19:07:50.582041+00:00",
+  "data": {
+   "type": "response",
+   "response_id": "resp_0bec5d1aaf0da385006aef7705acfc87d280fe31300ba7eb1f",
+   "usage": {
+    "requests": 1,
+    "input_tokens": 2873,
+    "output_tokens": 97,
+    "total_tokens": 2970,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cached_tokens": 2304,
+     "cache_write_tokens_details": null
+    },
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_ce1c51ecaa95473093180c86",
+  "parent_id": null,
+  "started_at": "2026-11-07T19:07:50.585039+00:00",
+  "ended_at": "2026-11-07T19:07:51.974008+00:00",
+  "data": {
+   "type": "custom",
+   "name": "task",
+   "data": {
+    "sdk_span_type": "task",
+    "name": "Agent workflow",
+    "usage": {
+     "input_tokens": 2624,
+     "output_tokens": 164,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0,
+     "requests": 1,
+     "total_tokens": 2788
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_da6588d4c5fb4827b380a022",
+  "parent_id": "span_3c492946fb5f4f25bd763e37",
+  "started_at": "2026-11-07T19:07:50.587036+00:00",
+  "ended_at": "2026-11-07T19:07:51.973014+00:00",
+  "data": {
+   "type": "custom",
+   "name": "turn",
+   "data": {
+    "sdk_span_type": "turn",
+    "turn": 1,
+    "agent_name": "Decision Draft",
+    "usage": {
+     "input_tokens": 2624,
+     "output_tokens": 164,
+     "cached_input_tokens": 0,
+     "cache_write_input_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_3c492946fb5f4f25bd763e37",
+  "parent_id": "span_ce1c51ecaa95473093180c86",
+  "started_at": "2026-11-07T19:07:50.587036+00:00",
+  "ended_at": "2026-11-07T19:07:51.974008+00:00",
+  "data": {
+   "type": "agent",
+   "name": "Decision Draft",
+   "handoffs": [],
+   "tools": [],
+   "output_type": "DraftOutput"
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_84d720d68ae04f14b0605473",
+  "parent_id": "span_da6588d4c5fb4827b380a022",
+  "started_at": "2026-11-07T19:07:50.589037+00:00",
+  "ended_at": "2026-11-07T19:07:51.972011+00:00",
+  "data": {
+   "type": "response",
+   "response_id": "resp_0cbacbd09bf088f1006aef7706d76c87d28dcb1dc3da8a7e59",
+   "usage": {
+    "requests": 1,
+    "input_tokens": 2624,
+    "output_tokens": 164,
+    "total_tokens": 2788,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cached_tokens": 0,
+     "cache_write_tokens_details": null
+    },
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    }
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_5ecb1fd192b44a75bd3254a5",
+  "parent_id": null,
+  "started_at": "2026-11-07T19:07:51.974518+00:00",
+  "ended_at": "2026-11-07T19:07:51.974518+00:00",
+  "data": {
+   "type": "custom",
+   "name": "output_scan",
+   "data": {
+    "foreign_claim_ids": []
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_d35f76b42200458b8bef9ba7",
+  "parent_id": null,
+  "started_at": "2026-11-07T19:07:51.974518+00:00",
+  "ended_at": "2026-11-07T19:07:51.974518+00:00",
+  "data": {
+   "type": "custom",
+   "name": "precedence",
+   "data": {
+    "drafted": "ROUTE",
+    "required": "ROUTE",
+    "final": "ROUTE",
+    "cited": [
+     "CLS-COL-001",
+     "CLS-FRD-001"
+    ],
+    "removed": [],
+    "uncited": false
+   }
+  },
+  "error": null
+ },
+ {
+  "span_id": "span_fd7d223607904ee2bd42dec2",
+  "parent_id": null,
+  "started_at": "2026-11-07T19:07:51.974518+00:00",
+  "ended_at": "2026-11-07T19:07:51.976545+00:00",
+  "data": {
+   "type": "custom",
+   "name": "write_draft",
+   "data": {
+    "claim_id": "CLM-2026-0024",
+    "run_id": "17ce4a74-9ff6-4f41-9768-ff1e5400f69e"
+   }
+  },
+  "error": null
+ }
+]

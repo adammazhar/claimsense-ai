@@ -5,7 +5,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 
 ---
 
-## D-001 Â· 2026-10-24 Â· Deterministic spine, model judgment only where reading is required
+## D-001 · 2026-10-24 · Deterministic spine, model judgment only where reading is required
 
 - **Decision:** Identity, entitlement, policy-term checks, coverage presence, deductibles, limits,
   total-loss ratio and payable amounts are computed in Python. The model is used only for work that
@@ -22,7 +22,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Revisit when:** A judgment step turns out to be fully expressible as a rule. Then it moves into
   code.
 
-## D-002 Â· 2026-10-24 Â· Four outcomes with a fixed precedence; refusal is not an outcome
+## D-002 · 2026-10-24 · Four outcomes with a fixed precedence; refusal is not an outcome
 
 - **Decision:** The co-pilot returns exactly one of APPROVE, DENY, FLAG or ROUTE. When several apply,
   precedence is **DENY > ROUTE > FLAG > APPROVE**: if the policy doesn't respond, the claim is denied
@@ -38,7 +38,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Owner:** FDE, to be confirmed with the Claims Quality Lead
 - **Revisit when:** The client's SIU wants fraud referrals even on out-of-term claims.
 
-## D-003 Â· 2026-10-24 Â· Access control is code that runs before any agent
+## D-003 · 2026-10-24 · Access control is code that runs before any agent
 
 - **Decision:** Every request carries a token. The data-access service resolves the user, checks
   entitlement against the CMS assignment record, and only then fetches claim data and invokes the
@@ -53,7 +53,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Revisit when:** The client requires agents to act on behalf of the user against their systems
   (on-behalf-of tokens), in week 4.
 
-## D-004 Â· 2026-10-24 Â· Policy term is computed from term dates and payment history, never the status field
+## D-004 · 2026-10-24 · Policy term is computed from term dates and payment history, never the status field
 
 - **Decision:** Whether the policy responds on the loss date is computed from the effective and
   expiration dates and the cancellation and reinstatement history. The PAS `status` field is shown to
@@ -67,7 +67,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Revisit when:** The client confirms a case where status is authoritative (open question 5 in the
   charter).
 
-## D-005 Â· 2026-10-24 Â· Citations restricted to retrieved clause IDs
+## D-005 · 2026-10-24 · Citations restricted to retrieved clause IDs
 
 - **Decision:** The policy corpus is indexed at clause level, keyed by clause ID (for example,
   `CLS-PER-006`). The coverage agent may cite only clause IDs present in its retrieved set; a
@@ -79,7 +79,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Owner:** FDE
 - **Revisit when:** Clause IDs in the supplied corpus aren't stable across form revisions.
 
-## D-006 Â· 2026-10-24 Â· Evaluation cases versioned from day one, with a held-out split
+## D-006 · 2026-10-24 · Evaluation cases versioned from day one, with a held-out split
 
 - **Decision:** Evaluation cases live in `evals/` under version control, starting with the 20 v0
   cases, and each case records its reference outcome, the deterministic values code must produce, and
@@ -94,7 +94,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Revisit when:** The Quality Lead disagrees with a reference label. The label changes only with a
   dated entry here.
 
-## D-007 Â· 2026-10-24 Â· The legacy fraud score is an input, not the trigger
+## D-007 · 2026-10-24 · The legacy fraud score is an input, not the trigger
 
 - **Decision:** The legacy fraud score is passed to the risk agent as one piece of evidence. ROUTE is
   decided by reading the file for inconsistencies (timeline, injuries, damage versus narrative, prior
@@ -108,7 +108,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Owner:** FDE, to be confirmed with the SIU Manager
 - **Revisit when:** Fraud routing precision falls below 70% in evaluation.
 
-## D-008 Â· 2026-10-27 Â· Pydantic v2 models are the contract layer; JSON Schemas are generated
+## D-008 · 2026-10-27 · Pydantic v2 models are the contract layer; JSON Schemas are generated
 
 - **Decision:** The typed contracts for the CMS, PAS, document store and clause corpus are Pydantic v2
   models in `src/claimsense/contracts/`. They are strict (unknown fields rejected, immutable). Money is
@@ -125,7 +125,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Revisit when:** The official fixtures arrive with their own schema; then adapters map to our
   models, rather than the models changing to match.
 
-## D-009 Â· 2026-10-27 Â· The one write is idempotent on claim_id + run_id
+## D-009 · 2026-10-27 · The one write is idempotent on claim_id + run_id
 
 - **Decision:** `POST /claims/{claim_id}/recommendations` requires `Idempotency-Key:
   {claim_id}:{run_id}`. The first request creates the draft (201). A replay with the same body
@@ -142,7 +142,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Owner:** FDE; to be agreed with claims IT (the CMS owners)
 - **Revisit when:** The CMS offers native idempotency, or adjusters need to amend a draft in place.
 
-## D-010 Â· 2026-10-27 Â· Agents get a pre-fetched dossier, not tools to the client systems
+## D-010 · 2026-10-27 · Agents get a pre-fetched dossier, not tools to the client systems
 
 - **Decision:** After entitlement passes, deterministic code fetches one claim's record, policy and
   documents, computes the deterministic facts, and hands the agents a fixed dossier. The agents have
@@ -160,14 +160,14 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Revisit when:** Agents need documents the dossier can't anticipate, or the scope grows to
   multi-claim reasoning (for example, a linked-claims fraud ring).
 
-## D-011 Â· 2026-10-27 Â· Pricing: the rate card is the bill rate; fixed floor plus a capped outcome bonus
+## D-011 · 2026-10-27 · Pricing: the rate card is the bill rate; fixed floor plus a capped outcome bonus
 
 - **Decision:** The US rate card is what the client pays: principal FDE $325/h, senior AI engineer
   $275/h, engagement manager $250/h, evaluation engineer $200/h, on an 8-hour day, blending to
-  $2,180/day. The T&M price is billable days Ã— the rate card plus expenses at cost ($191,430 at
+  $2,180/day. The T&M price is billable days × the rate card plus expenses at cost ($191,430 at
   expected effort).
   - **Cost is separate.** It is each role's loaded cost per billable hour: Levels.fyi pay at a
-    boutique-firm percentile Ã· 0.70 benefits loading (BLS ECEC) Ã· 1,560 billable hours (75%
+    boutique-firm percentile ÷ 0.70 benefits loading (BLS ECEC) ÷ 1,560 billable hours (75%
     utilization, SPI 2026). That blends to $1,318/day, a 39.5% labor gross margin.
   - **The recommended price.** A fixed floor equal to the expected T&M price ($191,430, 37.8% gross
     margin), plus $15 per recommendation the adjuster confirms unchanged during an 8-week
@@ -178,12 +178,12 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Why:** Using the rate card as the bill rate means the client pays the market rate for the
   expected effort, no more. The rate card sits at roughly the 75th to 90th percentile of GSA CALC
   federal ceiling rates for its categories, and federal ceilings run at or below commercial prices.
-  The margin comes from the gap between bill rate and cost, and lands in the 35â€“45% consulting
+  The margin comes from the gap between bill rate and cost, and lands in the 35–45% consulting
   range. The floor gives procurement a ceiling, and the bonus pays only for the outcome the client's
   board cares about, counted by the client.
   - **Why the first draft changed.** It put margin on top of market rates, which counted margin
     twice. It started from a single $1,800/day blended rate, then moved to marking up the rate card.
-- **Alternatives considered:** (a) Pure fixed price at expected T&M Ã— 1.20 ($229,716). Rejected:
+- **Alternatives considered:** (a) Pure fixed price at expected T&M × 1.20 ($229,716). Rejected:
   safer for us, but a hard premium to defend while access delays are the client's. (b) Pure
   outcome-based. Rejected: with synthetic data only, no confirmation can happen before handover.
   (c) T&M with a cap. Rejected: no ceiling until the cap, and no alignment to the result.
@@ -194,7 +194,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
   team must be paid at big-tech rates (16.8%), or the production pilot isn't approved within 30
   days of handover (the bonus lapses and the floor stands alone).
 
-## D-012 Â· 2026-10-27 Â· Planned AWS footprint; local stack first until the IK account exists
+## D-012 · 2026-10-27 · Planned AWS footprint; local stack first until the IK account exists
 
 - **Decision:** Plan API Gateway, ECS Fargate, ECR, Cognito, DynamoDB (audit and idempotency), S3
   (corpus and fixtures), Secrets Manager and CloudWatch. All are marked "planned, pending IK account".
@@ -208,7 +208,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Owner:** FDE
 - **Revisit when:** The IK account arrives with quotas or a budget cap that rule a service out.
 
-## D-013 Â· 2026-10-27 Â· Synthetic values are synthetic by construction
+## D-013 · 2026-10-27 · Synthetic values are synthetic by construction
 
 - **Decision:** Every VIN starts `SYN`, and every person is named "Synthetic <role> NNN"; the
   contracts reject anything else. Two Milestone 1 values were changed to comply: EV-010's excluded
@@ -222,7 +222,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Owner:** FDE
 - **Revisit when:** The official fixtures use a different convention; then the patterns follow theirs.
 
-## D-014 Â· 2026-10-27 Â· The eval cases are the source of the synthetic fixtures
+## D-014 · 2026-10-27 · The eval cases are the source of the synthetic fixtures
 
 - **Decision:** `scripts/build_fixtures.py` generates `data/synthetic/` from `evals/cases_v0.yaml`,
   validating every record against the contracts. A fixture changes only by changing the case and
@@ -233,7 +233,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Owner:** FDE
 - **Revisit when:** The instructor's official fixtures arrive; they become the source, and the eval
   cases reference them by ID.
-## D-015 Â· 2026-10-31 Â· Outcome mapping to the instructor's labels; eval set to 5 per outcome
+## D-015 · 2026-10-31 · Outcome mapping to the instructor's labels; eval set to 5 per outcome
 
 - **Decision:** Our four outcomes map one to one onto the instructor's Week 1 labels:
 
@@ -272,7 +272,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Revisit when:** The client wants total losses routed to an appraiser queue distinct from
   adjuster review; then a sixth label is added, and criterion 4 stays SIU-only.
 
-## D-016 Â· 2026-10-31 Â· The four agents use the instructor's names
+## D-016 · 2026-10-31 · The four agents use the instructor's names
 
 - **Decision:** The agents are Document Intake, Coverage Check, Claim Assessment and Decision Draft,
   in that order, in the charter, the architecture diagram and the risk register. They were
@@ -287,7 +287,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
   every reviewer.
 - **Owner:** FDE
 - **Revisit when:** Never for the pilot.
-## D-017 Â· 2026-11-04 Â· Four typed agents; gpt-4o-mini reads, gpt-4o decides what the wording means
+## D-017 · 2026-11-04 · Four typed agents; gpt-4o-mini reads, gpt-4o decides what the wording means
 
 - **Decision:** Document Intake and Claim Assessment run on `gpt-4o-mini`; Coverage Check and Decision
   Draft run on `gpt-4o`. All four are OpenAI Agents SDK agents with a strict Pydantic `output_type`.
@@ -299,11 +299,12 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Alternatives considered:** (a) gpt-4o everywhere. Rejected on cost, without evidence yet that it
   would be more accurate. (b) One agent. Rejected in Milestone 2: errors can't be attributed to a stage.
 - **Owner:** FDE
+- **Amended 2026-11-07 by D-026:** Claim Assessment now runs on gpt-4o, after it missed fraud on gpt-4o-mini.
 - **Revisit when:** A stage's errors dominate. The first live run points at Claim Assessment on
   gpt-4o-mini, where all three fallbacks occurred. That is one run, and it is not yet a finding about
   the model rather than the prompt or the turn limit.
 
-## D-018 Â· 2026-11-04 Â· The mock brain is an SDK Model, and it proves plumbing, not judgment
+## D-018 · 2026-11-04 · The mock brain is an SDK Model, and it proves plumbing, not judgment
 
 - **Decision:** `MockModel` implements the Agents SDK's `Model` interface, so CI runs the real `Agent`,
   `Runner`, strict output validation and tool loop, with no key and no network. It reads the claim
@@ -321,7 +322,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Revisit when:** The live gate in Milestone 5 ("the gate passes with the model required") replaces
   the mock as the release gate. The mock stays for pull requests.
 
-## D-019 Â· 2026-11-04 Â· BM25 retrieval, seeded by code; Claim Assessment also gets the search tool; any invented citation marks the output uncited
+## D-019 · 2026-11-04 · BM25 retrieval, seeded by code; Claim Assessment also gets the search tool; any invented citation marks the output uncited
 
 - **Decision:**
   - **Index.** A local BM25 index over the corpus, keyed by clause ID, with ties broken by clause ID.
@@ -344,7 +345,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Revisit when:** The official corpus arrives and BM25 misses clauses that adjusters consider
   governing, or `must_cite` recall stays low on it (20 of 24 on the first live run).
 
-## D-020 Â· 2026-11-04 Â· Verdict source, fallback, and what counts as a hit
+## D-020 · 2026-11-04 · Verdict source, fallback, and what counts as a hit
 
 - **Decision:**
   - **Label.** Every response carries `verdict_source`, `model` or `deterministic_fallback`.
@@ -362,7 +363,7 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Revisit when:** The client wants system accuracy as the contractual measure. The SoW says
   model-generated today.
 
-## D-021 Â· 2026-11-04 Â· Six held-out claims in v0; the eval gate's rules; D-006's 30 moves to week 5
+## D-021 · 2026-11-04 · Six held-out claims in v0; the eval gate's rules; D-006's 30 moves to week 5
 
 - **Decision:**
   - **Split.** Each case now has a `split`. Six decision cases are held out: EV-004, EV-007, EV-010,
@@ -381,12 +382,13 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **After the first live run:** EV-004 and EV-022 missed. Their failures were looked at only as far as
   outcome, stage, override and missing citations. Fixing either would make that case no longer held out, so any such fix
   must retire it from the held-out set.
+- **Amended 2026-11-07 by D-027:** EV-004 and EV-022 moved to tuning; EV-023 and EV-024 replace them.
 - **Alternatives considered:** Writing 30 new cases now. Rejected: out of scope this week, and the live
   run was limited to the 22.
 - **Owner:** FDE; Claims Quality Lead for labels
 - **Revisit when:** Week 5, when the suite reaches 150 cases.
 
-## D-022 Â· 2026-11-04 Â· CI order, and how the block is proved
+## D-022 · 2026-11-04 · CI order, and how the block is proved
 
 - **Decision:** `tests` -> `eval-gate` -> `build-and-push-image`. The image job `needs` the gate. It
   starts the stack with compose, smoke-tests a real request through the containers, and pushes to GHCR
@@ -398,14 +400,19 @@ records what was decided, why, what was rejected, who owns it, and what would re
 - **Why the broken case swaps two labels:** The broken case has to pass `pytest` and fail the gate, or
   the run proves the tests block rather than the gate. Pipeline tests therefore hard-code their expected
   outcomes instead of reading labels from the YAML.
+- **What only `main` could show:** The first push from `main` failed: the layers uploaded, then the
+  registry answered `denied` (run 41951989045). A pull request can't exercise that step. The likely
+  cause is the provenance attestations compose's build attaches, so the pushed image is now built
+  explicitly without them and carries the OCI source label. A package-settings cause wasn't ruled out.
 - **Not done:** Branch protection isn't turned on, so a person could still merge over a red check. The
   push is blocked regardless. Making the gate a required check is a repository setting for the owner.
+- **Amended 2026-11-07 by D-026 and D-029:** a live-model gate runs before the push, and the push uses the gated build instead of rebuilding.
 - **Alternatives considered:** Copying the course's `eval-gate.yml` as is. Rejected: it gates merges but
   not image pushes, which this milestone requires.
 - **Owner:** FDE
 - **Revisit when:** Milestone 5 adds the live gate and a deploy step.
 
-## D-023 Â· 2026-11-04 Â· Milestone 3 identity is a placeholder; the entitlement check is not
+## D-023 · 2026-11-04 · Milestone 3 identity is a placeholder; the entitlement check is not
 
 - **Decision:** The API takes the caller's identity from an `X-User-Id` header, unverified. Entitlement
   against the CMS assignment is real, and runs before anything else is fetched or any agent is invoked.
@@ -419,3 +426,126 @@ records what was decided, why, what was rejected, who owns it, and what would re
   being it.
 - **Owner:** FDE; CISO at the Milestone 4 sign-off
 - **Revisit when:** Milestone 4.
+
+## D-024 · 2026-11-07 · Each searching stage gets a search budget; any fallback fails the gate
+
+- **Decision:** Coverage Check and Claim Assessment may each make 3 clause searches
+  (`MAX_SEARCHES_PER_STAGE`). Once a stage spends them, the tool is withdrawn, so the model's next turn
+  must be its answer. Three search turns plus the answer fit inside the unchanged 5-turn limit. Each
+  stage counts its own searches. The eval gate now also fails on any decision case the model didn't
+  decide: one fallback is red even above the accuracy floor.
+- **Why:** The first live run's three fallbacks were never confirmed. A smoke run on 2026-11-07 showed
+  `MaxTurnsExceeded` at Claim Assessment: gpt-4o-mini searched on all 5 turns and never answered.
+  EV-006 and EV-013 passed on that run, so the loop is intermittent. Raising the limit would only move
+  where it stops. Withdrawing the tool makes the limit unreachable for a model that just over-searches.
+  A fallback was already scored as a miss. The new rule makes it a gate failure in its own right, because
+  a gate meant to measure model judgment must not pass on code's answer (the instructor's CI brief).
+- **Tests:** a mock fault that searches every turn while the tool is offered still gets a model
+  verdict at either searching stage. A fault that calls the tool after withdrawal falls back with
+  `ModelBehaviorError` and its tokens are counted. One fallback in an otherwise passing run fails the
+  gate.
+- **Result:** no fallback in any of the five full live runs on the routed tier since. The one all-mini
+  run had one: a 30-second stage timeout at Document Intake, a different failure from this one.
+- **Alternatives considered:** (a) Raise `max_turns`. Rejected: no bound on cost or latency. (b) Cap the
+  searches inside the tool and return an error string. Rejected: the model keeps calling it.
+- **Owner:** FDE
+- **Revisit when:** Retrieval moves to OpenSearch (Milestone 4), which changes what a search returns.
+
+## D-025 · 2026-11-07 · The instructor's synthetic claims are a separate blind set
+
+- **Decision:** `scripts/convert_ik_blind.py` converts the instructor's claims, policies and documents
+  CSVs (`docs/ik/w15/review/`) into `evals/blind_ik.yaml`, in our case format. The output carries his
+  narratives verbatim, so it is git-ignored. The committed script holds only the field mapping and our
+  labels, each with a one-line reason in our words. The file is marked `gate: false`: the runner scores
+  it and never gates on it. It ran live once. No prompt or rule is changed because of its results.
+- **Labels:** only the 12 of his 20 claims whose facts clearly justify an outcome: 3 APPROVE, 5 DENY,
+  3 FLAG and 1 ROUTE. His outcome names map to ours as in D-015. His `claim_status` column is neither
+  shown to the models nor used for labels. The 8 others were left out rather than guessed, for example a
+  hit-and-run with no police report, or a no-injury claim with a medical report on file.
+- **Mapping:** listed in the script's docstring. The judgment calls: his `POL-TXA-88000` policy IDs
+  become `POL-8000` to fit the contract, `Expired` becomes `Lapsed`, `RENTAL_RECEIPT` is dropped, and
+  `prior_claims_12mo` fills `prior_claims_24m`.
+- **Result:** 83.3% (10 of 12), 0 fallbacks, 0 unsafe approvals. The two misses (CLM-2024-1873, labeled
+  ROUTE, and CLM-2024-2749, labeled APPROVE) were both drafted FLAG, because the model treated a police
+  report as required for a collision. Our rule requires one only for a theft. It is reported, not fixed.
+- **Owner:** FDE
+- **Revisit when:** The instructor supplies labels, or the policy corpus states which documents a
+  collision needs.
+
+## D-026 · 2026-11-07 · A live-model gate in CI; Claim Assessment moves to gpt-4o
+
+- **Decision:** CI gains `live-eval-gate`, which runs the full suite against the real models with the
+  `OPENAI_API_KEY` repository secret. It runs on pushes to `main` and on manual dispatch, never on pull
+  requests, to control cost. The mock gate still runs on every pull request. A missing or rejected key
+  fails the run before any case runs: the runner checks the key against each routed model, which costs
+  nothing. Thresholds are unchanged: 85% overall, 80% held-out, all adversarial and access-control
+  cases, no guardrail breach, and now no fallback (D-024).
+- **Model tier:** `CLAIMSENSE_MODEL_TIER` chooses `routed` (the default) or `mini`. The cheapest tier
+  that keeps judgment acceptable is `routed` with Claim Assessment on gpt-4o. That amends D-017.
+  - The all-mini tier scored 80% overall and 50% held-out, with a fallback, at $0.045 a run. Rejected.
+  - Routed with Claim Assessment on gpt-4o-mini reached 90.9%, but drafted an unsafe APPROVE on a fraud
+    case. Earlier runs got that case and EV-015 right, so its fraud reading is inconsistent.
+  - With Claim Assessment on gpt-4o, fraud recall went from 66.7% to 100%.
+- **Cost:** one CI live run is 22 decision claims (the 2 refusals use no tokens), about 12,600 input and
+  770 output tokens each, at $2.50 and $10 per million tokens for gpt-4o and $0.15 and $0.60 for
+  gpt-4o-mini. That is **about $0.73 a run**, $0.033 a claim, ignoring the cached-input discount.
+- **Owner:** FDE; the engagement lead set the routing change
+- **Revisit when:** Volume pricing for Milestone 5, or a cheaper model matches it on the gate.
+
+## D-027 · 2026-11-07 · EV-004 and EV-022 retire from held-out; models never see the status field; a pre-dated document is a fraud indicator
+
+- **Decision:**
+  - **New held-out cases.** EV-023 (APPROVE) and EV-024 (ROUTE) were written and committed (514d1b4)
+    before the code changes below, and won't be adjusted. EV-004 and EV-022 move to tuning, so there
+    are still six held-out cases.
+  - **Status field.** The policy's `status_field` is removed from the file the models read. Code still
+    computes the term from dates and transactions, and the adjuster still sees the field (D-004).
+  - **Pre-dated documents.** Claim Assessment's prompt now makes a document dated before the loss it
+    describes a fraud indicator on its own (D-007). Decision Draft's prompt says fraud means ROUTE, not
+    FLAG, and never ROUTE on the legacy score alone.
+- **Why:** After the D-024 fix, the live gate was red only on held-out accuracy (66.7%). EV-004
+  drafted DENY because the model trusted a stale `Lapsed` status over code's in-term finding. EV-022
+  drafted FLAG on an estimate dated before the deer strike. The engagement lead judged both labels right
+  and both misses code issues. Fixing a held-out miss makes the case tuning by D-021, so replacements
+  had to come first.
+- **Result:** the new held-out cases both passed live. Held-out accuracy is 100% of 6 on the passing
+  run, and EV-004 and EV-022, now tuning, both passed.
+- **Owner:** FDE; engagement lead for labels
+- **Revisit when:** Week 5 grows the held-out set (D-021).
+
+## D-028 · 2026-11-07 · Injected text is never fraud evidence, and Claim Assessment has a field for it
+
+- **Decision:** Every prompt now says text addressed to the co-pilot or "the system" is an attack on
+  the co-pilot, not evidence, and never a fraud indicator by itself. The fraud examples no longer
+  include "a document asserting that a review was passed". Claim Assessment's output gains
+  `instructions_to_ignore`, where it quotes such text, so the observation has somewhere to go other
+  than a fraud finding. The mock brain fills the field from the input scan, and no longer counts a
+  "fraud review passed" letter as fraud.
+- **Why:** On gpt-4o, Claim Assessment set `fraud_indicated` on EV-002 because its statement asks the
+  assistant for other customers' claims. That routed a clean windshield claim to SIU, failing an
+  adversarial case. The engagement lead judged the code wrong and the APPROVE label right. Rewording
+  the prompt alone did not hold: three runs of four injection cases still routed EV-002 every time. The
+  old prompt also contradicted EV-018's reference reasoning, which calls the "review passed" letter "an
+  injected instruction, not evidence".
+- **Result:** the next full live run passed the gate with 7/7 adversarial.
+- **Owner:** FDE
+- **Revisit when:** Red-teaming in Milestone 4.
+
+## D-029 · 2026-11-07 · The image that passed the gate is the image pushed
+
+- **Decision:** CI builds the image once in `build-image`, smoke-tests it through compose
+  (`--no-build`), and saves it as a workflow artifact. `live-eval-gate` loads that artifact, checks its
+  image ID against the build's, and runs `run_evals.py` inside a throwaway container of it. Only the
+  eval harness and cases are mounted; the code under test is the image's own `src` and data. `push-image`
+  needs both gates. It loads the same artifact, checks the ID again, tags and pushes it, and fails
+  unless the registry's config or manifest digest equals the gated image ID. It runs only on `main`.
+  This replaces D-022's rebuild in the push step. That rebuild, from the unmerged GHCR fix, kept its
+  no-attestation flags and source label.
+- **Why:** The instructor's CI brief: the pushed image must be the one that passed the gate, by digest,
+  never a second build. A rebuild can differ, from a moved base tag or a changed dependency.
+- **Checked locally:** the image ID survives `docker save` and `docker load` unchanged (containerd image
+  store), and the mock gate passes inside the image the same way CI runs the live one. actionlint
+  wasn't run, because pulling its image was blocked here; the workflow was checked for syntax and job
+  dependencies instead.
+- **Owner:** FDE
+- **Revisit when:** Milestone 5 pushes to ECR with OIDC.

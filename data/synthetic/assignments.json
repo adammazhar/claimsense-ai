@@ -120,6 +120,18 @@
     "assigned_at": "2026-08-06T10:00:00Z"
   },
   {
+    "claim_id": "CLM-2026-0023",
+    "adjuster_user_id": "adj-002",
+    "desk": "PD-AUTO-1",
+    "assigned_at": "2026-07-20T10:00:00Z"
+  },
+  {
+    "claim_id": "CLM-2026-0024",
+    "adjuster_user_id": "adj-001",
+    "desk": "PD-AUTO-1",
+    "assigned_at": "2026-08-13T10:00:00Z"
+  },
+  {
     "claim_id": "CLM-2026-0019",
     "adjuster_user_id": "adj-003",
     "desk": "PD-AUTO-1",

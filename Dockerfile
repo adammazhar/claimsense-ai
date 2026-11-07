@@ -1,6 +1,8 @@
 # One image for the co-pilot API and the three mock client systems; compose picks the command.
 FROM python:3.12-slim
 
+LABEL org.opencontainers.image.source="https://github.com/adammazhar/claimsense-ai"
+
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/app/src CLAIMSENSE_DATA_DIR=/app/data/synthetic
 
 WORKDIR /app

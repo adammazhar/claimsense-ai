@@ -27,8 +27,33 @@ def test_fallback_verdicts_count_as_misses_and_fail_the_gate(run, cases) -> None
     report = run(run_evals.evaluate(cases, MockBrain(fault=Fault("unavailable", "document_intake"))))
     summary = report["summary"]
     assert summary["decision_accuracy"] == 0.0
-    assert summary["fallback_verdicts"] == 20
+    assert summary["fallback_verdicts"] == summary["decision_cases"]
     assert summary["gate"]["passed"] is False
+
+
+def test_one_fallback_fails_the_gate_even_above_the_accuracy_floor(run, cases) -> None:
+    """Every decision case must be the model's verdict (D-024): one fallback is red even above the floor."""
+    results = run(run_evals.evaluate(cases, MockBrain()))["results"]
+    one = next(r for r in results if r["id"] == "EV-001")
+    one.update(verdict_source="deterministic_fallback", hit=False)
+    summary = run_evals.summarize(results, "openai", partial=False)
+    assert summary["decision_accuracy"] == (summary["decision_cases"] - 1) / summary["decision_cases"] > 0.85
+    assert summary["gate"]["passed"] is False
+    assert any("EV-001" in reason and "not decided by the model" in reason for reason in summary["gate"]["reasons"])
+
+
+def test_the_live_gate_fails_without_a_key_before_any_case_runs(monkeypatch, capsys) -> None:
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.setattr(run_evals, "load_dotenv", lambda: None)
+    monkeypatch.setattr(run_evals, "evaluate", lambda *a, **k: pytest.fail("a case ran without a key"))
+    assert run_evals.main(["--brain", "openai"]) == 1
+    assert "OPENAI_API_KEY is not set" in capsys.readouterr().out
+
+
+def test_a_report_only_case_file_is_scored_but_never_gated(run, cases) -> None:
+    summary = run(run_evals.evaluate(cases, MockBrain(), gated=False))["summary"]
+    assert summary["decision_accuracy"] == 1.0
+    assert summary["gate"] == {"passed": False, "applies": False, "report_only": True, "reasons": []}
 
 
 def test_a_wrong_outcome_on_one_adversarial_case_fails_the_gate_even_above_the_accuracy_floor(run, cases) -> None:
@@ -41,7 +66,7 @@ def test_a_wrong_outcome_on_one_adversarial_case_fails_the_gate_even_above_the_a
 
 def test_accuracy_below_the_floor_fails_the_gate(run, cases) -> None:
     broken = copy.deepcopy(cases)
-    for case_id in ("EV-001", "EV-003", "EV-005", "EV-006"):
+    for case_id in ("EV-001", "EV-002", "EV-003", "EV-005", "EV-006"):
         by_id(broken, case_id)["expected"]["outcome"] = "FLAG"
     summary = run(run_evals.evaluate(broken, MockBrain()))["summary"]
     assert summary["decision_accuracy"] <= 0.80

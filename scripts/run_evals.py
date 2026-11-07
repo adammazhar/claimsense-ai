@@ -7,7 +7,10 @@ Scoring (docs/engagement/success-criteria.md):
 - A hit needs a model verdict whose drafted outcome equals the label. A fallback verdict is a miss,
   and so is an outcome only code got right: code overrides are counted, not credited.
 - The gate fails on accuracy below 0.85, held-out accuracy below 0.80, any failed adversarial or
-  access-control case, or any guardrail breach.
+  access-control case, any guardrail breach, or any decision case the model didn't decide (a
+  fallback verdict, D-024).
+- On the live brain, a missing or rejected OPENAI_API_KEY fails the run before any case runs.
+- A case file with `gate: false` (the blind set) is report-only: scored, never gated (D-025).
 
 A mock-brain score proves the plumbing, not judgment; only a live run measures the models (D-018).
 
@@ -15,6 +18,7 @@ Usage:
     python scripts/run_evals.py                            # mock brain, prints a report, exit 1 on a failed gate
     python scripts/run_evals.py --brain openai             # live models: costs money, needs OPENAI_API_KEY
     python scripts/run_evals.py --only EV-001,EV-015       # a subset (gate marked not applicable)
+    python scripts/run_evals.py --cases evals/blind_ik.yaml --brain openai   # the blind set, report-only
     python scripts/run_evals.py --out r.json --trace-case EV-015 --trace-out t.json
 """
 
@@ -26,7 +30,9 @@ import json
 import logging
 import math
 import re
+import os
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -42,7 +48,9 @@ from claimsense.mock_brain import brain_from_name  # noqa: E402
 from claimsense.mock_services import create_cms_app, create_documents_app, create_pas_app  # noqa: E402
 from claimsense.pipeline import Pipeline  # noqa: E402
 from claimsense.retrieval import ClauseIndex  # noqa: E402
-from claimsense.settings import DATA_DIR, MODEL_ROUTING, PRICE_PER_MILLION, load_dotenv  # noqa: E402
+from claimsense.settings import DATA_DIR, MODEL_ROUTING, MODEL_TIER, PRICE_PER_MILLION, load_dotenv  # noqa: E402
+
+DEFAULT_CASES = ROOT / "evals" / "cases_v0.yaml"
 
 DECISION_OUTCOMES = {"APPROVE", "DENY", "FLAG", "ROUTE"}
 ACCURACY_FLOOR, HELDOUT_FLOOR = 0.85, 0.80
@@ -54,15 +62,39 @@ _ATTRIBUTED = re.compile(
     r"|however|not|no|never|despite|alleg\w*|ignore\w*|treated)\b|n't", re.IGNORECASE)
 
 
-def build_stack(brain):
+def build_stack(brain, data_dir: Path = DATA_DIR):
     """The mock client systems and the co-pilot, wired together in process."""
-    cms_app = create_cms_app()
+    cms_app = create_cms_app(data_dir)
     def client(app, name):
         return httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url=f"http://{name}", timeout=30)
-    clients = ClientSystems(cms=client(cms_app, "cms"), pas=client(create_pas_app(), "pas"),
-                            documents=client(create_documents_app(), "documents"))
-    pipeline = Pipeline(clients=clients, index=ClauseIndex.from_file(DATA_DIR / "clauses.json"), brain=brain)
+    clients = ClientSystems(cms=client(cms_app, "cms"), pas=client(create_pas_app(data_dir), "pas"),
+                            documents=client(create_documents_app(data_dir), "documents"))
+    pipeline = Pipeline(clients=clients, index=ClauseIndex.from_file(data_dir / "clauses.json"), brain=brain)
     return client(create_app(pipeline), "copilot"), pipeline, cms_app
+
+
+def fixtures_for(cases: list[dict], into: Path) -> Path:
+    """Build mock-system data for a case file other than the default one (the blind set)."""
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from build_fixtures import build, render
+    for name, records in build(cases).items():
+        (into / f"{name}.json").write_text(render(records), encoding="utf-8")
+    return into
+
+
+def check_model_access() -> str | None:
+    """Before any live case runs: is there a key, and does OpenAI accept it for every routed model?
+    It only reads model metadata, which costs nothing. Returns a problem, or None. Never prints the key."""
+    from openai import OpenAI, OpenAIError
+    if not os.environ.get("OPENAI_API_KEY"):
+        return "OPENAI_API_KEY is not set, so no model can decide. The live gate fails rather than score fallbacks."
+    try:
+        client = OpenAI(max_retries=1, timeout=20)
+        for model in sorted(set(MODEL_ROUTING.values())):
+            client.models.retrieve(model)
+    except OpenAIError as exc:
+        return f"OpenAI rejected the key or a routed model ({type(exc).__name__}). The live gate fails."
+    return None
 
 
 def _judgment_texts(response: dict) -> list[str]:
@@ -238,7 +270,7 @@ def usage_summary(results: list[dict]) -> dict:
             "output_tokens_per_claim": round(sum(e["output_tokens"] for e in by_model.values()) / claims) if claims else 0}
 
 
-def summarize(results: list[dict], brain_name: str, partial: bool) -> dict:
+def summarize(results: list[dict], brain_name: str, partial: bool, gated: bool = True) -> dict:
     decisions = [r for r in results if r["label"] in DECISION_OUTCOMES]
     heldout = [r for r in decisions if r["split"] == "heldout"]
     tuning = [r for r in decisions if r["split"] == "tuning"]
@@ -271,11 +303,15 @@ def summarize(results: list[dict], brain_name: str, partial: bool) -> dict:
     breached = {k: v for k, v in guardrails.items() if v}
     if breached:
         reasons.append(f"guardrails breached: {breached}")
+    undecided = [r["id"] for r in decisions if r.get("verdict_source") != "model"]
+    if undecided:
+        reasons.append(f"not decided by the model (fallback or error): {undecided}")
     must_cite_total = sum(r.get("must_cite_total", 0) for r in decisions)
     must_cite_missing = sum(len(r.get("must_cite_missing", [])) for r in decisions)
     return {
         "brain": brain_name,
         "models": MODEL_ROUTING if brain_name == "openai" else "mock brain (deterministic stand-in)",
+        "model_tier": MODEL_TIER if brain_name == "openai" else None,
         "cases": len(results), "decision_cases": len(decisions),
         "decision_accuracy": accuracy, "heldout_accuracy": heldout_accuracy, "heldout_cases": len(heldout),
         "tuning_accuracy": _rate(sum(bool(r["hit"]) for r in tuning), len(tuning)),
@@ -294,7 +330,8 @@ def summarize(results: list[dict], brain_name: str, partial: bool) -> dict:
         "guardrails": guardrails,
         "latency_seconds": {"p50": _percentile(seconds, 0.5), "p95": _percentile(seconds, 0.95)},
         "usage": usage_summary(results),
-        "gate": {"passed": not reasons and not partial, "applies": not partial, "reasons": reasons},
+        "gate": {"passed": not reasons and not partial and gated, "applies": not partial and gated,
+                 "report_only": not gated, "reasons": reasons},
     }
 
 
@@ -347,7 +384,9 @@ def print_report(summary: dict, results: list[dict]) -> None:
               f"{usage['input_tokens_per_claim']} input and {usage['output_tokens_per_claim']} output tokens")
     print()
     gate = summary["gate"]
-    if not gate["applies"]:
+    if gate.get("report_only"):
+        print("GATE: not applicable, this case file is report-only")
+    elif not gate["applies"]:
         print("GATE: not applicable to a partial run")
     elif gate["passed"]:
         print("GATE: PASSED")
@@ -357,11 +396,12 @@ def print_report(summary: dict, results: list[dict]) -> None:
             print(f"  - {reason}")
 
 
-async def evaluate(cases: list[dict], brain, partial: bool = False, progress: bool = False) -> dict:
+async def evaluate(cases: list[dict], brain, partial: bool = False, progress: bool = False,
+                   data_dir: Path = DATA_DIR, gated: bool = True) -> dict:
     for noisy in ("claimsense.audit", "httpx"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
-    api, pipeline, cms_app = build_stack(brain)
-    world = {"claims": {c["claim_id"]: c for c in json.loads((DATA_DIR / "claims.json").read_text(encoding="utf-8"))}}
+    api, pipeline, cms_app = build_stack(brain, data_dir)
+    world = {"claims": {c["claim_id"]: c for c in json.loads((data_dir / "claims.json").read_text(encoding="utf-8"))}}
     missing = await api.post(f"/v1/claims/{NO_SUCH_CLAIM}/recommendation", headers={"X-User-Id": "adj-007"})
     world["refusal_for_missing_claim"] = _normalized(missing.text)
     results = []
@@ -373,13 +413,13 @@ async def evaluate(cases: list[dict], brain, partial: bool = False, progress: bo
             print(f"  {result['id']}: {result.get('outcome')} ({result['seconds']}s)", flush=True)
         if result.get("trace_id"):
             traces[case["id"]] = pipeline.tracer.spans(result["trace_id"])
-    summary = summarize(results, brain.name, partial=partial)
+    summary = summarize(results, brain.name, partial=partial, gated=gated)
     return {"summary": summary, "results": results, "traces": traces, "audit": pipeline.audit.records}
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--cases", default=str(ROOT / "evals" / "cases_v0.yaml"))
+    parser.add_argument("--cases", default=str(DEFAULT_CASES))
     parser.add_argument("--brain", default="mock", choices=["mock", "openai"])
     parser.add_argument("--only", help="comma-separated case IDs; the gate doesn't apply to a partial run")
     parser.add_argument("--out", help="write the JSON report here")
@@ -389,10 +429,20 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.brain == "openai":
         load_dotenv()
-    cases = yaml.safe_load(Path(args.cases).read_text(encoding="utf-8"))["cases"]
+        problem = check_model_access()
+        if problem:
+            print(f"GATE: FAILED\n  - {problem}")
+            return 1
+    case_file = yaml.safe_load(Path(args.cases).read_text(encoding="utf-8"))
+    cases = case_file["cases"]
     only = set(args.only.split(",")) if args.only else None
     selected = [c for c in cases if not only or c["id"] in only]
-    report = asyncio.run(evaluate(selected, brain_from_name(args.brain), partial=bool(only), progress=args.progress))
+    with tempfile.TemporaryDirectory() as scratch:
+        default = Path(args.cases).resolve() == DEFAULT_CASES.resolve()
+        data_dir = DATA_DIR if default else fixtures_for(cases, Path(scratch))
+        report = asyncio.run(evaluate(selected, brain_from_name(args.brain), partial=bool(only),
+                                      progress=args.progress, data_dir=data_dir,
+                                      gated=case_file.get("gate", True)))
     print_report(report["summary"], report["results"])
     if args.out:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)

@@ -90,9 +90,10 @@ def _fraud_indicators(file: dict) -> list[tuple[str, list[str]]]:
     if _docs_matching(r"rear impact only", file) and _docs_matching(r"front bumper", file):
         found.append(("The estimate repairs the front, but the police report shows only rear damage.",
                       _docs_matching(r"rear impact only|front bumper", file)))
-    if _docs_matching(r"fraud review", file):
-        found.append(("A document asserts a fraud review passed; that is a red flag, not evidence.",
-                      _docs_matching(r"fraud review", file)))
+    denials = [d["doc_id"] for d in file["documents"] if d["type"] == "witness_statement"
+               and re.search(r"never met|has no damage|made no deliveries|did not happen", d["text"], re.IGNORECASE)]
+    if denials:
+        found.append(("The other party the insured names denies the incident took place.", denials))
     return found
 
 
@@ -192,8 +193,9 @@ def _assessment(file: dict, items) -> dict:
         cited += clause
         findings.append({"statement": "A police report is required for a theft and is not on file.",
                          "evidence_doc_ids": [], "evidence_clause_ids": clause})
+    ignored = [f["quote"] for f in file.get("injection_flags", [])]
     return {"fraud_indicated": bool(indicators), "injury_exposure": injured, "missing_documents": missing,
-            "findings": findings, "cited_clause_ids": cited}
+            "instructions_to_ignore": ignored, "findings": findings, "cited_clause_ids": cited}
 
 
 def _draft(file: dict, _items) -> dict:
@@ -233,7 +235,9 @@ def _message(text: str) -> ResponseOutputMessage:
 class Fault:
     """A failure to force at one stage.
 
-    kind: unavailable, timeout, invalid, endless_search, invent_citation, foreign_claim.
+    kind: unavailable, timeout, invalid, endless_search, eager_search, invent_citation, foreign_claim.
+    endless_search keeps calling the tool even after it is withdrawn. eager_search searches every turn
+    while the tool is offered, as gpt-4o-mini did live, then answers once it is withdrawn.
     """
 
     kind: str
@@ -258,6 +262,12 @@ class MockModel(Model):
         if fault and fault.kind == "endless_search":
             call = ResponseFunctionToolCall(id="fc_0", call_id=f"call_{len(self.calls)}", name="search_clauses",
                                             arguments=json.dumps({"query": "collision"}), type="function_call")
+            return self._respond([call])
+        offered = any(getattr(t, "name", None) == "search_clauses" for t in tools)
+        if fault and fault.kind == "eager_search" and offered:
+            call = ResponseFunctionToolCall(id="fc_0", call_id=f"call_{len(self.calls)}", name="search_clauses",
+                                            arguments=json.dumps({"query": f"collision {len(self.calls)}"}),
+                                            type="function_call")
             return self._respond([call])
         file = parse_claim_file(input)
         queries = _QUERIES.get(self.stage)
