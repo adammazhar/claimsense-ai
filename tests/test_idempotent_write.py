@@ -7,6 +7,7 @@ from uuid import uuid4
 import httpx
 
 from claimsense.api import create_app
+from claimsense.clients import ACTING_ROLE, ACTING_USER
 from claimsense.contracts.idempotency import idempotency_key
 from claimsense.mock_brain import Fault
 from conftest import APPROVE_CLAIM, Stack
@@ -15,6 +16,7 @@ from test_contracts import draft
 
 async def _post(stack: Stack, body: dict, key: str | None, claim_id: str = APPROVE_CLAIM):
     headers = {"Idempotency-Key": key} if key else {}
+    headers |= {ACTING_USER: "adj-001", ACTING_ROLE: "adjuster_pd"}  # the owner, as the door would pass it
     return await stack.clients.cms.post(f"/claims/{claim_id}/recommendations", json=body, headers=headers)
 
 
@@ -107,5 +109,5 @@ def test_a_changed_result_under_a_used_run_id_is_a_conflict_not_a_second_draft(r
 
     response, drafts = run(scenario())
     assert response.status_code == 409
-    assert response.json()["code"] == "IDEMPOTENCY_CONFLICT"
+    assert response.json()["error"]["code"] == "idempotency_conflict"
     assert len(drafts) == 1

@@ -1,6 +1,17 @@
 {
+  "$defs": {
+    "ClaimLine": {
+      "description": "The line a claim is handled on, set by the CMS at first notice of loss (D-034).\n\nA stored field, never inferred from documents or by a model. The MCP door scopes access by it.",
+      "enum": [
+        "physical_damage",
+        "bodily_injury"
+      ],
+      "title": "ClaimLine",
+      "type": "string"
+    }
+  },
   "additionalProperties": false,
-  "description": "Response body of GET /claims/{claim_id}/assignment.",
+  "description": "Response body of GET /claims/{claim_id}/assignment. The routing metadata the scope gate reads.",
   "properties": {
     "claim_id": {
       "pattern": "^CLM-\\d{4}-\\d{4}$",
@@ -21,13 +32,22 @@
       "format": "date-time",
       "title": "Assigned At",
       "type": "string"
+    },
+    "claim_line": {
+      "$ref": "#/$defs/ClaimLine"
+    },
+    "siu_referred": {
+      "default": false,
+      "title": "Siu Referred",
+      "type": "boolean"
     }
   },
   "required": [
     "claim_id",
     "adjuster_user_id",
     "desk",
-    "assigned_at"
+    "assigned_at",
+    "claim_line"
   ],
   "title": "ClaimAssignment",
   "type": "object"

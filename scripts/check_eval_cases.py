@@ -29,6 +29,67 @@ MIN_PER_OUTCOME = 5  # instructor's Week 1 checklist: 5 approve, 5 deny, 5 flag_
 CONFIDENCE_LEVELS = {"high", "medium"}
 SPLITS = {"tuning", "heldout"}
 DOCUMENT_KEYS = {"doc_id", "type", "summary", "captured"}
+# Milestone 4 (D-034, D-038): seat roles, claim lines and the scope matrix, recomputed here independently
+# of claimsense.door.scope, the way the deterministic values are.
+SEAT_ROLES = {"adjuster_pd", "adjuster_bi", "siu", "supervisor", "customer_service"}
+CLAIM_LINES = {"physical_damage", "bodily_injury"}
+ADJUSTER_LINE = {"adjuster_pd": "physical_damage", "adjuster_bi": "bodily_injury"}
+SIU_REFERRAL_KEYS = {"referred_at", "source", "reason"}
+AUDIT_KEYS = {"acting_identity", "action", "resource", "decision"}
+
+
+def scope_allows(role: str, user: str, claim_line: str | None, assignee: str | None, siu: bool) -> bool:
+    """The access-control matrix (docs/engagement/access-control.md). Deny by default."""
+    if role == "supervisor":
+        return claim_line is not None
+    if role == "siu":
+        return siu
+    line = ADJUSTER_LINE.get(role)
+    return line is not None and claim_line == line and assignee == user
+
+
+def check_access(cases: list[dict], staff: list[dict]) -> tuple[list[str], int, int]:
+    """Seats, claim lines, SIU referrals and the refusal audit rows; then the scope matrix on every case.
+    Returns (problems, allowed, denied)."""
+    problems: list[str] = []
+    roles: dict[str, str] = {}
+    for entry in [*(c["requester"] for c in cases), *staff]:
+        if entry.get("role") not in SEAT_ROLES:
+            problems.append(f"{entry.get('user_id')}: unknown seat role {entry.get('role')!r}")
+        if roles.setdefault(entry["user_id"], entry.get("role")) != entry.get("role"):
+            problems.append(f"{entry['user_id']}: two different seat roles")
+    claims: dict[str, dict] = {}
+    for case in cases:
+        claim = case["claim"]
+        if "loss_type" not in claim:
+            continue  # a refusal case that reuses another case's claim
+        if claim.get("claim_line") not in CLAIM_LINES:
+            problems.append(f"{case['id']}: claim_line must be one of {sorted(CLAIM_LINES)}")
+        referral = claim.get("siu_referral")
+        if referral is not None and set(referral) != SIU_REFERRAL_KEYS:
+            problems.append(f"{case['id']}: siu_referral needs exactly {sorted(SIU_REFERRAL_KEYS)}")
+        requester = case["requester"]
+        assignee = requester["user_id"] if requester.get("assigned") else None
+        claims[claim["claim_id"]] = {"line": claim.get("claim_line"), "assignee": assignee, "siu": referral is not None}
+    allowed = denied = 0
+    for case in cases:
+        requester, claim_id = case["requester"], case["claim"]["claim_id"]
+        record = claims.get(claim_id, {"line": None, "assignee": None, "siu": False})
+        ok = scope_allows(requester.get("role", ""), requester["user_id"], record["line"], record["assignee"],
+                          record["siu"])
+        allowed, denied = allowed + ok, denied + (not ok)
+        refusal = case["expected"]["outcome"] == "REFUSED"
+        if refusal and ok:
+            problems.append(f"{case['id']}: the scope matrix allows this requester, so it can't be a refusal")
+        if not refusal and not ok:
+            problems.append(f"{case['id']}: the scope matrix denies this requester its own claim")
+        if refusal:
+            audit = case["expected"].get("audit", {})
+            if set(audit) != AUDIT_KEYS or audit.get("decision") != "deny" or audit.get("action") != "get_claim":
+                problems.append(f"{case['id']}: audit must be the door's get_claim deny row: {sorted(AUDIT_KEYS)}")
+            elif (audit["acting_identity"], audit["resource"]) != (requester["user_id"], f"claim/{claim_id}"):
+                problems.append(f"{case['id']}: the audit row must name the requester and claim/{claim_id}")
+    return problems, allowed, denied
 # A sentence break: end punctuation, space, capital. "a.m. on" and "(D-002)." don't match.
 SENTENCE_BREAK = re.compile(r"[.!?]\s+[A-Z]")
 
@@ -136,6 +197,7 @@ def main(path: str) -> int:
     """Check every case, print a summary, and return a process exit code."""
     data = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
     cases = data["cases"]
+    staff = data.get("staff", [])
     threshold = data["total_loss_threshold"]
     fraud_cut = data["legacy_fraud_threshold"]
     errors: list[str] = []
@@ -163,6 +225,9 @@ def main(path: str) -> int:
         else:
             errors.append(f"{case['id']}: unknown outcome {outcome}")
 
+    access_problems, allowed, denied = check_access(cases, staff)
+    errors += access_problems
+
     short = {o: counts.get(o, 0) for o in sorted(DECISION_OUTCOMES) if counts.get(o, 0) < MIN_PER_OUTCOME}
     if short:
         errors.append(f"each decision outcome needs at least {MIN_PER_OUTCOME} cases; short: {short}")
@@ -180,6 +245,8 @@ def main(path: str) -> int:
     adversarial = sum("adversarial" in c.get("tags", []) for c in cases)
     print(f"{len(cases)} cases: " + ", ".join(f"{k} {v}" for k, v in sorted(counts.items())))
     print(f"adversarial cases: {adversarial}; families: {sorted(REQUIRED_ADVERSARIAL & families)}")
+    print(f"scope matrix: {allowed} requests allowed, {denied} denied (every refusal is a deny, "
+          f"every decision case an allow)")
     print(
         f"legacy fraud rule (score >= {fraud_cut}) on these cases: "
         f"recall {recall:.0%}, precision {precision:.0%} "

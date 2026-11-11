@@ -1,5 +1,14 @@
 # The whole stack, from one command:  docker compose up --build
-# The co-pilot is the only published port; the mock client systems stay on the internal network.
+#
+# One time first: issue the seat tokens (the mock IdP). It writes the hashed seat registry to runtime/
+# and the plaintext tokens to .env, adding only SEAT_TOKEN_* lines:
+#     .\.venv\Scripts\python.exe scripts\issue_seat_tokens.py
+# Without the registry the MCP door refuses to start (fail closed), and so does the co-pilot.
+#
+# Networks (D-035): the mock client systems sit on `backend`, which only the MCP door joins, and have
+# no published port. The co-pilot is on `frontend` with the door, so its only way to a system of
+# record is the door. The co-pilot is the only published port.
+#
 # BRAIN defaults to the mock, which needs no key and costs nothing. BRAIN=openai uses OPENAI_API_KEY
 # from the environment or .env, which compose reads at startup. The key is never baked into the image.
 
@@ -18,6 +27,7 @@ services:
   cms:
     <<: *service
     command: ["uvicorn", "claimsense.mock_services:create_cms_app", "--factory", "--host", "0.0.0.0", "--port", "8001"]
+    networks: [backend]
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8001/health')"]
@@ -25,6 +35,7 @@ services:
   pas:
     <<: *service
     command: ["uvicorn", "claimsense.mock_services:create_pas_app", "--factory", "--host", "0.0.0.0", "--port", "8002"]
+    networks: [backend]
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8002/health')"]
@@ -32,24 +43,49 @@ services:
   documents:
     <<: *service
     command: ["uvicorn", "claimsense.mock_services:create_documents_app", "--factory", "--host", "0.0.0.0", "--port", "8003"]
+    networks: [backend]
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8003/health')"]
 
-  copilot:
+  # The governed MCP door: the only service on both networks (D-031).
+  door:
     <<: *service
+    command: ["uvicorn", "claimsense.door:create_app", "--factory", "--host", "0.0.0.0", "--port", "8010"]
     environment:
-      BRAIN: ${BRAIN:-mock}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       CMS_URL: http://cms:8001
       PAS_URL: http://pas:8002
       DOCS_URL: http://documents:8003
-    ports:
-      - "8000:8000"
+      SEAT_REGISTRY: /app/runtime/seats.json
+      AUDIT_LOG: /app/runtime/audit.jsonl
+      DOOR_ALLOWED_HOSTS: door:8010
+    volumes:
+      - ./runtime:/app/runtime
+    networks: [backend, frontend]
     depends_on:
       cms: {condition: service_healthy}
       pas: {condition: service_healthy}
       documents: {condition: service_healthy}
     healthcheck:
       <<: *healthcheck
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8010/health')"]
+
+  copilot:
+    <<: *service
+    environment:
+      BRAIN: ${BRAIN:-mock}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      DOOR_URL: http://door:8010/mcp
+    ports:
+      - "8000:8000"
+    networks: [frontend]
+    depends_on:
+      door: {condition: service_healthy}
+    healthcheck:
+      <<: *healthcheck
       test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/health')"]
+
+networks:
+  backend:
+    internal: true  # no route out: the systems of record talk only to the door
+  frontend: {}

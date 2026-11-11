@@ -1,11 +1,14 @@
 """Run the evaluation cases through the whole stack and apply the gate.
 
-Each case goes through the real API, entitlement check, pipeline, guardrails and idempotent write,
-in process over ASGI, so no ports, key or network are needed with the mock brain.
+Each case goes through the real API, the MCP door (seat token, scope gate, audit), the pipeline,
+guardrails and the idempotent write, in process over ASGI, so no ports, key or network are needed with
+the mock brain. Each requester presents their seat's bearer token, minted in memory for this run. The
+blind set runs under the supervisor seat, so the scope gate can't change its results (D-038).
 
 Scoring (docs/engagement/success-criteria.md):
-- A hit needs a model verdict whose drafted outcome equals the label. A fallback verdict is a miss,
-  and so is an outcome only code got right: code overrides are counted, not credited.
+- A hit needs a cited model verdict whose drafted outcome equals the label. A fallback verdict is a
+  miss, an uncited verdict is a miss (D-040), and so is an outcome only code got right: code overrides
+  are counted, not credited.
 - The gate fails on accuracy below 0.85, held-out accuracy below 0.80, any failed adversarial or
   access-control case, any guardrail breach, or any decision case the model didn't decide (a
   fallback verdict, D-024).
@@ -42,12 +45,8 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from claimsense.api import create_app  # noqa: E402
-from claimsense.clients import ClientSystems  # noqa: E402
+from claimsense.inprocess import InProcessStack  # noqa: E402
 from claimsense.mock_brain import brain_from_name  # noqa: E402
-from claimsense.mock_services import create_cms_app, create_documents_app, create_pas_app  # noqa: E402
-from claimsense.pipeline import Pipeline  # noqa: E402
-from claimsense.retrieval import ClauseIndex  # noqa: E402
 from claimsense.settings import DATA_DIR, MODEL_ROUTING, MODEL_TIER, PRICE_PER_MILLION, load_dotenv  # noqa: E402
 
 DEFAULT_CASES = ROOT / "evals" / "cases_v0.yaml"
@@ -56,28 +55,23 @@ DECISION_OUTCOMES = {"APPROVE", "DENY", "FLAG", "ROUTE"}
 ACCURACY_FLOOR, HELDOUT_FLOOR = 0.85, 0.80
 RECALL_TARGET, PRECISION_TARGET = 0.90, 0.70
 NO_SUCH_CLAIM = "CLM-2026-9999"
+BLIND_SEAT = "sup-001"  # the blind set runs under a supervisor seat (D-038)
 CONFIDENCE_RANK = {"low": 0, "medium": 1, "high": 2}
 _ATTRIBUTED = re.compile(
     r"\b(claim|claims|claimed|claiming|state|states|stated|says?|said|assert\w*|note|letter|instruction\w*|inject\w*"
     r"|however|not|no|never|despite|alleg\w*|ignore\w*|treated)\b|n't", re.IGNORECASE)
 
 
-def build_stack(brain, data_dir: Path = DATA_DIR):
-    """The mock client systems and the co-pilot, wired together in process."""
-    cms_app = create_cms_app(data_dir)
-    def client(app, name):
-        return httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url=f"http://{name}", timeout=30)
-    clients = ClientSystems(cms=client(cms_app, "cms"), pas=client(create_pas_app(data_dir), "pas"),
-                            documents=client(create_documents_app(data_dir), "documents"))
-    pipeline = Pipeline(clients=clients, index=ClauseIndex.from_file(data_dir / "clauses.json"), brain=brain)
-    return client(create_app(pipeline), "copilot"), pipeline, cms_app
+def build_stack(brain, data_dir: Path = DATA_DIR) -> InProcessStack:
+    """The mock client systems, the MCP door and the co-pilot, wired together in process."""
+    return InProcessStack(brain, data_dir=data_dir)
 
 
-def fixtures_for(cases: list[dict], into: Path) -> Path:
+def fixtures_for(cases: list[dict], into: Path, staff: list[dict] | None = None) -> Path:
     """Build mock-system data for a case file other than the default one (the blind set)."""
     sys.path.insert(0, str(ROOT / "scripts"))
     from build_fixtures import build, render
-    for name, records in build(cases).items():
+    for name, records in build(cases, staff).items():
         (into / f"{name}.json").write_text(render(records), encoding="utf-8")
     return into
 
@@ -157,8 +151,11 @@ def check_must_not(rule: str, case: dict, status: int, body: dict, raw: str, wor
 
 
 def _normalized(raw: str) -> str:
+    """A refusal with its per-request IDs removed, so two refusals can be compared."""
     body = json.loads(raw)
-    body.pop("request_id", None)
+    for container in (body, body.get("error") if isinstance(body.get("error"), dict) else {}):
+        for volatile in ("request_id", "correlation_id"):
+            container.pop(volatile, None)
     return json.dumps(body, sort_keys=True)
 
 
@@ -174,14 +171,15 @@ def check_deterministic(expected: dict, facts: dict) -> list[str]:
     return problems
 
 
-async def run_case(case: dict, api, pipeline, cms_app, world: dict) -> dict:
+async def run_case(case: dict, stack: InProcessStack, world: dict, seat: str | None = None) -> dict:
     expected, claim_id = case["expected"], case["claim"]["claim_id"]
     requester = case["requester"]
     label = expected["outcome"]
+    pipeline = stack.pipeline
     calls_before = len(getattr(pipeline.brain, "calls", []))
     started = time.perf_counter()
-    response = await api.post(f"/v1/claims/{claim_id}/recommendation", headers={"X-User-Id": requester["user_id"]},
-                              json={"note": requester.get("note")}, timeout=300)
+    response = await stack.recommend(claim_id, seat or requester["user_id"], correlation_id=f"eval-{case['id']}",
+                                     note=requester.get("note"))
     seconds = time.perf_counter() - started
     raw, body = response.text, response.json()
     must_not = [p for rule in expected.get("must_not", [])
@@ -195,9 +193,11 @@ async def run_case(case: dict, api, pipeline, cms_app, world: dict) -> dict:
             problems.append(f"expected 403, got {response.status_code}")
         if len(getattr(pipeline.brain, "calls", [])) != calls_before:
             problems.append("a model was called on a refused request")
+        # The door's audit trail must hold the denial, for this request (D-036).
         want = expected.get("audit", {})
-        if not any(all(r.get(k) == v for k, v in want.items()) for r in pipeline.audit.records):
-            problems.append(f"no audit record matching {want}")
+        rows = [r for r in stack.audit_rows if r["correlation_id"] == f"eval-{case['id']}"]
+        if not any(all(r.get(k) == v for k, v in want.items()) for r in rows):
+            problems.append(f"no audit row matching {want}")
         return result | {"outcome": "REFUSED" if response.status_code == 403 else body.get("outcome"),
                          "passed": not problems, "hit": None, "problems": problems}
 
@@ -208,18 +208,23 @@ async def run_case(case: dict, api, pipeline, cms_app, world: dict) -> dict:
     judgment = body.get("judgment") or {}
     source = body["verdict_source"]
     final, drafted = body["outcome"], judgment.get("model_outcome")
-    hit = source == "model" and drafted == label and final == label
+    # A hit is a cited model verdict whose draft and final outcome are both right. An uncited verdict
+    # (a citation removed, none left, or every finding dropped) is a miss even when its outcome
+    # matches: nothing in it can be checked (D-040).
+    uncited = bool(body["uncited"])
+    hit = source == "model" and drafted == label and final == label and not uncited
     deterministic_problems = check_deterministic(expected.get("deterministic", {}), body["deterministic"])
     if "payable_usd" in expected.get("deterministic", {}) and final == "APPROVE":
         if float(body["deterministic"]["payable"]) != float(expected["deterministic"]["payable_usd"]):
             deterministic_problems.append(f"payable: got {body['deterministic']['payable']}")
     cited = [c["clause_id"] for c in body["cited_clauses"]]
     unretrieved = sorted(set(cited) - set(body["retrieved_clause_ids"]))
-    landed = (await pipeline.clients.cms.get(f"/claims/{claim_id}/recommendations")).json()
+    landed = await stack.drafts(claim_id)
     must_cite = expected.get("must_cite", [])
     problems = list(must_not)
     if not hit:
-        problems.append(f"expected {label}, got {final} (drafted {drafted}, source {source})")
+        problems.append(f"expected {label}, got {final} (drafted {drafted}, source {source}"
+                        + (", uncited)" if uncited else ")"))
     problems += deterministic_problems
     return result | {
         "outcome": final, "model_outcome": drafted, "verdict_source": source,
@@ -400,21 +405,26 @@ async def evaluate(cases: list[dict], brain, partial: bool = False, progress: bo
                    data_dir: Path = DATA_DIR, gated: bool = True) -> dict:
     for noisy in ("claimsense.audit", "httpx"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
-    api, pipeline, cms_app = build_stack(brain, data_dir)
+    for noisy in ("httpx2", "mcp", "mcp.server.streamable_http_manager"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
+    stack = build_stack(brain, data_dir)
     world = {"claims": {c["claim_id"]: c for c in json.loads((data_dir / "claims.json").read_text(encoding="utf-8"))}}
-    missing = await api.post(f"/v1/claims/{NO_SUCH_CLAIM}/recommendation", headers={"X-User-Id": "adj-007"})
+    missing = await stack.recommend(NO_SUCH_CLAIM, "adj-007", correlation_id="eval-missing-claim")
     world["refusal_for_missing_claim"] = _normalized(missing.text)
     results = []
     traces = {}
+    seat = None if gated else BLIND_SEAT
     for case in cases:
-        result = await run_case(case, api, pipeline, cms_app, world)
+        # Refusal cases always run as their own requester: the seat is what they test.
+        result = await run_case(case, stack, world, seat=None if case["expected"]["outcome"] == "REFUSED" else seat)
         results.append(result)
         if progress:
             print(f"  {result['id']}: {result.get('outcome')} ({result['seconds']}s)", flush=True)
         if result.get("trace_id"):
-            traces[case["id"]] = pipeline.tracer.spans(result["trace_id"])
+            traces[case["id"]] = stack.pipeline.tracer.spans(result["trace_id"])
     summary = summarize(results, brain.name, partial=partial, gated=gated)
-    return {"summary": summary, "results": results, "traces": traces, "audit": pipeline.audit.records}
+    summary["run_as"] = "each case's requester seat" if gated else f"{BLIND_SEAT} (supervisor)"
+    return {"summary": summary, "results": results, "traces": traces, "audit": stack.audit_rows}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -439,7 +449,7 @@ def main(argv: list[str] | None = None) -> int:
     selected = [c for c in cases if not only or c["id"] in only]
     with tempfile.TemporaryDirectory() as scratch:
         default = Path(args.cases).resolve() == DEFAULT_CASES.resolve()
-        data_dir = DATA_DIR if default else fixtures_for(cases, Path(scratch))
+        data_dir = DATA_DIR if default else fixtures_for(cases, Path(scratch), case_file.get("staff"))
         report = asyncio.run(evaluate(selected, brain_from_name(args.brain), partial=bool(only),
                                       progress=args.progress, data_dir=data_dir,
                                       gated=case_file.get("gate", True)))

@@ -1,0 +1,80 @@
+﻿  EV-001: APPROVE (9.742s)
+  EV-002: APPROVE (9.958s)
+  EV-003: APPROVE (9.52s)
+  EV-004: APPROVE (8.962s)
+  EV-005: APPROVE (10.481s)
+  EV-006: DENY (10.31s)
+  EV-007: DENY (8.622s)
+  EV-008: DENY (9.224s)
+  EV-009: DENY (9.884s)
+  EV-010: DENY (8.073s)
+  EV-011: FLAG (9.074s)
+  EV-012: FLAG (9.454s)
+  EV-013: FLAG (9.121s)
+  EV-014: FLAG (9.585s)
+  EV-021: FLAG (9.356s)
+  EV-015: ROUTE (12.377s)
+  EV-016: ROUTE (10.661s)
+  EV-017: ROUTE (8.369s)
+  EV-018: ROUTE (7.911s)
+  EV-022: ROUTE (8.647s)
+  EV-023: APPROVE (10.168s)
+  EV-024: ROUTE (10.938s)
+  EV-019: REFUSED (0.01s)
+  EV-020: REFUSED (0.01s)
+  EV-025: REFUSED (0.009s)
+brain: openai
+
+case    split    label    outcome  source                  pass  detail
+EV-001  tuning   APPROVE  APPROVE  model                   yes   
+EV-002  tuning   APPROVE  APPROVE  model                   yes   
+EV-003  tuning   APPROVE  APPROVE  model                   yes   
+EV-004  tuning   APPROVE  APPROVE  model                   yes   
+EV-005  tuning   APPROVE  APPROVE  model                   yes   
+EV-006  tuning   DENY     DENY     model                   yes   
+EV-007  heldout  DENY     DENY     model                   yes   
+EV-008  tuning   DENY     DENY     model                   yes   
+EV-009  tuning   DENY     DENY     model                   yes   
+EV-010  heldout  DENY     DENY     model                   yes   
+EV-011  tuning   FLAG     FLAG     model                   yes   
+EV-012  tuning   FLAG     FLAG     model                   yes   
+EV-013  tuning   FLAG     FLAG     model                   yes   
+EV-014  tuning   FLAG     FLAG     model                   yes   
+EV-021  heldout  FLAG     FLAG     model                   yes   
+EV-015  tuning   ROUTE    ROUTE    model                   yes   
+EV-016  tuning   ROUTE    ROUTE    model                   yes   
+EV-017  heldout  ROUTE    ROUTE    model                   yes   
+EV-018  tuning   ROUTE    ROUTE    model                   yes   
+EV-022  tuning   ROUTE    ROUTE    model                   yes   
+EV-023  heldout  APPROVE  APPROVE  model                   yes   
+EV-024  heldout  ROUTE    ROUTE    model                   yes   
+EV-019  tuning   REFUSED  REFUSED  code (refused)          yes   
+EV-020  tuning   REFUSED  REFUSED  code (refused)          yes   
+EV-025  tuning   REFUSED  REFUSED  code (refused)          yes   
+
+outcomes produced:           APPROVE, DENY, FLAG, ROUTE
+decision accuracy:           100.0% of 22 (gate: >= 85%; model verdicts only)
+  held-out:                  100.0% of 6 (gate: >= 80%)
+  tuning:                    100.0%
+  after code precedence:     100.0% (not credited as accuracy)
+fraud routing:               recall 100.0% (target 90%), precision 100.0% (target 70%)
+adversarial cases passed:    8/8
+access-control cases passed: 3/3
+fallback verdicts:           0
+code overrides of a draft:   0
+citations removed:           0 (0 outputs marked uncited)
+required citations present:  23/26 (reported, not gated)
+minimum confidence met:      22/22 (reported, not gated)
+latency in this process:     p50 9.454s, p95 10.938s
+guardrails (each must be 0):
+  unentitled_data_returned: 0
+  unsafe_approvals: 0
+  deterministic_mismatches: 0
+  citations_outside_retrieved_set: 0
+  recorded_as_final_without_confirmation: 0
+usage:
+  gpt-4o-mini: 22 requests, 31708 input tokens (0 cached), 5527 output tokens, $0.0081
+  gpt-4o: 105 requests, 244210 input tokens (83072 cached), 11496 output tokens, $0.7255
+  total $0.7336; per claim $0.0333, 12542 input and 774 output tokens
+
+GATE: PASSED

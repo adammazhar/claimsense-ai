@@ -1,5 +1,14 @@
 {
   "$defs": {
+    "ClaimLine": {
+      "description": "The line a claim is handled on, set by the CMS at first notice of loss (D-034).\n\nA stored field, never inferred from documents or by a model. The MCP door scopes access by it.",
+      "enum": [
+        "physical_damage",
+        "bodily_injury"
+      ],
+      "title": "ClaimLine",
+      "type": "string"
+    },
     "LossType": {
       "enum": [
         "collision",
@@ -28,6 +37,34 @@
         "display_name"
       ],
       "title": "Party",
+      "type": "object"
+    },
+    "SiuReferral": {
+      "additionalProperties": false,
+      "description": "An open Special Investigations Unit referral. Fraud details: visible to SIU and supervisors only,\nand never part of any model's input (D-034).",
+      "properties": {
+        "referred_at": {
+          "format": "date-time",
+          "title": "Referred At",
+          "type": "string"
+        },
+        "source": {
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "referred_at",
+        "source",
+        "reason"
+      ],
+      "title": "SiuReferral",
       "type": "object"
     },
     "Vehicle": {
@@ -126,6 +163,22 @@
       "format": "date-time",
       "title": "Reported At",
       "type": "string"
+    },
+    "claim_line": {
+      "$ref": "#/$defs/ClaimLine",
+      "description": "Set at FNOL. Scopes access; excluded from the model dossier."
+    },
+    "siu_referral": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SiuReferral"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Fraud details. Stripped for every role but SIU and supervisor."
     }
   },
   "required": [
@@ -139,7 +192,8 @@
     "repair_estimate",
     "legacy_fraud_score",
     "prior_claims_24m",
-    "reported_at"
+    "reported_at",
+    "claim_line"
   ],
   "title": "Claim",
   "type": "object"

@@ -43,11 +43,39 @@ def _tool_outputs(input_items) -> list[dict]:
     return [i for i in input_items if isinstance(i, dict) and i.get("type") == "function_call_output"]
 
 
+def _output_text(output) -> str:
+    """A tool output as the SDK hands it back: a string, or content items (an MCP tool's result)."""
+    if isinstance(output, str):
+        return output
+    if isinstance(output, dict):
+        return str(output.get("text", ""))
+    if isinstance(output, list):
+        return "".join(_output_text(item) for item in output)
+    return ""
+
+
 def _retrieved_ids(file: dict, input_items) -> list[str]:
     ids = [c["clause_id"] for c in file.get("retrieved_clauses", [])]
     for output in _tool_outputs(input_items):
-        ids += [hit["clause_id"] for hit in json.loads(output["output"])]
+        try:
+            hits = json.loads(_output_text(output["output"]))
+        except ValueError:
+            continue
+        if isinstance(hits, list):  # a door refusal is an error object: no clauses came back
+            ids += [hit["clause_id"] for hit in hits]
     return list(dict.fromkeys(ids))
+
+
+def _search(call_id: str, query: str, claim_id: str | None = None) -> ResponseFunctionToolCall:
+    """A search call as a model sends it: query only, since code binds the claim. Only a jailbroken
+    model names a claim_id, and the door's gate decides it."""
+    arguments = {"query": query} | ({"claim_id": claim_id} if claim_id else {})
+    return ResponseFunctionToolCall(id=f"fc_{call_id}", call_id=f"call_{call_id}", name="search_clauses",
+                                    arguments=json.dumps(arguments), type="function_call")
+
+
+# A jailbroken model's default target. Tests aim it at a real claim with Fault(target=...).
+FOREIGN_CLAIM = "CLM-2026-0999"
 
 
 def _texts(file: dict) -> list[str]:
@@ -235,13 +263,17 @@ def _message(text: str) -> ResponseOutputMessage:
 class Fault:
     """A failure to force at one stage.
 
-    kind: unavailable, timeout, invalid, endless_search, eager_search, invent_citation, foreign_claim.
+    kind: unavailable, timeout, invalid, endless_search, eager_search, invent_citation, foreign_claim,
+    foreign_search.
     endless_search keeps calling the tool even after it is withdrawn. eager_search searches every turn
     while the tool is offered, as gpt-4o-mini did live, then answers once it is withdrawn.
+    foreign_search is a jailbroken model: its first turn searches another claim (FOREIGN_CLAIM, or
+    `target`) through the door, as an injected instruction might ask. The door's gate must refuse it.
     """
 
     kind: str
     stage: str = DECISION_DRAFT
+    target: str = FOREIGN_CLAIM
 
 
 class MockModel(Model):
@@ -259,25 +291,21 @@ class MockModel(Model):
             await asyncio.sleep(3600)
         if fault and fault.kind == "invalid":
             return self._respond([_message('{"not": "the schema"}')])
+        file = parse_claim_file(input)
+        claim_id = file["claim"]["claim_id"]
         if fault and fault.kind == "endless_search":
-            call = ResponseFunctionToolCall(id="fc_0", call_id=f"call_{len(self.calls)}", name="search_clauses",
-                                            arguments=json.dumps({"query": "collision"}), type="function_call")
-            return self._respond([call])
+            return self._respond([_search(str(len(self.calls)), "collision")])
         offered = any(getattr(t, "name", None) == "search_clauses" for t in tools)
         if fault and fault.kind == "eager_search" and offered:
-            call = ResponseFunctionToolCall(id="fc_0", call_id=f"call_{len(self.calls)}", name="search_clauses",
-                                            arguments=json.dumps({"query": f"collision {len(self.calls)}"}),
-                                            type="function_call")
-            return self._respond([call])
-        file = parse_claim_file(input)
+            return self._respond([_search(str(len(self.calls)), f"collision {len(self.calls)}")])
+        if fault and fault.kind == "foreign_search" and offered and not _tool_outputs(input):
+            return self._respond([_search("jb", "collision", claim_id=fault.target)])
         queries = _QUERIES.get(self.stage)
-        if queries and not _tool_outputs(input):
+        searched = [o for o in _tool_outputs(input) if o.get("call_id") != "call_jb"]
+        if queries and not searched:
             planned = queries(file)
             if planned:
-                calls = [ResponseFunctionToolCall(id=f"fc_{i}", call_id=f"call_{i}", name="search_clauses",
-                                                  arguments=json.dumps({"query": q}), type="function_call")
-                         for i, q in enumerate(planned)]
-                return self._respond(calls)
+                return self._respond([_search(str(i), q) for i, q in enumerate(planned)])
         answer = _RESPONDERS[self.stage](file, input)
         if fault and fault.kind == "invent_citation":
             answer["cited_clause_ids"] = [*answer["cited_clause_ids"], "CLS-XXX-999"]

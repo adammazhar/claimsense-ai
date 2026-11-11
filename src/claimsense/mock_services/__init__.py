@@ -1,8 +1,13 @@
 """Mock client systems (CMS, PAS, document store), served from data/synthetic/ and the contracts.
 
 They stand in for the client's real systems, so they enforce the contracts instead of trusting them:
-every record is validated at load, and errors use the shared ErrorResponse shape. They carry no
-authentication in Milestone 3: compose keeps them on an internal network with no published port.
+every record is validated at load, and errors use the shared ErrorResponse shape.
+
+Compose keeps them on a backend network that only the MCP door joins (D-035). The CMS also filters
+claim rows by the acting seat the door passes it, our stand-in for database row-level security: a
+claim read or draft write with no acting seat, or one outside the seat's rows, is refused, and fraud
+details are stripped for every role but SIU and supervisor. The rule is written here independently of
+the door's gate (claimsense.door.scope), so a bug in one isn't silently a bug in both.
 """
 
 from __future__ import annotations
@@ -56,6 +61,21 @@ def _base_app(title: str) -> FastAPI:
     return app
 
 
+_ROW_FORBIDDEN = "the acting seat may not read or write this row"
+
+
+def _row_visible(user: str | None, role: str | None, claim: Claim, assignment: ClaimAssignment) -> bool:
+    """The CMS's row policy. Deny by default; see the module docstring."""
+    if not user or not role:
+        return False
+    if role == "supervisor":
+        return True
+    if role == "siu":
+        return claim.siu_referral is not None
+    line = {"adjuster_pd": "physical_damage", "adjuster_bi": "bodily_injury"}.get(role)
+    return line is not None and claim.claim_line.value == line and assignment.adjuster_user_id == user
+
+
 def create_cms_app(data_dir: Path = DATA_DIR) -> FastAPI:
     app = _base_app("mock-cms")
     claims = {r["claim_id"]: Claim.model_validate(r) for r in _load(data_dir, "claims")}
@@ -65,9 +85,17 @@ def create_cms_app(data_dir: Path = DATA_DIR) -> FastAPI:
     app.state.drafts = drafts
 
     @app.get("/claims/{claim_id}")
-    async def get_claim(claim_id: str):
+    async def get_claim(claim_id: str, x_acting_user: str | None = Header(default=None),
+                        x_acting_role: str | None = Header(default=None)):
         claim = claims.get(claim_id)
-        return claim.model_dump(mode="json") if claim else _not_found("claim")
+        if claim is None:
+            return _not_found("claim")
+        if not _row_visible(x_acting_user, x_acting_role, claim, assignments[claim_id]):
+            return _error(403, ErrorCode.FORBIDDEN, _ROW_FORBIDDEN)
+        record = claim.model_dump(mode="json")
+        if x_acting_role not in ("siu", "supervisor"):
+            record.pop("siu_referral", None)
+        return record
 
     @app.get("/claims/{claim_id}/assignment")
     async def get_assignment(claim_id: str):
@@ -76,10 +104,13 @@ def create_cms_app(data_dir: Path = DATA_DIR) -> FastAPI:
 
     @app.post("/claims/{claim_id}/recommendations")
     async def post_recommendation(
-        claim_id: str, body: DraftRecommendationRequest, idempotency_key: str | None = Header(default=None)
+        claim_id: str, body: DraftRecommendationRequest, idempotency_key: str | None = Header(default=None),
+        x_acting_user: str | None = Header(default=None), x_acting_role: str | None = Header(default=None),
     ):
         if claim_id not in claims:
             return _not_found("claim")
+        if not _row_visible(x_acting_user, x_acting_role, claims[claim_id], assignments[claim_id]):
+            return _error(403, ErrorCode.FORBIDDEN, _ROW_FORBIDDEN)
         result = store.submit(claim_id, idempotency_key, body)
         if result.status == 201:
             drafts.setdefault(claim_id, []).append(body.model_dump(mode="json"))

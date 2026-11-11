@@ -1,0 +1,87 @@
+{
+  "$defs": {
+    "DoorErrorCode": {
+      "description": "Errors an agent or the API can reason about, never a stack trace (W16 p.7).",
+      "enum": [
+        "unauthenticated",
+        "forbidden_scope",
+        "not_found",
+        "rate_limited",
+        "upstream_unavailable",
+        "idempotency_conflict",
+        "invalid_argument"
+      ],
+      "title": "DoorErrorCode",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The body of a failed tool call, and of the API error it becomes.",
+  "properties": {
+    "code": {
+      "$ref": "#/$defs/DoorErrorCode"
+    },
+    "message": {
+      "maxLength": 500,
+      "minLength": 1,
+      "title": "Message",
+      "type": "string"
+    },
+    "hint": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Hint"
+    },
+    "retryable": {
+      "title": "Retryable",
+      "type": "boolean"
+    },
+    "retry_after": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Seconds; set on rate_limited.",
+      "title": "Retry After"
+    },
+    "correlation_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Correlation Id"
+    },
+    "request_id": {
+      "description": "Matches the audit row of the call that failed.",
+      "minLength": 1,
+      "title": "Request Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "code",
+    "message",
+    "retryable",
+    "request_id"
+  ],
+  "title": "DoorError",
+  "type": "object"
+}

@@ -6,6 +6,10 @@
 # changes more than documentation (docs/** and *.md), and is a required check (D-030). It fails on any
 # fallback verdict, and on a missing or rejected key (D-024, D-026). A docs-only push to main runs no
 # live gate, so it pushes no image.
+#
+# Milestone 4: every hop to a system of record goes through the MCP door, in the gates (in process)
+# and in the image (compose). build-image runs the two-adjuster test against the running containers
+# with seat tokens minted for this run only (D-031, D-033).
 name: ci
 
 on:
@@ -98,13 +102,26 @@ jobs:
         run: docker build --provenance=false --sbom=false -t claimsense:local .
       - id: image
         run: echo "id=$(docker image inspect --format '{{.Id}}' claimsense:local)" >> "$GITHUB_OUTPUT"
+      - name: Issue seat tokens for this run only (stdlib; thrown away with the runner, never a secret)
+        run: python3 scripts/issue_seat_tokens.py --container-writable
       - name: Start the stack from that image, and wait for every healthcheck
         run: docker compose up --no-build --detach --wait
-      - name: Smoke test a recommendation through the running containers
+      - name: Two-adjuster test through the running containers (mock brain)
+        run: python3 scripts/two_adjuster_test.py --brain mock --out out/two-adjuster-mock.txt
+      - name: The co-pilot container cannot reach a system of record directly
         run: |
-          curl --fail-with-body --silent --show-error -X POST \
-            -H "X-User-Id: adj-001" -H "Content-Type: application/json" -d '{}' \
-            http://localhost:8000/v1/claims/CLM-2026-0001/recommendation | python3 -m json.tool
+          if docker compose exec -T copilot python -c "import urllib.request as u; u.urlopen('http://cms:8001/health', timeout=3)"; then
+            echo "the co-pilot reached the CMS without the door"; exit 1
+          fi
+          echo "refused, as it should be: only the door is on the backend network"
+      - name: Keep the audit trail of this run
+        if: always()
+        run: mkdir -p out && cp runtime/audit.jsonl out/ 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: two-adjuster
+          path: out/
       - name: Stop the stack
         if: always()
         run: docker compose down

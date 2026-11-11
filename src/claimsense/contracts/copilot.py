@@ -102,6 +102,8 @@ class RecommendationResponse(Contract):
     recommendation_id: UUID
     usage: list[StageUsage]
     trace_id: str
+    correlation_id: str | None = Field(
+        default=None, description="Ties this response to the MCP door's audit rows for the request (D-036).")
 
     @model_validator(mode="after")
     def _source_is_consistent(self) -> RecommendationResponse:

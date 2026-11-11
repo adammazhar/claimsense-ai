@@ -6,6 +6,7 @@ this suite, is what judges the labels.
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -16,7 +17,19 @@ from agents.agent_output import AgentOutputSchema
 
 import check_eval_cases
 from claimsense import mock_brain
-from claimsense.agent_defs import AssessmentOutput, CoverageOutput, DraftOutput, IntakeOutput, build_agents
+from types import SimpleNamespace
+
+from claimsense.agent_defs import (
+    AssessmentOutput,
+    CoverageOutput,
+    DraftOutput,
+    IntakeOutput,
+    RunContext,
+    build_agents,
+    door_search_tool,
+    with_door,
+)
+from claimsense.door import MODEL_TOOLS, TOOLS
 from claimsense.contracts import Claim, CoverageReading, DeterministicFacts, Outcome, Policy
 from claimsense.deterministic import in_force_at
 from claimsense.guardrails import apply_precedence, required_outcome, scan_untrusted
@@ -89,8 +102,9 @@ def test_refusal_does_not_reveal_whether_the_claim_exists(run, stack) -> None:
 
     real, missing = run(scenario())
     assert real.status_code == missing.status_code == 403
-    strip = lambda r: {k: v for k, v in r.json().items() if k != "request_id"}  # noqa: E731
+    strip = lambda r: {k: v for k, v in r.json()["error"].items() if k not in ("request_id", "correlation_id")}  # noqa: E731
     assert strip(real) == strip(missing)
+    assert strip(real)["code"] == "forbidden_scope"
     assert "CANARY" not in real.text
 
 
@@ -100,12 +114,32 @@ def test_no_identity_is_refused(run, stack) -> None:
     assert stack.brain.calls == []
 
 
-def test_agents_have_no_tool_except_clause_search() -> None:
+def test_agents_have_no_tool_except_the_doors_clause_search() -> None:
+    """No agent has a local tool. The searching agents reach the door, and are offered only
+    search_clauses, while their stage has searches left (D-024, D-031)."""
     agents = build_agents(MockBrain())
-    for agent in (agents.intake, agents.draft):
-        assert agent.tools == []
-    for agent in (agents.coverage, agents.assessment):
-        assert [t.name for t in agent.tools] == ["search_clauses"]
+    for agent in (agents.intake, agents.coverage, agents.assessment, agents.draft):
+        assert agent.tools == [] and agent.mcp_servers == []
+
+    listed = SimpleNamespace(name="search_clauses", description="Search the policy wording.", input_schema={
+        "type": "object", "required": ["claim_id", "query"], "properties": {
+            "claim_id": {"type": "string", "title": "Claim Id", "pattern": "^CLM-", "maxLength": 64},
+            "query": {"description": "Words.", "maxLength": 2000, "title": "Query", "type": "string"}}})
+    search = door_search_tool(None, listed, "CLM-2026-0001")
+    assert [t.name for t in with_door(agents.coverage, search).tools] == ["search_clauses"]
+    assert [t.name for t in with_door(agents.assessment, search).tools] == ["search_clauses"]
+    assert with_door(agents.intake, search).tools == [] and with_door(agents.draft, search).tools == []
+    # The model sees Milestone 3's tool byte for byte: the claim is bound by code, server-side keywords
+    # stay there, and the shape and key order are the SDK's function-tool schema.
+    assert json.dumps(search.params_json_schema) == json.dumps(
+        {"properties": {"query": {"description": "Words.", "title": "Query", "type": "string"}},
+         "required": ["query"], "title": "search_clauses_args", "type": "object", "additionalProperties": False})
+    assert set(MODEL_TOOLS) == {"search_clauses"} and set(MODEL_TOOLS) < set(TOOLS)
+
+    def budget_left(searches: int) -> bool:
+        return search.is_enabled(SimpleNamespace(context=RunContext(retrieval=None, tool_calls=["s"] * searches)), None)
+
+    assert budget_left(0) and budget_left(2) and not budget_left(3)
 
 
 def test_a_failing_client_system_fails_closed(run) -> None:
@@ -117,7 +151,8 @@ def test_a_failing_client_system_fails_closed(run) -> None:
         return stack, await stack.recommend(APPROVE_CLAIM), await stack.drafts(APPROVE_CLAIM)
 
     stack, response, drafts = run(scenario())
-    assert (response.status_code, response.json()["code"]) == (503, "UPSTREAM_UNAVAILABLE")
+    assert (response.status_code, response.json()["error"]["code"]) == (503, "upstream_unavailable")
+    assert response.json()["error"]["retryable"] is True
     assert drafts == [] and stack.brain.calls == []
 
 

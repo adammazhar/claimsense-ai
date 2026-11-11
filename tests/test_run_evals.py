@@ -80,6 +80,16 @@ def test_a_failing_access_control_case_fails_the_gate(run, cases) -> None:
     assert any("access-control" in reason for reason in summary["gate"]["reasons"])
 
 
+def test_an_uncited_verdict_is_a_miss_even_when_its_outcome_is_right(run, cases) -> None:
+    """EV-015 is a ROUTE: an invented citation leaves the outcome standing but the verdict uncited."""
+    report = run(run_evals.evaluate([by_id(cases, "EV-015")], MockBrain(fault=Fault("invent_citation")), partial=True))
+    result = report["results"][0]
+    assert (result["outcome"], result["verdict_source"], result["uncited"]) == ("ROUTE", "model", True)
+    assert result["hit"] is False and result["passed"] is False
+    assert any("uncited" in p for p in result["problems"])
+    assert report["summary"]["decision_accuracy"] == 0.0
+
+
 def test_a_partial_run_cannot_pass_the_gate(run, cases) -> None:
     gate = run(run_evals.evaluate([by_id(cases, "EV-001")], MockBrain(), partial=True))["summary"]["gate"]
     assert gate["passed"] is False and gate["applies"] is False
@@ -89,6 +99,8 @@ def test_every_must_not_rule_in_the_cases_has_an_evaluator(cases) -> None:
     world = {"claims": {"CLM-2026-0019": {"narrative": "n", "vehicle": {"vin": "v"}, "policy_id": "p",
                                           "claimant": {"display_name": "d"}},
                         "CLM-2026-0001": {"narrative": "n", "vehicle": {"vin": "v"}, "policy_id": "p",
+                                          "claimant": {"display_name": "d"}},
+                        "CLM-2026-0011": {"narrative": "n", "vehicle": {"vin": "v"}, "policy_id": "p",
                                           "claimant": {"display_name": "d"}}},
              "refusal_for_missing_claim": '{"a": 1}'}
     for case in cases:

@@ -80,7 +80,7 @@ class ClauseIndex:
 class RetrievalLog:
     """Every clause retrieved for one claim in one run. The citation validator's source of truth."""
 
-    index: ClauseIndex
+    index: ClauseIndex | None
     form_number: str
     queries: list[str] = field(default_factory=list)
     hits: dict[str, RetrievalHit] = field(default_factory=dict)
@@ -99,6 +99,18 @@ class RetrievalLog:
             self.hits.setdefault(hit.clause_id, hit)
             clean.append(hit)
         return clean
+
+    def record(self, query: str, hits: list[dict]) -> list[RetrievalHit]:
+        """Record what the MCP door's search_clauses returned (Milestone 4). The door already ran the
+        search on this claim's form and quarantined injected clause text, so this only keeps the log
+        the citation validator trusts."""
+        self.queries.append(query)
+        recorded = []
+        for hit in hits:
+            entry = RetrievalHit(clause_id=hit["clause_id"], score=0.0, heading=hit["heading"], text=hit["text"])
+            self.hits.setdefault(entry.clause_id, entry)
+            recorded.append(entry)
+        return recorded
 
     @property
     def retrieved_ids(self) -> list[str]:

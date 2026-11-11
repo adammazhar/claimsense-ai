@@ -41,7 +41,9 @@ CASES = ROOT / "evals" / "cases_v0.yaml"
 OUT = ROOT / "data" / "synthetic"
 FORM = "SYN-PA-01"
 FORM_EDITION = date(2026, 1, 1)
-DESK = "PD-AUTO-1"
+DESKS = {"physical_damage": "PD-AUTO-1", "bodily_injury": "BI-AUTO-1"}
+# Every fixture set has a supervisor, so the blind set can run under one (D-038).
+DEFAULT_STAFF = [{"user_id": "sup-001", "role": "supervisor"}]
 
 # Placeholder clause wording, synthetic, for the clause IDs cited in the eval cases.
 CLAUSES = [
@@ -109,8 +111,9 @@ def _coverages(raw: dict) -> dict:
     return out
 
 
-def build(cases: list[dict]) -> dict[str, list[dict]]:
+def build(cases: list[dict], staff: list[dict] | None = None) -> dict[str, list[dict]]:
     """Return the fixture files as {name: [records]}, each record validated against its contract."""
+    staff = staff or []
     claims, policies, assignments, documents = {}, {}, {}, []
     for case in cases:
         c = case["claim"]
@@ -131,6 +134,9 @@ def build(cases: list[dict]) -> dict[str, list[dict]]:
             "claimant": party, "repair_estimate": c.get("repair_estimate_usd", 0),
             "legacy_fraud_score": c["fraud_score"], "prior_claims_24m": c["prior_claims_24m"],
             "reported_at": _utc(reported, 9),
+            # A stored CMS field set at FNOL, never inferred (D-034). The blind set has none: physical damage.
+            "claim_line": c.get("claim_line", "physical_damage"),
+            "siu_referral": c.get("siu_referral"),
         }).model_dump(mode="json")
 
         effective = date.fromisoformat(str(p["effective_date"]))
@@ -150,8 +156,10 @@ def build(cases: list[dict]) -> dict[str, list[dict]]:
         }).model_dump(mode="json")
 
         assignee = case["requester"]["user_id"] if case["requester"].get("assigned") else REFUSAL_ASSIGNEES[cid]
+        line = claims[cid]["claim_line"]
         assignments[cid] = ClaimAssignment.model_validate({
-            "claim_id": cid, "adjuster_user_id": assignee, "desk": DESK, "assigned_at": _utc(reported, 10),
+            "claim_id": cid, "adjuster_user_id": assignee, "desk": DESKS[line], "assigned_at": _utc(reported, 10),
+            "claim_line": line, "siu_referred": claims[cid]["siu_referral"] is not None,
         }).model_dump(mode="json")
 
         for d in case.get("documents", []):
@@ -173,7 +181,18 @@ def build(cases: list[dict]) -> dict[str, list[dict]]:
         "policies": list(policies.values()),
         "documents": documents,
         "clauses": clauses,
+        "seats": seat_roster(cases, staff),
     }
+
+
+def seat_roster(cases: list[dict], staff: list[dict]) -> list[dict]:
+    """Who has a seat, and its role. Roles only: tokens are issued by scripts/issue_seat_tokens.py (D-033)."""
+    seats: dict[str, str] = {}
+    for entry in [*(c["requester"] for c in cases), *staff, *DEFAULT_STAFF]:
+        role = seats.setdefault(entry["user_id"], entry["role"])
+        if role != entry["role"]:
+            raise ValueError(f"{entry['user_id']} has two roles: {role} and {entry['role']}")
+    return [{"user_id": u, "role": r} for u, r in sorted(seats.items())]
 
 
 def render(records: list[dict]) -> str:
@@ -181,8 +200,8 @@ def render(records: list[dict]) -> str:
 
 
 def main(argv: list[str]) -> int:
-    cases = yaml.safe_load(CASES.read_text(encoding="utf-8"))["cases"]
-    files = build(cases)
+    case_file = yaml.safe_load(CASES.read_text(encoding="utf-8"))
+    files = build(case_file["cases"], case_file.get("staff", []))
     stale = []
     for name, records in files.items():
         path = OUT / f"{name}.json"

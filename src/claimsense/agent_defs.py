@@ -1,7 +1,10 @@
 """The four agents on the OpenAI Agents SDK, with strict typed outputs (D-017).
 
-Agents read one claim's dossier and return typed judgment. They have no tool that reaches a client
-system; the only tool is clause search, which returns policy wording and no claim data (D-010).
+Agents read one claim's dossier and return typed judgment. Since Milestone 4 their only tool is the
+MCP door's `search_clauses`, which returns policy wording and no claim data (D-010, D-031). The door
+gates it by the adjuster's scope like every other call, so a model that searches another claim is
+refused and audited (tests/test_jailbreak.py). Only Coverage Check and Claim Assessment get it, and it
+is withdrawn once the stage has spent its searches (D-024).
 Prompts describe the job in general terms. They must never carry a case, a claim ID or an expected
 outcome from the evaluation set, so held-out claims stay held out (D-021).
 """
@@ -12,7 +15,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Literal
 
-from agents import Agent, ModelSettings, RunContextWrapper, function_tool
+from agents import Agent, FunctionTool, ModelSettings, RunContextWrapper, RunHooks
 from pydantic import BaseModel, ConfigDict
 
 from .retrieval import RetrievalLog
@@ -22,8 +25,9 @@ from .settings import (
     DECISION_DRAFT,
     DOCUMENT_INTAKE,
     MAX_SEARCHES_PER_STAGE,
-    RETRIEVAL_TOP_K,
 )
+
+SEARCH_TOOL = "search_clauses"
 
 
 class _Output(BaseModel):
@@ -82,28 +86,93 @@ class DraftOutput(_Output):
 
 @dataclass
 class RunContext:
-    """Per-stage state the clause-search tool can reach: the run's shared search log, this stage's own
-    searches, and nothing about other claims."""
+    """Per-stage state: the run's shared search log and this stage's own searches. Nothing about
+    other claims, and no identity: that is on the door connection's transport."""
 
     retrieval: RetrievalLog
     tool_calls: list[str] = field(default_factory=list)
 
 
+SEARCHING_AGENTS = frozenset({"Coverage Check", "Claim Assessment"})
+# Schema keywords the door enforces itself. The model is shown the schema exactly as the Milestone 3
+# function tool's (the SDK's own shape and key order), byte for byte.
+_SERVER_SIDE_KEYWORDS = ("maxLength", "pattern")
+
+
 def _search_budget_left(ctx: RunContextWrapper[RunContext], agent) -> bool:
     """Withdraw the tool once the stage has spent its searches, so the model must answer (D-024)."""
-    return len(ctx.context.tool_calls) < MAX_SEARCHES_PER_STAGE
+    return isinstance(ctx.context, RunContext) and len(ctx.context.tool_calls) < MAX_SEARCHES_PER_STAGE
 
 
-@function_tool(is_enabled=_search_budget_left)
-def search_clauses(ctx: RunContextWrapper[RunContext], query: str) -> str:
-    """Search the policy wording for this claim's policy form. Returns clause IDs, headings and text.
+BOUND_ARGUMENT = "claim_id"  # filled in by code with the request's claim, not shown to the model
 
-    Args:
-        query: Words describing the coverage, exclusion, endorsement or duty to look up.
+
+def _model_schema(schema: dict) -> dict:
+    properties = {name: {k: v for k, v in spec.items() if k not in _SERVER_SIDE_KEYWORDS}
+                  for name, spec in schema.get("properties", {}).items() if name != BOUND_ARGUMENT}
+    required = [name for name in schema.get("required", []) if name != BOUND_ARGUMENT]
+    return {"properties": properties, "required": required, "title": f"{SEARCH_TOOL}_args", "type": "object",
+            "additionalProperties": False}
+
+
+def door_search_tool(conn, listed, claim_id: str) -> FunctionTool:
+    """The door's search_clauses, as the searching agents' one tool (D-031).
+
+    Every call goes over the request's MCP connection (`conn`, wrapping the Agents SDK's
+    MCPServerStreamableHttp) to the door, which gates it by the adjuster's scope and audits it, with the
+    same retry and backoff as every other read (D-037). A refusal comes back to the model as the door's
+    structured error, never as clauses. The wrapper exists so the model sees what it saw in Milestone 3:
+    the door's JSON as a plain string (the SDK's MCP path re-packs it as content items) and a schema
+    without server-side keywords. The name, description and arguments come from the door's own listing.
+
+    The door's claim_id argument is bound to the request's claim and not shown to the model, so the tool
+    the model sees is Milestone 3's `search_clauses(query)`: with a required claim_id the live models
+    searched far less often. A claim_id the model names anyway (a jailbroken model) is passed to the
+    door unchanged, where the scope gate decides it (tests/test_jailbreak.py).
     """
-    ctx.context.tool_calls.append(query)
-    hits = ctx.context.retrieval.search(query, top_k=RETRIEVAL_TOP_K)
-    return json.dumps([{"clause_id": h.clause_id, "heading": h.heading, "text": h.text} for h in hits])
+    from .door_client import DoorCallError
+
+    async def invoke(_ctx: RunContextWrapper, arguments: str) -> str:
+        call = json.loads(arguments or "{}")
+        call.setdefault(BOUND_ARGUMENT, claim_id)
+        try:
+            return await conn.call_text(SEARCH_TOOL, **call)
+        except DoorCallError as refused:
+            return refused.error.model_dump_json()
+
+    schema = getattr(listed, "input_schema", None) or getattr(listed, "inputSchema", None) or {}
+    return FunctionTool(name=SEARCH_TOOL, description=listed.description or "", params_json_schema=_model_schema(schema),
+                        on_invoke_tool=invoke, strict_json_schema=True, is_enabled=_search_budget_left)
+
+
+def _tool_text(result: object) -> str:
+    """The text of a tool result, however the SDK packed it (a string, a text item, or a list)."""
+    if isinstance(result, str):
+        return result
+    if isinstance(result, dict):
+        return str(result.get("text", ""))
+    if isinstance(result, list) and result:
+        return _tool_text(result[0])
+    return str(getattr(result, "text", ""))
+
+
+class SearchHooks(RunHooks):
+    """Counts a stage's searches and records every clause the door returned, so the citation
+    validator still trusts only what was actually retrieved (D-005)."""
+
+    async def on_tool_start(self, context: RunContextWrapper, agent, tool) -> None:
+        if tool.name == SEARCH_TOOL and isinstance(context.context, RunContext):
+            context.context.tool_calls.append(SEARCH_TOOL)
+
+    async def on_tool_end(self, context: RunContextWrapper, agent, tool, result: object) -> None:
+        if tool.name != SEARCH_TOOL or not isinstance(context.context, RunContext):
+            return
+        try:
+            hits = json.loads(_tool_text(result))
+        except ValueError:
+            return
+        if isinstance(hits, list):  # a refusal is an error object, not a list of clauses
+            context.context.retrieval.record("(agent search)", [h for h in hits if isinstance(h, dict)])
 
 
 _SHARED = """
@@ -212,15 +281,27 @@ class AgentSet:
 
 
 def build_agents(brain) -> AgentSet:
-    """Build the four agents. `brain` supplies each stage's model: real, or the mock brain."""
+    """Build the four agents. `brain` supplies each stage's model: real, or the mock brain.
+
+    No agent has a tool here. The pipeline attaches the request's door connection to the searching
+    agents (`with_door`), because the connection carries that adjuster's token.
+    """
     settings = ModelSettings(temperature=0)
     return AgentSet(
         intake=Agent(name="Document Intake", instructions=INTAKE_PROMPT, output_type=IntakeOutput,
                      model=brain.model(DOCUMENT_INTAKE), model_settings=settings),
         coverage=Agent(name="Coverage Check", instructions=COVERAGE_PROMPT, output_type=CoverageOutput,
-                       tools=[search_clauses], model=brain.model(COVERAGE_CHECK), model_settings=settings),
+                       model=brain.model(COVERAGE_CHECK), model_settings=settings),
         assessment=Agent(name="Claim Assessment", instructions=ASSESSMENT_PROMPT, output_type=AssessmentOutput,
-                         tools=[search_clauses], model=brain.model(CLAIM_ASSESSMENT), model_settings=settings),
+                         model=brain.model(CLAIM_ASSESSMENT), model_settings=settings),
         draft=Agent(name="Decision Draft", instructions=DRAFT_PROMPT, output_type=DraftOutput,
                     model=brain.model(DECISION_DRAFT), model_settings=settings),
     )
+
+
+def with_door(agent: Agent, search_tool: FunctionTool) -> Agent:
+    """A searching agent for one request, with that request's door search tool (its connection
+    carries the adjuster's token)."""
+    if agent.name not in SEARCHING_AGENTS:
+        return agent
+    return agent.clone(tools=[search_tool])

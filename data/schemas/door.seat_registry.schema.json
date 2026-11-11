@@ -1,0 +1,79 @@
+{
+  "$defs": {
+    "Seat": {
+      "additionalProperties": false,
+      "description": "A seat in the registry. Only the token's SHA-256 is stored, never the token (D-033).",
+      "properties": {
+        "user_id": {
+          "pattern": "^[a-z]{2,3}-\\d{3}$",
+          "title": "User Id",
+          "type": "string"
+        },
+        "role": {
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        },
+        "token_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Token Sha256",
+          "type": "string"
+        },
+        "issued_at": {
+          "format": "date-time",
+          "title": "Issued At",
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "title": "Expires At",
+          "type": "string"
+        },
+        "revoked_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revoked At"
+        }
+      },
+      "required": [
+        "user_id",
+        "role",
+        "token_sha256",
+        "issued_at",
+        "expires_at"
+      ],
+      "title": "Seat",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The file the door loads at startup. Missing means the door refuses to start (fail closed).",
+  "properties": {
+    "version": {
+      "const": 1,
+      "default": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "seats": {
+      "items": {
+        "$ref": "#/$defs/Seat"
+      },
+      "title": "Seats",
+      "type": "array"
+    }
+  },
+  "required": [
+    "seats"
+  ],
+  "title": "SeatRegistry",
+  "type": "object"
+}
