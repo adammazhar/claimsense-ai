@@ -27,7 +27,7 @@
 | Two-adjuster test, compose stack | [two-adjuster-live.txt](two-adjuster-live.txt), [two-adjuster-mock.txt](two-adjuster-mock.txt) |
 | Audit sample | [audit-sample.jsonl](audit-sample.jsonl): the trail from both two-adjuster runs. Its hash chain verifies. No token appears in it. |
 | Workflow lint | actionlint on `.github/workflows/ci.yml`: no findings (run locally by the engagement lead, 2026-11-11) |
-| CI run on the PR | _to add once the PR's checks finish_ |
+| CI run on the PR | [PR #7](https://github.com/adammazhar/claimsense-ai/pull/7), [run 43123372074](https://github.com/adammazhar/claimsense-ai/actions/runs/43123372074): `tests`, `eval-gate`, `build-image` (two-adjuster test and the network check, on the containers) and `live-eval-gate` all pass. Live gate in CI: 100% of 22, held-out 100% of 6, 0 fallbacks, $0.74. The audit trail and transcript are in the run's `two-adjuster` artifact. |
 
 ## The result
 
@@ -82,7 +82,7 @@ Run 5's coverage-stage input is byte-identical to Milestone 3's, and its search 
 | **Local total, 2026-11-11** | **$4.18** |
 | A live gate run (run 5) | $0.73, $0.033 per claim |
 
-The CI live gate on the PR will add about $0.73, and again on the merge to `main` (D-030).
+The CI live gate on PR #7 cost $0.74. The merge to `main` runs it once more (D-030).
 
 ## Identity and the AWS account
 
