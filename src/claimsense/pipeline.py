@@ -1,14 +1,20 @@
-"""The first-pass pipeline: deterministic code around four agents.
+"""The first-pass pipeline: deterministic code around four agents, all of it behind the MCP door.
 
-Order matters and is the point of the design (D-001, D-003, D-010):
+Order matters and is the point of the design (D-001, D-003, D-010, D-031):
 
-    entitlement -> fetch one claim file -> compute facts -> scan untrusted text -> seed retrieval
+    open a door connection under the requester's token -> get_claim (the scope gate: a denial ends
+    the request here, audited, before any agent) -> whoami -> get_policy, get_claim_documents
+    -> compute facts -> scan untrusted text -> seed retrieval (search_clauses)
     -> agents (Document Intake, then Coverage Check and Claim Assessment in parallel, then Decision
-       Draft) -> validate citations -> scan output -> apply precedence -> idempotent write -> audit
+       Draft; the searching agents' one tool is the door's search_clauses, on the same connection)
+    -> validate citations -> scan output -> apply precedence -> idempotent write (the door's
+       submit_draft_recommendation) -> audit
 
-Nothing about a claim is fetched until entitlement passes, and the agents only ever see that one
-claim's file. If a model is unavailable, times out or returns invalid output, the deterministic
-fallback answers instead, and the response says so.
+The co-pilot never opens a connection to a system of record: every read and the one write is a door
+tool call, scoped to the requester and audited by the door. Identity is the bearer token on the
+connection; the pipeline learns who is asking from the door, never from the request body. The agents
+only ever see one claim's file. If a model is unavailable, times out or returns invalid output, the
+deterministic fallback answers instead, and the response says so.
 """
 
 from __future__ import annotations
@@ -30,29 +36,37 @@ from .agent_defs import (
     CoverageOutput,
     DraftOutput,
     IntakeOutput,
+    SEARCH_TOOL,
     RunContext,
+    SearchHooks,
     build_agents,
+    door_search_tool,
+    with_door,
 )
 from .audit import AuditLog
-from .clients import ClientSystems, ClientSystemError, NotFoundError
 from .contracts import (
     CitedClause,
+    Claim,
     CodeOverride,
     Confidence,
     CoverageReading,
     DeterministicFacts,
     Document,
     DraftRecommendationRequest,
+    DraftRecommendationResponse,
     FallbackReason,
     Finding,
     InjectionFlag,
     ModelJudgment,
     Outcome,
+    Policy,
     RecommendationResponse,
     RecommendationStatus,
     StageUsage,
     VerdictSource,
 )
+from .contracts.idempotency import idempotency_key
+from .door_client import DoorCallError, DoorConnection
 from .deterministic import compute_facts, coverage_type_for, payable_amount
 from .guardrails import (
     apply_precedence,
@@ -62,7 +76,7 @@ from .guardrails import (
     scan_untrusted,
     validate_citations,
 )
-from .retrieval import ClauseIndex, RetrievalLog
+from .retrieval import RetrievalLog
 from .settings import (
     CLAIM_ASSESSMENT,
     COVERAGE_CHECK,
@@ -75,10 +89,10 @@ from .settings import (
 from .tracing_local import install_local_tracing
 
 ACTION = "get_recommendation"
-
-
-class Refused(Exception):
-    """The requester isn't entitled. Carries nothing about the claim, not even whether it exists."""
+# The model dossier never carries these (D-027, D-034): the cached status never drives an outcome, the
+# claim line only scopes access, and an SIU referral would hand the model the ROUTE answer.
+DOSSIER_EXCLUDES_POLICY = {"status_field"}
+DOSSIER_EXCLUDES_CLAIM = {"claim_line", "siu_referral"}
 
 
 class StageFailure(Exception):
@@ -97,10 +111,9 @@ class ModelRun:
 
 @dataclass
 class Pipeline:
-    clients: ClientSystems
-    index: ClauseIndex
+    door: object  # a door connector: HttpDoorConnector (compose) or InProcessDoorConnector (tests, evals)
     brain: object
-    audit: AuditLog = field(default_factory=AuditLog)
+    audit: AuditLog = field(default_factory=AuditLog)  # the co-pilot's app log; the door's trail is the audit
     stage_timeout: float = STAGE_TIMEOUT_SECONDS
 
     def __post_init__(self) -> None:
@@ -108,33 +121,42 @@ class Pipeline:
         self.agents: AgentSet = build_agents(self.brain)
 
     # ------------------------------------------------------------ the deterministic spine
-    async def authorize(self, user_id: str, claim_id: str) -> None:
-        """Entitlement: the requester must be the CMS assignee. Runs before anything else (D-003)."""
-        try:
-            assignment = await self.clients.get_assignment(claim_id)
-        except NotFoundError:
-            assignment = None
-        if assignment is None or assignment.adjuster_user_id != user_id:
-            self.audit.record(user_id, ACTION, claim_id, "denied", reason="not_entitled")
-            raise Refused
+    async def check_access(self, token: str, claim_id: str, correlation_id: str) -> str:
+        """Re-run the gate for a cached replay (a replay never skips it). Returns the acting user."""
+        async with self.door.connect(token, correlation_id) as conn:
+            await conn.call("get_claim", claim_id=claim_id)
+            return (await conn.call("whoami"))["user_id"]
 
-    async def recommend(self, user_id: str, claim_id: str, note: str | None = None,
-                        run_id: UUID | None = None) -> RecommendationResponse:
-        await self.authorize(user_id, claim_id)
+    async def recommend(self, token: str, claim_id: str, note: str | None = None, run_id: UUID | None = None,
+                        correlation_id: str | None = None) -> RecommendationResponse:
+        """Raises DoorCallError when the door refuses (401, 403, ...) or can't serve the request."""
         run_id = run_id or uuid4()
-        with trace("claimsense.first_pass", metadata={"claim_id": claim_id, "brain": self.brain.name,
-                                                      "run_id": str(run_id)}) as sdk_trace:
-            response = await self._run(sdk_trace.trace_id, user_id, claim_id, note, run_id)
-        self.audit.record(user_id, ACTION, claim_id, "granted", run_id=str(run_id),
+        correlation_id = correlation_id or f"corr-{uuid4().hex[:16]}"
+        async with self.door.connect(token, correlation_id) as conn:
+            try:
+                # The scope gate, in the door, is the first call and comes before any agent (D-003, D-034).
+                # A refused request leaves exactly one audit row: this denial.
+                claim = Claim.model_validate(await conn.call("get_claim", claim_id=claim_id))
+            except DoorCallError as refused:
+                self.audit.record("(refused at the door)", ACTION, claim_id, "denied",
+                                  reason=refused.error.code.value, correlation_id=correlation_id)
+                raise
+            # Who is asking, as the door resolved the token. Never taken from the request.
+            user_id = (await conn.call("whoami"))["user_id"]
+            with trace("claimsense.first_pass", metadata={"claim_id": claim_id, "brain": self.brain.name,
+                                                          "run_id": str(run_id),
+                                                          "correlation_id": correlation_id}) as sdk_trace:
+                response = await self._run(conn, sdk_trace.trace_id, user_id, claim, note, run_id)
+        self.audit.record(user_id, ACTION, claim_id, "granted", run_id=str(run_id), correlation_id=correlation_id,
                           verdict_source=response.verdict_source.value, outcome=response.outcome.value)
-        return response
+        return response.model_copy(update={"correlation_id": correlation_id})
 
-    async def _run(self, trace_id: str, user_id: str, claim_id: str, note: str | None,
+    async def _run(self, conn: DoorConnection, trace_id: str, user_id: str, claim: Claim, note: str | None,
                    run_id: UUID) -> RecommendationResponse:
+        claim_id = claim.claim_id
         with custom_span("fetch_claim_file", {"claim_id": claim_id}):
-            claim = await self.clients.get_claim(claim_id)
-            policy = await self.clients.get_policy(claim.policy_id, claim.loss_datetime.date().isoformat())
-            documents = await self.clients.get_documents(claim_id)
+            policy = Policy.model_validate(await conn.call("get_policy", claim_id=claim_id))
+            documents = [Document.model_validate(d) for d in await conn.call("get_claim_documents", claim_id=claim_id)]
 
         with custom_span("deterministic_facts") as span:
             facts = compute_facts(claim, policy, [d.meta for d in documents])
@@ -145,10 +167,11 @@ class Pipeline:
             flags += scan_untrusted("requester_note", note)
             span.span_data.data = {"flags": [f.source for f in flags]}
 
-        log = RetrievalLog(index=self.index, form_number=policy.form_number)
+        log = RetrievalLog(index=None, form_number=policy.form_number)
         with custom_span("seed_retrieval") as span:
             for query in self._seed_queries(claim):
-                log.search(query, top_k=SEED_TOP_K)
+                hits = await conn.call("search_clauses", claim_id=claim_id, query=query)
+                log.record(query, hits[:SEED_TOP_K])  # the door ranks; seeds keep the top SEED_TOP_K
             span.span_data.data = {"queries": list(log.queries), "retrieved": log.retrieved_ids}
 
         context = RunContext(retrieval=log)
@@ -156,13 +179,13 @@ class Pipeline:
         usage: list[StageUsage] = []
         doc_ids = {d.meta.doc_id for d in documents}
         try:
-            run = await self._run_agents(file, context, usage)
+            run = await self._run_agents(conn, file, context, usage)
             self._scan_output(run, claim_id)
         except StageFailure as failure:
-            return await self._finish_fallback(trace_id, user_id, claim, policy, facts, flags, log, usage, run_id,
-                                               failure.stage, failure.reason, failure.error)
-        return await self._finish_model(trace_id, user_id, claim, policy, facts, flags, log, usage, run_id, run,
-                                        doc_ids)
+            return await self._finish_fallback(conn, trace_id, user_id, claim, policy, facts, flags, log, usage,
+                                               run_id, failure.stage, failure.reason, failure.error)
+        return await self._finish_model(conn, trace_id, user_id, claim, policy, facts, flags, log, usage, run_id,
+                                        run, doc_ids)
 
     @staticmethod
     def _seed_queries(claim) -> list[str]:
@@ -173,9 +196,10 @@ class Pipeline:
     @staticmethod
     def _claim_file(claim, policy, documents: list[Document], facts: DeterministicFacts, note, flags, log) -> dict:
         return {
-            "claim": claim.model_dump(mode="json"),
+            # Access metadata and fraud details never reach a model (D-034); see DOSSIER_EXCLUDES_*.
+            "claim": claim.model_dump(mode="json", exclude=DOSSIER_EXCLUDES_CLAIM),
             # The cached status never drives an outcome (D-004), so the models never see it (D-027).
-            "policy": policy.model_dump(mode="json", exclude={"status_field"}),
+            "policy": policy.model_dump(mode="json", exclude=DOSSIER_EXCLUDES_POLICY),
             "deterministic_facts": facts.model_dump(mode="json"),
             "documents": [{"doc_id": d.meta.doc_id, "type": d.meta.type.value,
                            "captured_on": d.meta.captured_on.isoformat() if d.meta.captured_on else None,
@@ -187,12 +211,18 @@ class Pipeline:
         }
 
     # ------------------------------------------------------------ model judgment
-    async def _run_agents(self, file: dict, context: RunContext, usage: list[StageUsage]) -> ModelRun:
+    async def _run_agents(self, conn: DoorConnection, file: dict, context: RunContext,
+                          usage: list[StageUsage]) -> ModelRun:
         intake = await self._stage(self.agents.intake, DOCUMENT_INTAKE, file, context, usage)
         with_intake = file | {"prior_outputs": {"document_intake": intake.model_dump()}}
+        # The searching agents' one tool: the door's search_clauses, on this request's connection.
+        listed = next(t for t in await conn.server.list_tools() if t.name == SEARCH_TOOL)
+        search = door_search_tool(conn, listed, file["claim"]["claim_id"])
+        coverage_agent = with_door(self.agents.coverage, search)
+        assessment_agent = with_door(self.agents.assessment, search)
         tasks = [
-            asyncio.create_task(self._stage(self.agents.coverage, COVERAGE_CHECK, with_intake, context, usage)),
-            asyncio.create_task(self._stage(self.agents.assessment, CLAIM_ASSESSMENT, with_intake, context, usage)),
+            asyncio.create_task(self._stage(coverage_agent, COVERAGE_CHECK, with_intake, context, usage)),
+            asyncio.create_task(self._stage(assessment_agent, CLAIM_ASSESSMENT, with_intake, context, usage)),
         ]
         try:
             coverage, assessment = await asyncio.gather(*tasks)
@@ -215,7 +245,8 @@ class Pipeline:
         context = RunContext(retrieval=context.retrieval)  # each stage spends its own search budget
         try:
             result = await asyncio.wait_for(
-                Runner.run(agent, prompt, context=context, max_turns=MAX_AGENT_TURNS), self.stage_timeout)
+                Runner.run(agent, prompt, context=context, max_turns=MAX_AGENT_TURNS, hooks=SearchHooks()),
+                self.stage_timeout)
         except TimeoutError as exc:
             raise StageFailure(stage, FallbackReason.TIMEOUT, type(exc).__name__) from exc
         except (ModelBehaviorError, ModelRefusalError, MaxTurnsExceeded, ValidationError) as exc:
@@ -250,7 +281,7 @@ class Pipeline:
             raise StageFailure(DECISION_DRAFT, FallbackReason.OUTPUT_SCAN_FAILED)
 
     # ------------------------------------------------------------ assembling the result
-    async def _finish_model(self, trace_id, user_id, claim, policy, facts, flags, log, usage, run_id,
+    async def _finish_model(self, conn, trace_id, user_id, claim, policy, facts, flags, log, usage, run_id,
                             run: ModelRun, doc_ids: set[str]) -> RecommendationResponse:
         retrieved = log.retrieved_ids
         coverage_check = validate_citations(run.coverage.cited_clause_ids, retrieved)
@@ -262,6 +293,9 @@ class Pipeline:
         uncited = bool(removed) or not cited
 
         findings = self._clean_findings([*run.draft.findings, *run.assessment.findings], retrieved, doc_ids)
+        # A model verdict with no finding left standing has nothing an adjuster can check: mark it uncited,
+        # so code treats it like any other uncited output, instead of failing the write's contract (a 500).
+        uncited = uncited or not findings
         drafted = Outcome(run.draft.outcome)
         reading = CoverageReading(run.coverage.reading)
         with custom_span("precedence") as span:
@@ -284,11 +318,11 @@ class Pipeline:
             fraud_indicated=run.assessment.fraud_indicated, injury_exposure=run.assessment.injury_exposure,
             missing_documents=run.assessment.missing_documents, findings=findings, model_ids=model_ids)
         return await self._write_and_respond(
-            trace_id, user_id, claim, log, usage, run_id, flags, final_facts, outcome,
+            conn, trace_id, user_id, claim, log, usage, run_id, flags, final_facts, outcome,
             VerdictSource.MODEL, Confidence(run.draft.confidence), run.draft.reasoning, findings, cited, removed,
             uncited, overrides, judgment, model_ids, None, None)
 
-    async def _finish_fallback(self, trace_id, user_id, claim, policy, facts, flags, log, usage, run_id,
+    async def _finish_fallback(self, conn, trace_id, user_id, claim, policy, facts, flags, log, usage, run_id,
                                stage: str, reason: FallbackReason, error: str | None) -> RecommendationResponse:
         """No model verdict: DENY on a term or coverage failure, otherwise FLAG for an adjuster. Never more."""
         with custom_span("deterministic_fallback", {"stage": stage, "reason": reason.value, "error": error}):
@@ -302,7 +336,8 @@ class Pipeline:
         reasoning = (f"Deterministic fallback, not a model verdict: {reason.value} at {stage}. "
                      f"Code can only establish that {why}. No judgment was made about this file.")
         return await self._write_and_respond(
-            trace_id, user_id, claim, log, usage, run_id, flags, facts, outcome, VerdictSource.DETERMINISTIC_FALLBACK,
+            conn, trace_id, user_id, claim, log, usage, run_id, flags, facts, outcome,
+            VerdictSource.DETERMINISTIC_FALLBACK,
             Confidence.LOW, reasoning, [], cited, [], not cited, [], None, [], reason, stage, error)
 
     @staticmethod
@@ -323,26 +358,31 @@ class Pipeline:
             return facts
         return facts.model_copy(update={"payable": payable_amount(claim, policy)})
 
-    async def _write_and_respond(self, trace_id, user_id, claim, log, usage, run_id, flags, facts, outcome, source,
-                                 confidence, reasoning, findings, cited, removed, uncited, overrides, judgment,
-                                 model_ids, fallback_reason, fallback_stage,
+    async def _write_and_respond(self, conn, trace_id, user_id, claim, log, usage, run_id, flags, facts, outcome,
+                                 source, confidence, reasoning, findings, cited, removed, uncited, overrides,
+                                 judgment, model_ids, fallback_reason, fallback_stage,
                                  fallback_error=None) -> RecommendationResponse:
         body = DraftRecommendationRequest(
             claim_id=claim.claim_id, run_id=run_id, outcome=outcome, verdict_source=source, confidence=confidence,
             reasoning=reasoning, deterministic=facts, findings=findings, cited_clause_ids=cited, uncited=uncited,
             model_ids=model_ids, requested_by=user_id)
         with custom_span("write_draft", {"claim_id": claim.claim_id, "run_id": str(run_id)}):
-            written = await self.clients.post_draft(body)
+            # The one write, through the door, idempotent on claim_id + run_id (D-009, D-037).
+            result = await conn.call("submit_draft_recommendation", claim_id=claim.claim_id,
+                                     idempotency_key=idempotency_key(claim.claim_id, run_id),
+                                     draft=body.model_dump(mode="json"))
+            written = DraftRecommendationResponse.model_validate(result["recommendation"])
         return RecommendationResponse(
             run_id=run_id, claim_id=claim.claim_id, status=RecommendationStatus.DRAFT, outcome=outcome,
             verdict_source=source, fallback_reason=fallback_reason, fallback_stage=fallback_stage,
             fallback_error=fallback_error,
             confidence=confidence, reasoning=reasoning, deterministic=facts, judgment=judgment,
-            cited_clauses=[CitedClause(clause_id=c, heading=self.index.clauses[c].heading) for c in cited],
+            cited_clauses=[CitedClause(clause_id=c, heading=log.hits[c].heading) for c in cited],
             evidence_doc_ids=list(dict.fromkeys(d for f in findings for d in f.evidence_doc_ids)),
             retrieved_clause_ids=log.retrieved_ids, citations_removed=removed, uncited=uncited,
             code_overrides=overrides, injection_flags=flags, recommendation_id=written.recommendation_id,
             usage=usage, trace_id=trace_id)
 
 
-__all__ = ["ACTION", "ClientSystemError", "InjectionFlag", "Pipeline", "Refused"]
+__all__ = ["ACTION", "DOSSIER_EXCLUDES_CLAIM", "DOSSIER_EXCLUDES_POLICY", "DoorCallError", "InjectionFlag",
+           "Pipeline"]

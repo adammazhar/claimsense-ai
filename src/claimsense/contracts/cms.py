@@ -36,6 +36,25 @@ class LossType(StrEnum):
     THEFT = "theft"  # a comprehensive peril, kept separate because it has its own document duties
 
 
+class ClaimLine(StrEnum):
+    """The line a claim is handled on, set by the CMS at first notice of loss (D-034).
+
+    A stored field, never inferred from documents or by a model. The MCP door scopes access by it.
+    """
+
+    PHYSICAL_DAMAGE = "physical_damage"
+    BODILY_INJURY = "bodily_injury"
+
+
+class SiuReferral(Contract):
+    """An open Special Investigations Unit referral. Fraud details: visible to SIU and supervisors only,
+    and never part of any model's input (D-034)."""
+
+    referred_at: AwareDatetime
+    source: str = Field(min_length=1)
+    reason: str = Field(min_length=1)
+
+
 class Vehicle(Contract):
     vin: SyntheticVin
     year: int = Field(ge=1990, le=2027)
@@ -70,15 +89,20 @@ class Claim(Contract):
     legacy_fraud_score: Score = Field(description="Input to the Claim Assessment agent only; never the ROUTE trigger (D-007).")
     prior_claims_24m: int = Field(ge=0)
     reported_at: AwareDatetime
+    claim_line: ClaimLine = Field(description="Set at FNOL. Scopes access; excluded from the model dossier.")
+    siu_referral: SiuReferral | None = Field(
+        default=None, description="Fraud details. Stripped for every role but SIU and supervisor.")
 
 
 class ClaimAssignment(Contract):
-    """Response body of GET /claims/{claim_id}/assignment."""
+    """Response body of GET /claims/{claim_id}/assignment. The routing metadata the scope gate reads."""
 
     claim_id: ClaimId
     adjuster_user_id: UserId
     desk: str = Field(min_length=1)
     assigned_at: AwareDatetime
+    claim_line: ClaimLine
+    siu_referred: bool = False
 
 
 class Outcome(StrEnum):

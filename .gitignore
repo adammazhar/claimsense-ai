@@ -13,6 +13,10 @@ docs/ik/
 # Local scratch output (charter renders, etc.)
 tmp/
 
+# The door's runtime state: the hashed seat registry and the audit trail. Never committed; a sample of
+# the trail is copied into docs/evidence/m4/ by hand.
+runtime/
+
 # Local proof of submission (uploaded PDFs, form confirmations): never committed
 submissions/
 

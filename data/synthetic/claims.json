@@ -18,7 +18,9 @@
     "repair_estimate": "2400.00",
     "legacy_fraud_score": 0.12,
     "prior_claims_24m": 0,
-    "reported_at": "2026-06-15T09:00:00Z"
+    "reported_at": "2026-06-15T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0002",
@@ -39,7 +41,9 @@
     "repair_estimate": "650.00",
     "legacy_fraud_score": 0.08,
     "prior_claims_24m": 0,
-    "reported_at": "2026-04-04T09:00:00Z"
+    "reported_at": "2026-04-04T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0003",
@@ -60,7 +64,9 @@
     "repair_estimate": "3750.00",
     "legacy_fraud_score": 0.41,
     "prior_claims_24m": 0,
-    "reported_at": "2026-05-21T09:00:00Z"
+    "reported_at": "2026-05-21T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0004",
@@ -81,7 +87,9 @@
     "repair_estimate": "1850.00",
     "legacy_fraud_score": 0.15,
     "prior_claims_24m": 1,
-    "reported_at": "2026-06-23T09:00:00Z"
+    "reported_at": "2026-06-23T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0005",
@@ -102,7 +110,9 @@
     "repair_estimate": "3100.00",
     "legacy_fraud_score": 0.91,
     "prior_claims_24m": 0,
-    "reported_at": "2026-08-31T09:00:00Z"
+    "reported_at": "2026-08-31T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0006",
@@ -123,7 +133,9 @@
     "repair_estimate": "4120.00",
     "legacy_fraud_score": 0.1,
     "prior_claims_24m": 0,
-    "reported_at": "2026-01-19T09:00:00Z"
+    "reported_at": "2026-01-19T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0007",
@@ -144,7 +156,9 @@
     "repair_estimate": "2900.00",
     "legacy_fraud_score": 0.2,
     "prior_claims_24m": 0,
-    "reported_at": "2026-09-11T09:00:00Z"
+    "reported_at": "2026-09-11T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0008",
@@ -165,7 +179,9 @@
     "repair_estimate": "6400.00",
     "legacy_fraud_score": 0.18,
     "prior_claims_24m": 0,
-    "reported_at": "2026-05-06T09:00:00Z"
+    "reported_at": "2026-05-06T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0009",
@@ -186,7 +202,9 @@
     "repair_estimate": "3300.00",
     "legacy_fraud_score": 0.33,
     "prior_claims_24m": 0,
-    "reported_at": "2026-03-22T09:00:00Z"
+    "reported_at": "2026-03-22T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0010",
@@ -207,7 +225,9 @@
     "repair_estimate": "2700.00",
     "legacy_fraud_score": 0.26,
     "prior_claims_24m": 1,
-    "reported_at": "2026-04-12T09:00:00Z"
+    "reported_at": "2026-04-12T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0011",
@@ -228,7 +248,9 @@
     "repair_estimate": "5200.00",
     "legacy_fraud_score": 0.21,
     "prior_claims_24m": 0,
-    "reported_at": "2026-06-03T09:00:00Z"
+    "reported_at": "2026-06-03T09:00:00Z",
+    "claim_line": "bodily_injury",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0012",
@@ -249,7 +271,9 @@
     "repair_estimate": "14800.00",
     "legacy_fraud_score": 0.17,
     "prior_claims_24m": 0,
-    "reported_at": "2026-07-20T09:00:00Z"
+    "reported_at": "2026-07-20T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0013",
@@ -270,7 +294,9 @@
     "repair_estimate": "0.00",
     "legacy_fraud_score": 0.38,
     "prior_claims_24m": 0,
-    "reported_at": "2026-05-10T09:00:00Z"
+    "reported_at": "2026-05-10T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0014",
@@ -291,7 +317,9 @@
     "repair_estimate": "2200.00",
     "legacy_fraud_score": 0.14,
     "prior_claims_24m": 0,
-    "reported_at": "2026-07-08T09:00:00Z"
+    "reported_at": "2026-07-08T09:00:00Z",
+    "claim_line": "bodily_injury",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0021",
@@ -312,7 +340,9 @@
     "repair_estimate": "9000.00",
     "legacy_fraud_score": 0.16,
     "prior_claims_24m": 0,
-    "reported_at": "2026-08-12T09:00:00Z"
+    "reported_at": "2026-08-12T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0015",
@@ -333,7 +363,9 @@
     "repair_estimate": "7600.00",
     "legacy_fraud_score": 0.22,
     "prior_claims_24m": 1,
-    "reported_at": "2026-06-29T09:00:00Z"
+    "reported_at": "2026-06-29T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0016",
@@ -354,7 +386,13 @@
     "repair_estimate": "0.00",
     "legacy_fraud_score": 0.64,
     "prior_claims_24m": 3,
-    "reported_at": "2026-04-30T09:00:00Z"
+    "reported_at": "2026-04-30T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": {
+      "referred_at": "2026-04-30T09:30:00Z",
+      "source": "legacy_rule",
+      "reason": "Legacy fraud score 0.64 is at or above the 0.50 referral threshold."
+    }
   },
   {
     "claim_id": "CLM-2026-0017",
@@ -375,7 +413,9 @@
     "repair_estimate": "4500.00",
     "legacy_fraud_score": 0.35,
     "prior_claims_24m": 0,
-    "reported_at": "2026-06-07T09:00:00Z"
+    "reported_at": "2026-06-07T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0018",
@@ -396,7 +436,9 @@
     "repair_estimate": "7900.00",
     "legacy_fraud_score": 0.3,
     "prior_claims_24m": 0,
-    "reported_at": "2026-07-13T09:00:00Z"
+    "reported_at": "2026-07-13T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0022",
@@ -417,7 +459,9 @@
     "repair_estimate": "5600.00",
     "legacy_fraud_score": 0.18,
     "prior_claims_24m": 0,
-    "reported_at": "2026-08-06T09:00:00Z"
+    "reported_at": "2026-08-06T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0023",
@@ -438,7 +482,9 @@
     "repair_estimate": "4200.00",
     "legacy_fraud_score": 0.44,
     "prior_claims_24m": 1,
-    "reported_at": "2026-07-20T09:00:00Z"
+    "reported_at": "2026-07-20T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0024",
@@ -459,7 +505,9 @@
     "repair_estimate": "6800.00",
     "legacy_fraud_score": 0.21,
     "prior_claims_24m": 0,
-    "reported_at": "2026-08-13T09:00:00Z"
+    "reported_at": "2026-08-13T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   },
   {
     "claim_id": "CLM-2026-0019",
@@ -480,6 +528,8 @@
     "repair_estimate": "3000.00",
     "legacy_fraud_score": 0.1,
     "prior_claims_24m": 0,
-    "reported_at": "2026-05-31T09:00:00Z"
+    "reported_at": "2026-05-31T09:00:00Z",
+    "claim_line": "physical_damage",
+    "siu_referral": null
   }
 ]

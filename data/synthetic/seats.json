@@ -1,0 +1,34 @@
+[
+  {
+    "user_id": "adj-001",
+    "role": "adjuster_pd"
+  },
+  {
+    "user_id": "adj-002",
+    "role": "adjuster_pd"
+  },
+  {
+    "user_id": "adj-003",
+    "role": "adjuster_pd"
+  },
+  {
+    "user_id": "adj-004",
+    "role": "adjuster_bi"
+  },
+  {
+    "user_id": "adj-007",
+    "role": "adjuster_pd"
+  },
+  {
+    "user_id": "cs-021",
+    "role": "customer_service"
+  },
+  {
+    "user_id": "siu-001",
+    "role": "siu"
+  },
+  {
+    "user_id": "sup-001",
+    "role": "supervisor"
+  }
+]

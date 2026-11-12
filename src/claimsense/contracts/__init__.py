@@ -9,6 +9,7 @@ from .cms import (
     AdjusterDecisionEvent,
     Claim,
     ClaimAssignment,
+    ClaimLine,
     Confidence,
     DeterministicFacts,
     DraftRecommendationRequest,
@@ -20,10 +21,12 @@ from .cms import (
     OverrideReason,
     Party,
     RecommendationStatus,
+    SiuReferral,
     VerdictSource,
     Vehicle,
 )
 from .common import Contract, ErrorCode, ErrorResponse
+from .door import RETRYABLE, AuditRow, DoorError, DoorErrorCode, Role, Seat, SeatRegistry
 from .copilot import (
     CitedClause,
     CodeOverride,
@@ -69,6 +72,9 @@ SCHEMA_MODELS: dict[str, type[Contract]] = {
     "corpus.retrieval_query": RetrievalQuery,
     "corpus.retrieval_result": RetrievalResult,
     "common.error_response": ErrorResponse,
+    "door.error": DoorError,
+    "door.audit_row": AuditRow,
+    "door.seat_registry": SeatRegistry,
 }
 
 __all__ = [name for name in dir() if not name.startswith("_")]

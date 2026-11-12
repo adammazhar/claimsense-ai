@@ -38,7 +38,8 @@ def test_every_record_validates(name: str) -> None:
 
 
 def test_fixtures_are_up_to_date_with_eval_cases(cases: list[dict]) -> None:
-    built = build_fixtures.build(cases)
+    staff = yaml.safe_load((ROOT / "evals" / "cases_v0.yaml").read_text(encoding="utf-8")).get("staff", [])
+    built = build_fixtures.build(cases, staff)
     for name, records in built.items():
         on_disk = (DATA / f"{name}.json").read_text(encoding="utf-8")
         assert on_disk == build_fixtures.render(records), f"{name}.json is stale: run scripts/build_fixtures.py"

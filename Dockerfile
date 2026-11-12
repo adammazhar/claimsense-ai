@@ -1,4 +1,4 @@
-# One image for the co-pilot API and the three mock client systems; compose picks the command.
+# One image for the co-pilot API, the MCP door and the three mock client systems; compose picks the command.
 FROM python:3.12-slim
 
 LABEL org.opencontainers.image.source="https://github.com/adammazhar/claimsense-ai"

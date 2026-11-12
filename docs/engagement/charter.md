@@ -21,15 +21,19 @@ claims by step; if wrong, scope moves to where the time goes (logged in DECISION
 
 ## 3. The three client systems and their integration points
 
-| System | Owner | What the co-pilot needs | Access method (integration point) |
-|---|---|---|---|
-| **Claims management (CMS)** | Claims IT, CMS team | Claim: loss time, narrative, vehicle, fraud score, prior claims | REST read `GET /claims/{id}` |
-| | | Assignment: source of truth for entitlement | REST read `GET /claims/{id}/assignment` |
-| | | Draft recommendation, reasoning, citations | **The only write:** `POST /claims/{id}/recommendations`, idempotent on claim + `run_id` |
-| **Policy administration (PAS)** | Claims IT, policy systems | Policy as of the loss date: term, payments, coverages, deductibles, endorsements | REST read `GET /policies/{id}?as_of={loss_date}` |
-| **Document store** | Claims IT, content services | Police report, estimate, statements, medical notes, photo metadata | REST read `GET /claims/{id}/documents`, `GET /documents/{id}` |
+Since Milestone 4, the co-pilot reaches every system only through one governed **MCP door**, under the
+adjuster's own token. The door enforces scope in code and audits every call (D-031; matrix in
+[access-control.md](access-control.md)).
 
-Also: identity provider; clause corpus (owner: Compliance); one audited service checks entitlement.
+| System | Owner | What the co-pilot needs | Door tool → integration point |
+|---|---|---|---|
+| **Claims management (CMS)** | Claims IT, CMS team | Claim, plus the assignment and claim line that scope access | `get_claim` → `GET /claims/{id}`, `/assignment` |
+| | | Draft recommendation, reasoning, citations | **The only write:** `submit_draft_recommendation` → `POST /claims/{id}/recommendations`, idempotent |
+| **Policy administration (PAS)** | Claims IT, policy systems | Policy as of the loss date: term, payments, coverages, endorsements | `get_policy` → `GET /policies/{id}?as_of=` |
+| **Document store** | Claims IT, content services | Police report, estimate, statements, medical notes, photos | `get_claim_documents` → `GET /claims/{id}/documents` |
+| **Clause corpus** | Compliance | Policy wording for the claim's form | `search_clauses` (the agents' only tool) |
+
+Also: identity provider (simulated by seat tokens; production is OIDC with token exchange, D-033).
 
 ## 4. Target and fixed constraints
 
@@ -62,7 +66,7 @@ commercial auto, liability adjudication, payment execution, subrogation.
 ## 7. Top risks (full register: [risk-register.md](risk-register.md))
 
 1. **Fixture and data-access delay** (high): build on our own fixtures; adapters remap later (R1).
-2. **IK AWS account or OpenAI key limits** (high): local Docker stack first; token budgets (R2).
+2. **OpenAI key limits** (medium): AWS access granted 2026-11-11; token budgets, retry on 429 (R2).
 3. **Model misreads coverage** (medium): DENY precedence in code; citation validator (R3).
 
 ## 8. Open questions for the client

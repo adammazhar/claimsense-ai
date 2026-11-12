@@ -1,0 +1,183 @@
+# Two-adjuster test, 20261111T225732Z
+stack: http://localhost:8000 (brain: openai); claim: CLM-2026-0011; all data synthetic
+
+## Request as adj-004 (allowed)
+POST /v1/claims/CLM-2026-0011/recommendation
+Authorization: Bearer <adj-004 seat token, redacted>
+X-Correlation-Id: two-adjuster-20261111T225732Z-allowed
+body: {}
+-> HTTP 200 in 10.57s
+{
+  "run_id": "1766e968-adec-4c26-8f6f-018c5ff46cd8",
+  "claim_id": "CLM-2026-0011",
+  "status": "draft",
+  "outcome": "FLAG",
+  "verdict_source": "model",
+  "fallback_reason": null,
+  "fallback_stage": null,
+  "fallback_error": null,
+  "confidence": "high",
+  "reasoning": "The claim involves a collision loss, which is covered under the collision insuring agreement (CLS-COL-001). The policy is in term, and coverage is present. However, there is potential injury exposure as the driver of the other vehicle was taken to the hospital with chest pain, which requires a licensed adjuster to handle the claim.",
+  "deterministic": {
+    "in_term": true,
+    "coverage_present": true,
+    "total_loss_ratio": 0.2476,
+    "total_loss_candidate": false,
+    "days_since_inception": 102,
+    "photos_before_inception": null,
+    "payable": null
+  },
+  "judgment": {
+    "model_outcome": "FLAG",
+    "coverage_reading": "covered",
+    "coverage_reasoning": "The claim involves a collision loss, which is covered under the collision insuring agreement (CLS-COL-001). The deterministic facts confirm that the policy is in term and coverage is present. There are no endorsements or exclusions applicable to this claim, such as a named driver exclusion or use for public conveyance, that would negate coverage.",
+    "fraud_indicated": false,
+    "injury_exposure": true,
+    "missing_documents": [],
+    "findings": [
+      {
+        "statement": "The claim involves a collision loss, which is covered under the collision insuring agreement.",
+        "evidence_doc_ids": [],
+        "evidence_clause_ids": [
+          "CLS-COL-001"
+        ]
+      },
+      {
+        "statement": "The driver of the other vehicle was taken to the hospital by ambulance with chest pain, indicating potential injury exposure.",
+        "evidence_doc_ids": [
+          "DOC-0011-1"
+        ],
+        "evidence_clause_ids": [
+          "CLS-MED-001"
+        ]
+      }
+    ],
+    "model_ids": [
+      "gpt-4o-mini",
+      "gpt-4o"
+    ]
+  },
+  "cited_clauses": [
+    {
+      "clause_id": "CLS-COL-001",
+      "heading": "Collision insuring agreement"
+    },
+    {
+      "clause_id": "CLS-MED-001",
+      "heading": "Medical payments coverage"
+    }
+  ],
+  "evidence_doc_ids": [
+    "DOC-0011-1"
+  ],
+  "retrieved_clause_ids": [
+    "CLS-PER-006",
+    "CLS-DEC-001",
+    "CLS-MED-001",
+    "CLS-COL-001",
+    "CLS-CMP-001",
+    "CLS-DRV-002",
+    "CLS-EXC-003",
+    "CLS-DUT-001",
+    "CLS-TL-001",
+    "CLS-FRD-001"
+  ],
+  "citations_removed": [],
+  "uncited": false,
+  "code_overrides": [],
+  "injection_flags": [],
+  "recommendation_id": "d2e7a639-751b-473b-962c-7617b7286097",
+  "usage": [
+    {
+      "stage": "document_intake",
+      "model": "gpt-4o-mini",
+      "requests": 1,
+      "input_tokens": 1404,
+      "cached_input_tokens": 0,
+      "output_tokens": 302,
+      "seconds": 4.864
+    },
+    {
+      "stage": "coverage_check",
+      "model": "gpt-4o",
+      "requests": 2,
+      "input_tokens": 4039,
+      "cached_input_tokens": 1792,
+      "output_tokens": 146,
+      "seconds": 2.684
+    },
+    {
+      "stage": "claim_assessment",
+      "model": "gpt-4o",
+      "requests": 2,
+      "input_tokens": 5076,
+      "cached_input_tokens": 2176,
+      "output_tokens": 152,
+      "seconds": 3.11
+    },
+    {
+      "stage": "decision_draft",
+      "model": "gpt-4o",
+      "requests": 1,
+      "input_tokens": 2496,
+      "cached_input_tokens": 0,
+      "output_tokens": 215,
+      "seconds": 2.324
+    }
+  ],
+  "trace_id": "trace_7aea0159915240a39cc44ae155563e0c",
+  "correlation_id": "two-adjuster-20261111T225732Z-allowed"
+}
+
+## Request as adj-001 (denied)
+POST /v1/claims/CLM-2026-0011/recommendation
+Authorization: Bearer <adj-001 seat token, redacted>
+X-Correlation-Id: two-adjuster-20261111T225732Z-denied
+body: {}
+-> HTTP 403 in 0.04s
+{
+  "error": {
+    "code": "forbidden_scope",
+    "message": "This seat is not permitted to access this claim.",
+    "hint": "The denial was logged in the audit trail.",
+    "retryable": false,
+    "retry_after": null,
+    "correlation_id": "two-adjuster-20261111T225732Z-denied",
+    "request_id": "req-26648c9b8be3"
+  }
+}
+
+## Audit rows (the MCP door's trail, for these two requests)
+{"ts": "2026-11-11T22:57:33.059746Z", "request_id": "req-7b725c3c8a54", "correlation_id": "two-adjuster-20261111T225732Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "get_claim", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "767c5c0e31dc4951f4bc8ffb49d00f07d5612db39be9885f2400546a35b17119", "hash": "e4b23c381fc98ca250ad62210607e8aec4136c7466ad95e7ba233de43e83df96"}
+{"ts": "2026-11-11T22:57:33.087041Z", "request_id": "req-53763e94fc05", "correlation_id": "two-adjuster-20261111T225732Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "whoami", "resource": "seat/adj-004", "decision": "allow", "reason": "authenticated", "prev_hash": "e4b23c381fc98ca250ad62210607e8aec4136c7466ad95e7ba233de43e83df96", "hash": "cf680e59157f05a99e4ce56a0979117cc20b3f96d2ef2e5170e45412a058861e"}
+{"ts": "2026-11-11T22:57:33.106057Z", "request_id": "req-243d1353287d", "correlation_id": "two-adjuster-20261111T225732Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "get_policy", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "cf680e59157f05a99e4ce56a0979117cc20b3f96d2ef2e5170e45412a058861e", "hash": "d747a9a29f0621d9d2faae6751d4d6a5ab3f4b8c984dac74fd40f248bcaebe3b"}
+{"ts": "2026-11-11T22:57:33.127527Z", "request_id": "req-ee0c838e93d6", "correlation_id": "two-adjuster-20261111T225732Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "get_claim_documents", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "d747a9a29f0621d9d2faae6751d4d6a5ab3f4b8c984dac74fd40f248bcaebe3b", "hash": "b7e171c0ed19a6c2bb147e12cc1805b86d29d6edc74171a778028d5d5ec8da94"}
+{"ts": "2026-11-11T22:57:33.141483Z", "request_id": "req-c375c077112a", "correlation_id": "two-adjuster-20261111T225732Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "search_clauses", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "b7e171c0ed19a6c2bb147e12cc1805b86d29d6edc74171a778028d5d5ec8da94", "hash": "7af7eabcf1d976b568f70988912d4178cf0ef747f839ce141f57b64f3b2be7c3"}
+{"ts": "2026-11-11T22:57:33.161067Z", "request_id": "req-e82c615e5674", "correlation_id": "two-adjuster-20261111T225732Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "search_clauses", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "7af7eabcf1d976b568f70988912d4178cf0ef747f839ce141f57b64f3b2be7c3", "hash": "4f0e0b3e7669d752435663570cce7cb6a3c719c0a7a12b78d95b553b17193b69"}
+{"ts": "2026-11-11T22:57:33.180721Z", "request_id": "req-07939cfc3aab", "correlation_id": "two-adjuster-20261111T225732Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "search_clauses", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "4f0e0b3e7669d752435663570cce7cb6a3c719c0a7a12b78d95b553b17193b69", "hash": "4ebdec7f70e81b75a48f3416fd422dae5947a1799332a74e4f5b53a1efdaca88"}
+{"ts": "2026-11-11T22:57:39.337354Z", "request_id": "req-c0a14daf0322", "correlation_id": "two-adjuster-20261111T225732Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "search_clauses", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "4ebdec7f70e81b75a48f3416fd422dae5947a1799332a74e4f5b53a1efdaca88", "hash": "5ba3ab9c30176a96985f20d71dc282e4444c40ab569f635bad0f61a9fb61b8d3"}
+{"ts": "2026-11-11T22:57:39.359809Z", "request_id": "req-48619a9a5102", "correlation_id": "two-adjuster-20261111T225732Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "search_clauses", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "5ba3ab9c30176a96985f20d71dc282e4444c40ab569f635bad0f61a9fb61b8d3", "hash": "eeb6aca7b6b81650d5587649f6cdd3a5872e2c6c325b55d02e6f7a1182f40772"}
+{"ts": "2026-11-11T22:57:39.744255Z", "request_id": "req-8b8b6dbc4fe0", "correlation_id": "two-adjuster-20261111T225732Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "search_clauses", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "eeb6aca7b6b81650d5587649f6cdd3a5872e2c6c325b55d02e6f7a1182f40772", "hash": "6fe587f3677002fd7d9eab682d10f4291ed13328239b246679ec797cba170f62"}
+{"ts": "2026-11-11T22:57:39.772250Z", "request_id": "req-7fde65c9652f", "correlation_id": "two-adjuster-20261111T225732Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "search_clauses", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "6fe587f3677002fd7d9eab682d10f4291ed13328239b246679ec797cba170f62", "hash": "a327ccbdff46b8e716fadbcce796ae08c2cdfa21eb715c508cdeb88b933873d2"}
+{"ts": "2026-11-11T22:57:43.507955Z", "request_id": "req-54d9d453f647", "correlation_id": "two-adjuster-20261111T225732Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "submit_draft_recommendation", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "a327ccbdff46b8e716fadbcce796ae08c2cdfa21eb715c508cdeb88b933873d2", "hash": "198e6301dbcec692e557b0bd01d121d6430a771a965ab0a8a80226f54c09bdbb"}
+{"ts": "2026-11-11T22:57:43.567314Z", "request_id": "req-26648c9b8be3", "correlation_id": "two-adjuster-20261111T225732Z-denied", "acting_identity": "adj-001", "role": "adjuster_pd", "scope": "claims:physical_damage:assigned", "action": "get_claim", "resource": "claim/CLM-2026-0011", "decision": "deny", "reason": "claim_line_bodily_injury_outside_scope", "prev_hash": "198e6301dbcec692e557b0bd01d121d6430a771a965ab0a8a80226f54c09bdbb", "hash": "c8f46369dac05694511a8ea84127c163dd7d7be1bea67612cd6aef45aa57716e"}
+
+## Checks
+  [ok] adj-004 gets 200
+  [ok] the answer is for the claim asked about
+  [ok] the answer is the co-pilot's model verdict, not a fallback
+  [ok] the answer is a draft for the adjuster to confirm
+  [ok] the answer carries no fraud details or access metadata (filtered)
+  [ok] adj-001 gets 403
+  [ok] the refusal is the door's structured forbidden_scope error
+  [ok] the refusal carries no claim data
+  [ok] audit: get_claim allow for adj-004
+  [ok] audit: the denial is the first and only row for its request
+  [ok] audit: get_claim deny for adj-001
+  [ok] audit: the deny row's request_id is the error's
+  [ok] audit: the hash chain over the whole trail verifies
+  [ok] audit: both rows carry the seat's scope
+
+model cost of the answered request: $0.0345 (13015 input, 815 output tokens)
+
+PASS

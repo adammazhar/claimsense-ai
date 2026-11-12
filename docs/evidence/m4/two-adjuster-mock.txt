@@ -1,0 +1,177 @@
+# Two-adjuster test, 20261111T225721Z
+stack: http://localhost:8000 (brain: mock); claim: CLM-2026-0011; all data synthetic
+
+## Request as adj-004 (allowed)
+POST /v1/claims/CLM-2026-0011/recommendation
+Authorization: Bearer <adj-004 seat token, redacted>
+X-Correlation-Id: two-adjuster-20261111T225721Z-allowed
+body: {}
+-> HTTP 200 in 0.37s
+{
+  "run_id": "4350f647-9581-49cc-be59-6a5cd3f82a7e",
+  "claim_id": "CLM-2026-0011",
+  "status": "draft",
+  "outcome": "FLAG",
+  "verdict_source": "model",
+  "fallback_reason": null,
+  "fallback_stage": null,
+  "fallback_error": null,
+  "confidence": "high",
+  "reasoning": "In term, and the insuring agreement responds to this loss. Outcome: FLAG.",
+  "deterministic": {
+    "in_term": true,
+    "coverage_present": true,
+    "total_loss_ratio": 0.2476,
+    "total_loss_candidate": false,
+    "days_since_inception": 102,
+    "photos_before_inception": null,
+    "payable": null
+  },
+  "judgment": {
+    "model_outcome": "FLAG",
+    "coverage_reading": "covered",
+    "coverage_reasoning": "In term, and the insuring agreement responds to this loss.",
+    "fraud_indicated": false,
+    "injury_exposure": true,
+    "missing_documents": [],
+    "findings": [
+      {
+        "statement": "The file shows someone may have been hurt.",
+        "evidence_doc_ids": [
+          "DOC-0011-1"
+        ],
+        "evidence_clause_ids": [
+          "CLS-BI-001"
+        ]
+      }
+    ],
+    "model_ids": [
+      "mock-brain/document_intake",
+      "mock-brain/coverage_check",
+      "mock-brain/claim_assessment",
+      "mock-brain/decision_draft"
+    ]
+  },
+  "cited_clauses": [
+    {
+      "clause_id": "CLS-PER-006",
+      "heading": "Policy period and territory"
+    },
+    {
+      "clause_id": "CLS-COL-001",
+      "heading": "Collision insuring agreement"
+    },
+    {
+      "clause_id": "CLS-BI-001",
+      "heading": "Bodily injury liability"
+    }
+  ],
+  "evidence_doc_ids": [
+    "DOC-0011-1"
+  ],
+  "retrieved_clause_ids": [
+    "CLS-PER-006",
+    "CLS-DEC-001",
+    "CLS-MED-001",
+    "CLS-COL-001",
+    "CLS-CMP-001",
+    "CLS-BI-001",
+    "CLS-TL-001"
+  ],
+  "citations_removed": [],
+  "uncited": false,
+  "code_overrides": [],
+  "injection_flags": [],
+  "recommendation_id": "f2b1be59-1962-455b-a574-35356fc2f60c",
+  "usage": [
+    {
+      "stage": "document_intake",
+      "model": "mock-brain/document_intake",
+      "requests": 1,
+      "input_tokens": 10,
+      "cached_input_tokens": 0,
+      "output_tokens": 1,
+      "seconds": 0.006
+    },
+    {
+      "stage": "coverage_check",
+      "model": "mock-brain/coverage_check",
+      "requests": 2,
+      "input_tokens": 20,
+      "cached_input_tokens": 0,
+      "output_tokens": 2,
+      "seconds": 0.029
+    },
+    {
+      "stage": "claim_assessment",
+      "model": "mock-brain/claim_assessment",
+      "requests": 2,
+      "input_tokens": 20,
+      "cached_input_tokens": 0,
+      "output_tokens": 2,
+      "seconds": 0.055
+    },
+    {
+      "stage": "decision_draft",
+      "model": "mock-brain/decision_draft",
+      "requests": 1,
+      "input_tokens": 10,
+      "cached_input_tokens": 0,
+      "output_tokens": 1,
+      "seconds": 0.003
+    }
+  ],
+  "trace_id": "trace_8afc3d5b558c437196831c30f850a27a",
+  "correlation_id": "two-adjuster-20261111T225721Z-allowed"
+}
+
+## Request as adj-001 (denied)
+POST /v1/claims/CLM-2026-0011/recommendation
+Authorization: Bearer <adj-001 seat token, redacted>
+X-Correlation-Id: two-adjuster-20261111T225721Z-denied
+body: {}
+-> HTTP 403 in 0.06s
+{
+  "error": {
+    "code": "forbidden_scope",
+    "message": "This seat is not permitted to access this claim.",
+    "hint": "The denial was logged in the audit trail.",
+    "retryable": false,
+    "retry_after": null,
+    "correlation_id": "two-adjuster-20261111T225721Z-denied",
+    "request_id": "req-5f1084ca7116"
+  }
+}
+
+## Audit rows (the MCP door's trail, for these two requests)
+{"ts": "2026-11-11T22:57:21.583654Z", "request_id": "req-119b89978e50", "correlation_id": "two-adjuster-20261111T225721Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "get_claim", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000", "hash": "e8fe6472fbe83f5eff23c4b02b570605b4cd67f6e87e8cd8476032a888382bed"}
+{"ts": "2026-11-11T22:57:21.612049Z", "request_id": "req-e7591957c537", "correlation_id": "two-adjuster-20261111T225721Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "whoami", "resource": "seat/adj-004", "decision": "allow", "reason": "authenticated", "prev_hash": "e8fe6472fbe83f5eff23c4b02b570605b4cd67f6e87e8cd8476032a888382bed", "hash": "99864de54c8a2eb476aefc956234fdbb1d29a23f84f3f9ebab7e130bf05eb740"}
+{"ts": "2026-11-11T22:57:21.634241Z", "request_id": "req-d0727962ee53", "correlation_id": "two-adjuster-20261111T225721Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "get_policy", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "99864de54c8a2eb476aefc956234fdbb1d29a23f84f3f9ebab7e130bf05eb740", "hash": "c8ea2dfc9b854966d479ece0b60afaf36e39bc1b4e3a8f28e5926670f99a8926"}
+{"ts": "2026-11-11T22:57:21.658932Z", "request_id": "req-b2e02d82419a", "correlation_id": "two-adjuster-20261111T225721Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "get_claim_documents", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "c8ea2dfc9b854966d479ece0b60afaf36e39bc1b4e3a8f28e5926670f99a8926", "hash": "e2ba6aac8b5462ddf3fe693def31d6622085b3eb8ec9dc48cd571beabaaa335d"}
+{"ts": "2026-11-11T22:57:21.683950Z", "request_id": "req-85da68afc4ae", "correlation_id": "two-adjuster-20261111T225721Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "search_clauses", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "e2ba6aac8b5462ddf3fe693def31d6622085b3eb8ec9dc48cd571beabaaa335d", "hash": "6139e004720979c531817b0acffd61238fd62afbb27a937240aa2d09a2a75a80"}
+{"ts": "2026-11-11T22:57:21.703269Z", "request_id": "req-904acc348116", "correlation_id": "two-adjuster-20261111T225721Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "search_clauses", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "6139e004720979c531817b0acffd61238fd62afbb27a937240aa2d09a2a75a80", "hash": "763acfdb6b29e936d1aee69a14f7294ba00814b110b9e76efb47fb81a615d769"}
+{"ts": "2026-11-11T22:57:21.726547Z", "request_id": "req-770e6ea524ed", "correlation_id": "two-adjuster-20261111T225721Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "search_clauses", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "763acfdb6b29e936d1aee69a14f7294ba00814b110b9e76efb47fb81a615d769", "hash": "6d74716db5c36b556d030f76fa71c08ad85e38be9591157d62886325b74bfe96"}
+{"ts": "2026-11-11T22:57:21.763475Z", "request_id": "req-a0b0c597ea58", "correlation_id": "two-adjuster-20261111T225721Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "search_clauses", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "6d74716db5c36b556d030f76fa71c08ad85e38be9591157d62886325b74bfe96", "hash": "6a88a4a552876060b12016058c11cd0b8585e73a1f2f901671f88c74aff40444"}
+{"ts": "2026-11-11T22:57:21.781674Z", "request_id": "req-0d915b6066b4", "correlation_id": "two-adjuster-20261111T225721Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "search_clauses", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "6a88a4a552876060b12016058c11cd0b8585e73a1f2f901671f88c74aff40444", "hash": "cabaab20638d58fe444f0eec897ebab63ac45854b7b157ba5d10821bb456289f"}
+{"ts": "2026-11-11T22:57:21.819346Z", "request_id": "req-36d0772ebc40", "correlation_id": "two-adjuster-20261111T225721Z-allowed", "acting_identity": "adj-004", "role": "adjuster_bi", "scope": "claims:bodily_injury:assigned", "action": "submit_draft_recommendation", "resource": "claim/CLM-2026-0011", "decision": "allow", "reason": "assigned_in_line", "prev_hash": "cabaab20638d58fe444f0eec897ebab63ac45854b7b157ba5d10821bb456289f", "hash": "6cd17ac869ec863af5da7dad64113cdc9228fb6770ad5768496632cfbbf096e0"}
+{"ts": "2026-11-11T22:57:21.874988Z", "request_id": "req-5f1084ca7116", "correlation_id": "two-adjuster-20261111T225721Z-denied", "acting_identity": "adj-001", "role": "adjuster_pd", "scope": "claims:physical_damage:assigned", "action": "get_claim", "resource": "claim/CLM-2026-0011", "decision": "deny", "reason": "claim_line_bodily_injury_outside_scope", "prev_hash": "6cd17ac869ec863af5da7dad64113cdc9228fb6770ad5768496632cfbbf096e0", "hash": "767c5c0e31dc4951f4bc8ffb49d00f07d5612db39be9885f2400546a35b17119"}
+
+## Checks
+  [ok] adj-004 gets 200
+  [ok] the answer is for the claim asked about
+  [ok] the answer is the co-pilot's model verdict, not a fallback
+  [ok] the answer is a draft for the adjuster to confirm
+  [ok] the answer carries no fraud details or access metadata (filtered)
+  [ok] adj-001 gets 403
+  [ok] the refusal is the door's structured forbidden_scope error
+  [ok] the refusal carries no claim data
+  [ok] audit: get_claim allow for adj-004
+  [ok] audit: the denial is the first and only row for its request
+  [ok] audit: get_claim deny for adj-001
+  [ok] audit: the deny row's request_id is the error's
+  [ok] audit: the hash chain over the whole trail verifies
+  [ok] audit: both rows carry the seat's scope
+
+model cost of the answered request: $0.0000 (60 input, 6 output tokens)
+
+PASS

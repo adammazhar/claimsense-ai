@@ -481,6 +481,19 @@
     "trace_id": {
       "title": "Trace Id",
       "type": "string"
+    },
+    "correlation_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Ties this response to the MCP door's audit rows for the request (D-036).",
+      "title": "Correlation Id"
     }
   },
   "required": [

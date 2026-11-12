@@ -1,0 +1,106 @@
+{
+  "additionalProperties": false,
+  "description": "One row per tool call, granted or denied. Append-only and hash-chained (D-036).",
+  "properties": {
+    "ts": {
+      "format": "date-time",
+      "title": "Ts",
+      "type": "string"
+    },
+    "request_id": {
+      "title": "Request Id",
+      "type": "string"
+    },
+    "correlation_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Correlation Id"
+    },
+    "acting_identity": {
+      "description": "The seat the bearer token resolved to; 'anonymous' if none.",
+      "title": "Acting Identity",
+      "type": "string"
+    },
+    "role": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Role"
+    },
+    "scope": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Scope"
+    },
+    "action": {
+      "description": "The tool name.",
+      "title": "Action",
+      "type": "string"
+    },
+    "resource": {
+      "description": "For example claim/CLM-2026-0011.",
+      "title": "Resource",
+      "type": "string"
+    },
+    "decision": {
+      "enum": [
+        "allow",
+        "deny"
+      ],
+      "title": "Decision",
+      "type": "string"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reason"
+    },
+    "prev_hash": {
+      "title": "Prev Hash",
+      "type": "string"
+    },
+    "hash": {
+      "title": "Hash",
+      "type": "string"
+    }
+  },
+  "required": [
+    "ts",
+    "request_id",
+    "correlation_id",
+    "acting_identity",
+    "role",
+    "scope",
+    "action",
+    "resource",
+    "decision",
+    "prev_hash",
+    "hash"
+  ],
+  "title": "AuditRow",
+  "type": "object"
+}

@@ -582,3 +582,281 @@ records what was decided, why, what was rejected, who owns it, and what would re
   as more moving parts.
 - **Owner:** FDE; the repository owner for the settings
 - **Revisit when:** A second engineer joins (require one approval), or live-run cost matters at volume.
+
+## D-031 · 2026-11-11 · One governed MCP door between the co-pilot and every client system
+
+- **Decision:** An MCP server, "the door", is the only way the co-pilot reaches a system of record. It
+  bridges four: the CMS (claim, assignment, and the one write), the PAS (the policy as of the loss
+  date), the document store, and the clause library. The co-pilot imports no client adapter and names
+  no backend URL (`tests/test_no_direct_backend.py`), and in compose it isn't on the backend network.
+  - **The dossier stays (D-010).** The pipeline, not the model, fetches the one claim's record, policy
+    and documents, but now through the door, under the adjuster's own token. Every read is scoped by
+    the door and audited.
+  - **The model's only door tool is `search_clauses`.** Only Coverage Check and Claim Assessment get
+    it. The door's tool takes `(claim_id, query)`. Code binds `claim_id` to the request's claim, so the
+    model sees Milestone 3's `search_clauses(query)`. A claim the model names anyway is passed to the
+    door as named. The door gates it by the adjuster's scope like any other call, so a jailbroken model that searches another claim is refused and audited
+    (`tests/test_jailbreak.py`). `get_claim`, `get_policy`, `get_claim_documents`, `whoami` and
+    `submit_draft_recommendation` are code-only.
+  - This supersedes D-010's "no door" alternative, which D-010 kept as the upgrade path. D-010's
+    decision, a pre-fetched dossier, stands.
+- **Why:** The W16 acceptance criteria and the brief's Milestone 4 ask for one governed, audited
+  boundary with access control in code. Fetching through the door under the adjuster's token makes
+  every read scoped and audited without giving the model a way to ask for records.
+- **Alternatives considered:** (a) Model-callable record reads (`get_claim_documents` for the agents),
+  closer to the Meridian example. Rejected for now: it reopens D-010's injection surface, adds turns and
+  cost, and risks live-gate drift. Kept as a future extension, behind the same gate. (b) The door only
+  in front of the agents, with the pipeline still calling the systems directly. Rejected: two paths to
+  a system of record, one of them unaudited.
+- **Owner:** FDE; CISO at the Milestone 4 sign-off
+- **Revisit when:** Agents need records the dossier can't anticipate (D-010's own trigger).
+
+## D-032 · 2026-11-11 · The official MCP Python SDK v2 over streamable HTTP; the Agents SDK as client
+
+- **Decision:** The door is built on `mcp==2.3.0`, using `MCPServer` (v2's name for FastMCP; the v1
+  import `mcp.server.fastmcp` no longer exists) over streamable HTTP, with stateless JSON responses. The
+  co-pilot connects with `openai-agents` 0.24.0's `MCPServerStreamableHttp`, one connection per request.
+  Pipeline code calls tools on it directly. The searching agents get one `FunctionTool`, built from the
+  door's own `search_clauses` listing, that calls the door over that same connection with the same
+  retries as every read. Tests and the eval harness serve the same door in process over `httpx2`'s
+  ASGI transport, so CI crosses the real protocol, auth and gate with no ports. `mcp` and `httpx2` are
+  pinned in `requirements-runtime.txt`.
+- **Why:** v2 is the current major; v1 gets security fixes only. A smoke test (`tests/test_door_smoke.py`)
+  proved the Agents SDK client reaches the v2 server with a bearer token, and that `get_access_token()`
+  inside the tool returns the seat, before anything was built on it. The wrapper, rather than
+  `Agent(mcp_servers=[...])`, keeps the model's input as it was in Milestone 3.
+  - **Live run 1** (`mcp_servers`) scored 20 of 22, with both misses in Coverage Check. The SDK's MCP
+    path hands the model the tool result as content items instead of a string, and shows server-side
+    schema keywords (`pattern`, `maxLength`, `title`).
+  - **Live run 2** (the wrapper, plain string and clean schema, but a required `claim_id`) also scored
+    20 of 22. The per-stage turn counts showed why: across tuning and held-out cases alike, the agents
+    searched far less often than in Milestone 3.
+  - **Runs 3 and 4** (`claim_id` bound by code) still searched less than Milestone 3. The control was
+    the unchanged Milestone 3 code (`main`), run live the same day: 100% of 22, with Coverage Check
+    skipping a search on only 4 cases, as on Nov 7. So it wasn't model drift.
+  - **The fix:** the model-facing tool and the whole coverage-stage input are now byte-identical to
+    Milestone 3's, down to the schema's `title` keys and key order. A capture test checks the schema
+    (`tests/test_pipeline.py`).
+
+  A prompt bullet tried in run 4 was reverted here. It came back as D-042, once a CI run showed EV-018
+  flipping even with byte-identical input. Every fix was chosen from structural diffs and turn counts
+  across all cases, never from a held-out case's content.
+- **Alternatives considered:** (a) Pinning `mcp<2` to keep the name FastMCP from the slides. Rejected:
+  it builds on a branch in maintenance. (b) stdio transport. Rejected: the door is a separate service.
+  (c) `Agent(mcp_servers=[door])` with a tool filter. Tried first; see Why.
+- **Owner:** FDE
+- **Revisit when:** `openai-agents` or `mcp` ships a breaking change; the pins hold until then.
+
+## D-033 · 2026-11-11 · Identity is a seat bearer token, hashed and revocable, resolved by the door
+
+- **Decision:** Every adjuster seat has a random bearer token. The door's `TokenVerifier` resolves it
+  on the transport, before any tool runs, to `{user, role, scope}`. No tool has an identity argument,
+  and a forged `user_id` or `role` argument changes nothing. The registry stores only SHA-256 hashes,
+  with an expiry and a revocation time. The door re-reads it when it changes, so a revocation takes
+  effect on the next call. The co-pilot API requires `Authorization: Bearer` on every `/v1` route and
+  forwards the token to the door: presenting it is the simulated on-behalf-of exchange.
+  `scripts/issue_seat_tokens.py` (the mock IdP) writes the registry to the git-ignored `runtime/` and
+  the tokens to `.env`. It adds or updates only `SEAT_TOKEN_*` lines, backs `.env` up to `tmp/` first,
+  and never prints a token. CI mints tokens per run, and stores none as a secret. Without a registry the
+  door refuses to start. This supersedes D-023's `X-User-Id` header.
+- **Production form:** an OIDC identity provider (Cognito, Entra or Okta) signs the adjuster in. The
+  co-pilot exchanges that token for a door-audience token scoped to the same adjuster (OAuth 2.0 token
+  exchange, RFC 8693), or AgentCore Identity holds the exchange and the token vault. The door's verifier
+  then checks a signed JWT's issuer, audience and expiry instead of looking up a hash. No standing
+  service credential ever acts for an adjuster.
+- **Why:** Identity must come from transport authentication, never from something a model can set
+  (W16 p.11). Hashing, expiry and revocation are the parts of token handling a mock can still get right.
+- **Risk accepted:** the token is a static bearer secret for up to 30 days, in a local `.env`. It's a
+  simulation, on synthetic data, and nothing is exposed (R10).
+- **Alternatives considered:** (a) A mock IdP service in compose with a sign-in. Rejected as more code
+  than the criterion needs. (b) HMAC tokens derived from a shared secret. Rejected: the door would hold
+  a secret that mints any seat.
+- **Owner:** FDE; CISO at the Milestone 4 sign-off
+- **Revisit when:** The IK AWS account hosts the stack: move to Cognito and token exchange.
+
+## D-034 · 2026-11-11 · Four scopes, deny by default, by claim line, assignment and SIU referral
+
+- **Decision:** The door's gate (`claimsense.door.scope.authorize`) is a pure function of the seat and
+  the claim's routing metadata:
+  - `adjuster_pd`: physical-damage claims assigned to the seat.
+  - `adjuster_bi`: bodily-injury claims assigned to the seat.
+  - `siu`: claims with an open SIU referral.
+  - `supervisor`: every claim.
+  - Any other role, such as `customer_service`, gets nothing.
+
+  Assignment still matters, as D-003 had it. Fraud details (the SIU referral) are stripped for every
+  role but SIU and supervisor. A refusal says nothing about whether the claim exists, except to a
+  supervisor. Writing the draft follows the same rule as reading.
+
+  The claim line is a stored CMS field, `claim_line`, set at first notice of loss. It is never inferred
+  from documents or by a model. `claim_line` and `siu_referral` are kept out of every model's input,
+  as `status_field` is (D-027), because a referral would hand the model the ROUTE answer
+  (`tests/test_dossier_excludes.py`). The matrix is in `docs/engagement/access-control.md`.
+- **Why:** The scopes the engagement lead proposed fit how a claims desk is split. A claim line on the
+  record makes the scope check a field comparison, and so deterministic code (D-001).
+- **Alternatives considered:** Scoping by the model's `injury_exposure` and `fraud_indicated` outputs.
+  Rejected: access would depend on a model's reading.
+- **Owner:** FDE; Claims Operations for the scope definitions
+- **Revisit when:** The client's real desks or roles differ (for example, a total-loss desk).
+
+## D-035 · 2026-11-11 · Defense in depth: the prompt is advisory; the gate and the data layer enforce
+
+- **Decision:** There are three enforced layers under the advisory prompt:
+  1. **The door's scope gate,** in code.
+  2. **The CMS's own row filter.** The door passes the acting seat, and the CMS refuses rows outside
+     it and strips fraud details. The rule is written separately from the gate, as row-level security
+     would be. A test replaces the gate with one that allows everything and shows the CMS still
+     refuses.
+  3. **Network isolation in compose.** The systems of record sit on an internal `backend` network
+     that only the door joins. CI checks that the co-pilot container can't reach the CMS.
+- **Why:** "The agent prompt is advisory; the MCP layer and DB row-level security are the enforced
+  boundaries" (W16 p.13).
+- **Risk accepted:** the PAS and the document store have no row filter of their own. The door reaches
+  them only for a claim the gate has passed, and the PAS policy is looked up by the claim, never by a
+  caller's policy ID.
+- **Owner:** FDE
+- **Revisit when:** The real systems of record offer their own row-level controls.
+
+## D-036 · 2026-11-11 · The door's audit trail: a row per call, the denial first, hash-chained
+
+- **Decision:** Every door call writes one row before it returns, granted or denied:
+  `ts, request_id, correlation_id, acting_identity, role, scope, action, resource, decision, reason`.
+  - A denial is on record before its error leaves the door.
+  - A request the transport refuses for a bad token is audited as `anonymous` / `authenticate`.
+  - The trail is append-only JSONL at the git-ignored `runtime/audit.jsonl`, flushed and synced per
+    row. Each row's hash covers the previous row's, so an edited or removed row breaks the chain.
+  - The co-pilot sends a correlation ID per request, and returns it with the answer, so an answer can
+    be matched to its rows.
+  - The pipeline calls the gate (`get_claim`) first, so a refused request leaves exactly one row: its
+    denial.
+  - The co-pilot's own in-memory log stays as an application log. The door's trail is the audit.
+- **Why:** W16 p.15 and the brief's Milestone 4 ("an audit record for every call, granted or denied,
+  carrying user, action and resource").
+- **Alternatives considered:** SQLite. Rejected for now: JSONL can be read with no tools, and appending
+  is the only operation. DynamoDB, the production target (D-012).
+- **Owner:** FDE; CISO
+- **Revisit when:** The stack is hosted. Then write to DynamoDB or CloudWatch with a retention policy.
+
+## D-037 · 2026-11-11 · The door's tool contract: typed inputs, structured errors, retries, idempotent write
+
+- **Decision:**
+  - **Inputs** are typed, and the schema publishes their patterns. The door validates them itself, so
+    a bad value is an audited `invalid_argument` rather than a crash before the gate.
+  - **Errors** are structured `{code, message, hint, retryable, retry_after, correlation_id,
+    request_id}`. The codes are `unauthenticated`, `forbidden_scope`, `not_found`, `rate_limited`
+    (with `retry_after`), `upstream_unavailable`, `idempotency_conflict` and `invalid_argument`. The
+    API passes them through unchanged, as 401, 403, 404, 429, 503, 409 and 422.
+  - **Retries:** the door backs off and retries a transient backend failure on reads. The co-pilot's
+    client retries retryable errors, waiting out a short `retry_after`; anything over 5 s goes back to
+    the caller.
+  - **Rate limit:** a token bucket per seat.
+  - **The write,** `submit_draft_recommendation`, carries `claim_id:run_id` as its idempotency key. A
+    replay returns the original with `idempotent_replay: true`, and a different draft under the same
+    key is a conflict. The draft must name the acting seat.
+- **Why:** "Structured errors the agent can reason about (not a 500 stack trace)", with idempotency
+  keys on writes and retries with backoff (W16 p.7).
+- **Owner:** FDE
+- **Revisit when:** A second write appears (for example, an adjuster note).
+
+## D-038 · 2026-11-11 · Eval changes for Milestone 4: claim lines, a BI seat, EV-025, the blind set as supervisor
+
+- **Decision:**
+  - Every case's claim has a `claim_line`. EV-011 and EV-014 (third-party and passenger injury) are
+    bodily-injury claims, handled by a new BI seat, `adj-004`. Only their requester and claim line
+    changed: no expected outcome, reasoning, finding or confidence moved.
+  - EV-016 carries an SIU referral opened at FNOL by the legacy rule. It is never shown to a model.
+  - Requester roles are now seat roles (`adjuster_pd` and so on), plus a supervisor seat (`sup-001`)
+    and an SIU seat (`siu-001`).
+  - The refusal cases' audit expectations are now the door's rows.
+  - A new refusal case, EV-025, has a physical-damage adjuster ask for a bodily-injury claim.
+  - The set is now 25 cases: still 22 decision cases (6 held out), plus 3 access-control cases. The
+    accuracy denominator stays comparable to Milestone 3.
+  - The blind set runs under the supervisor seat, so the scope gate can't change its results. Its
+    refusal cases, if any, run as their own requester.
+- **Why:** Scoping needs a stored claim line. The scope denial should be inside the gated set, not
+  only in a unit test. No held-out case was edited.
+- **Owner:** FDE; Claims Quality Lead for the labels
+- **Revisit when:** The official fixtures carry their own line-of-business field.
+
+## D-039 · 2026-11-11 · The IK lab account has S3 and Bedrock; we stay on the OpenAI models
+
+- **Decision:** The IK lab AWS account was granted S3 and Bedrock access on 2026-11-11, which closes
+  the AWS blocker in R2 (it denied `s3:CreateBucket` and all Bedrock actions on 2026-10-31). Bedrock is
+  recorded as a production option only. The models stay on OpenAI through the Agents SDK, and nothing
+  in the code changes. D-012's footprint stays planned; its trigger is now the hosting work, not access.
+- **Why:** The brief standardizes on the OpenAI Agents SDK. The live gate is green on the current
+  models, and switching providers in the last two weeks would reopen every judgment result.
+- **Alternatives considered:** Moving the models to Bedrock now. Rejected: no requirement asks for it,
+  and it would cost the gate's evidence.
+- **Owner:** FDE
+- **Revisit when:** The client asks for its data to stay in its own AWS account, or a Bedrock model is
+  needed for a cost or latency reason.
+
+## D-040 · 2026-11-11 · An uncited verdict is a miss, even when its outcome is right
+
+- **Decision:** A hit now also requires the verdict not to be `uncited`. An uncited verdict is one where
+  the validator removed a citation, none was left, or every finding was dropped. It counts as a miss
+  in decision accuracy, held-out accuracy and the live gate, whatever its outcome. This amends D-020's
+  scoring, and the eval report says "uncited" on such a miss.
+- **Why:** Until now, `block_uncited` downgraded only an uncited APPROVE or DENY. An uncited FLAG or
+  ROUTE whose outcome matched the label counted as a hit, crediting the model with a verdict nobody
+  could check. The engagement lead asked for an uncited verdict never to pass.
+- **Effect on the record:** none. The Milestone 4 live gate (run 5) and the mock gate had no uncited
+  output, so their numbers stand. `tests/test_run_evals.py` covers the rule.
+- **Owner:** FDE; Claims Quality Lead
+- **Revisit when:** A label is ever met only by an uncited answer on purpose. That shouldn't happen.
+
+## D-041 · 2026-11-12 · Every CI step runs with pipefail; the live gate could not fail before
+
+- **Decision:** `ci.yml` now sets `defaults: run: shell: bash`, so GitHub runs every step as
+  `bash --noprofile --norc -eo pipefail`. A test (`tests/test_ci_workflow.py`) keeps that default and
+  stops any step from overriding it.
+- **The defect:** with no `shell:`, GitHub runs a step as `bash -e`, without pipefail.
+  - The live gate step is `docker run ... run_evals.py ... | tee out/live-run.txt`, so its exit status
+    was `tee`'s: always 0. A failed gate went green.
+  - This was true from the live gate's first run in Milestone 3 (D-026). The required check (D-030)
+    therefore never blocked anything.
+  - It showed up on PR #7's second run (43125077119), which printed `GATE: FAILED` and passed.
+- **The audit:** every `run:` step was checked for a pipe or a swallowed status.
+  - The live gate's `| tee` was the defect.
+  - `docker save | gzip` could upload a broken image artifact, and two `gunzip -c | docker load`
+    pipes reported `gunzip`'s status.
+  - The `|| true` in `changes` and in the audit copy are intentional, and stay correct under pipefail.
+  - `tests` and `eval-gate` have no pipes.
+- **The proof:** the CI step's exact shape, `run_evals.py ... | tee`, on a case file whose mock gate
+  fails (EV-008 relabeled), exits 0 under `bash -e` and 1 under `bash -eo pipefail`. A passing gate
+  exits 0 under both. No live run was spent on it.
+- **Were the earlier results real?** Yes. Every CI `live-eval-gate` job was read back from its log:
+  - the six earlier jobs that ran printed `GATE: PASSED`, at 100% of 22, held-out 100% of 6, 0
+    fallbacks;
+  - four were skipped as docs-only;
+  - the only false pass is 43125077119.
+
+  The runs are listed in `docs/evidence/m4/README.md`.
+- **Temperature and seed:** every agent runs at `temperature=0`. There is no seed. The Agents SDK uses
+  the Responses API, which has no `seed` parameter, and Chat Completions' `seed` is best-effort.
+  Switching APIs for it would change every stage's transport and still not make gpt-4o
+  deterministic. The gate is treated as measuring a stochastic system. A change that touches model
+  input needs two clean local live runs before it is pushed, and a borderline case is made robust, not
+  rerun until it passes.
+- **Owner:** FDE
+- **Revisit when:** A step needs a different shell. Set it on that step, and the test then needs a
+  stated exception.
+
+## D-042 · 2026-11-12 · Coverage Check: credibility is a fraud question, never a coverage reading
+
+- **Decision:** One general bullet goes into the Coverage Check prompt. Whether the claimed damage, an
+  estimate or a statement is believable is not a coverage question. Damage that doesn't match the
+  described impact, contradicting accounts and possible misrepresentation are Claim Assessment's fraud
+  indicators, and never make the reading `does_not_respond`.
+- **Why:** EV-018 (adversarial, tuning) flips between runs even with model input byte-identical to
+  Milestone 3. Twice Coverage Check read its rear-impact, front-end-estimate inconsistency as no
+  coverage, and code's DENY precedence then overrode a correct ROUTE draft. EV-015 failed the same
+  way once. With the bullet, run 4 got both right. The Decision Draft prompt already says a conflict in
+  the file doesn't change coverage; Coverage Check had no such line. The bullet names no case, claim or
+  outcome (D-021), and no held-out case informed it.
+- **Alternatives considered:** Rerunning until EV-018 passed (D-041 rules that out), or accepting a gate
+  that fails some of the time on `main`, which would block the image push.
+- **Owner:** FDE; Claims Quality Lead
+- **Revisit when:** A held-out or blind case shows a real coverage defense, such as a misrepresentation
+  voiding clause, that this bullet keeps Coverage Check from reading.
