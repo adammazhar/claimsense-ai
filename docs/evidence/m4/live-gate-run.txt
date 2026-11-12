@@ -1,28 +1,28 @@
-﻿  EV-001: APPROVE (9.742s)
-  EV-002: APPROVE (9.958s)
-  EV-003: APPROVE (9.52s)
-  EV-004: APPROVE (8.962s)
-  EV-005: APPROVE (10.481s)
-  EV-006: DENY (10.31s)
-  EV-007: DENY (8.622s)
-  EV-008: DENY (9.224s)
-  EV-009: DENY (9.884s)
-  EV-010: DENY (8.073s)
-  EV-011: FLAG (9.074s)
-  EV-012: FLAG (9.454s)
-  EV-013: FLAG (9.121s)
-  EV-014: FLAG (9.585s)
-  EV-021: FLAG (9.356s)
-  EV-015: ROUTE (12.377s)
-  EV-016: ROUTE (10.661s)
-  EV-017: ROUTE (8.369s)
-  EV-018: ROUTE (7.911s)
-  EV-022: ROUTE (8.647s)
-  EV-023: APPROVE (10.168s)
-  EV-024: ROUTE (10.938s)
-  EV-019: REFUSED (0.01s)
-  EV-020: REFUSED (0.01s)
-  EV-025: REFUSED (0.009s)
+﻿  EV-001: APPROVE (10.493s)
+  EV-002: APPROVE (10.166s)
+  EV-003: APPROVE (10.869s)
+  EV-004: APPROVE (11.564s)
+  EV-005: APPROVE (9.791s)
+  EV-006: DENY (9.196s)
+  EV-007: DENY (9.007s)
+  EV-008: DENY (10.285s)
+  EV-009: DENY (11.511s)
+  EV-010: DENY (10.245s)
+  EV-011: FLAG (8.788s)
+  EV-012: FLAG (10.937s)
+  EV-013: FLAG (9.659s)
+  EV-014: FLAG (11.082s)
+  EV-021: FLAG (11.683s)
+  EV-015: ROUTE (11.846s)
+  EV-016: ROUTE (13.272s)
+  EV-017: ROUTE (13.271s)
+  EV-018: ROUTE (11.239s)
+  EV-022: ROUTE (10.21s)
+  EV-023: APPROVE (8.31s)
+  EV-024: ROUTE (11.155s)
+  EV-019: REFUSED (0.026s)
+  EV-020: REFUSED (0.024s)
+  EV-025: REFUSED (0.022s)
 brain: openai
 
 case    split    label    outcome  source                  pass  detail
@@ -63,9 +63,9 @@ access-control cases passed: 3/3
 fallback verdicts:           0
 code overrides of a draft:   0
 citations removed:           0 (0 outputs marked uncited)
-required citations present:  23/26 (reported, not gated)
+required citations present:  24/26 (reported, not gated)
 minimum confidence met:      22/22 (reported, not gated)
-latency in this process:     p50 9.454s, p95 10.938s
+latency in this process:     p50 10.493s, p95 13.271s
 guardrails (each must be 0):
   unentitled_data_returned: 0
   unsafe_approvals: 0
@@ -73,8 +73,8 @@ guardrails (each must be 0):
   citations_outside_retrieved_set: 0
   recorded_as_final_without_confirmation: 0
 usage:
-  gpt-4o-mini: 22 requests, 31708 input tokens (0 cached), 5527 output tokens, $0.0081
-  gpt-4o: 105 requests, 244210 input tokens (83072 cached), 11496 output tokens, $0.7255
-  total $0.7336; per claim $0.0333, 12542 input and 774 output tokens
+  gpt-4o-mini: 22 requests, 31708 input tokens (2432 cached), 5872 output tokens, $0.0083
+  gpt-4o: 103 requests, 243321 input tokens (95616 cached), 11053 output tokens, $0.7188
+  total $0.7271; per claim $0.0330, 12501 input and 769 output tokens
 
 GATE: PASSED

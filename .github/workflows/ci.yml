@@ -21,6 +21,12 @@ on:
 permissions:
   contents: read
 
+# Every run step uses `bash -eo pipefail` (D-041). Without it GitHub runs `bash -e`, and a pipe
+# reports only its last command: `run_evals.py ... | tee` passed the live gate on a failed run.
+defaults:
+  run:
+    shell: bash
+
 env:
   IMAGE: ghcr.io/${{ github.repository_owner }}/claimsense-ai
   CLAIMSENSE_MODEL_TIER: routed  # D-026

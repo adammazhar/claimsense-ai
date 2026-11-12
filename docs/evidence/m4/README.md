@@ -21,9 +21,9 @@
 
 | Deliverable | File |
 |---|---|
-| Test suite | [pytest.txt](pytest.txt): 289 passed |
+| Test suite | [pytest.txt](pytest.txt): 291 passed |
 | Mock gate, through the door | [mock-gate-run.txt](mock-gate-run.txt), [mock-gate-report.json](mock-gate-report.json) |
-| Live gate, through the door | [live-gate-run.txt](live-gate-run.txt), [live-gate-report.json](live-gate-report.json) |
+| Live gate, through the door | [live-gate-run.txt](live-gate-run.txt), [live-gate-report.json](live-gate-report.json) (run 6b); [live-run-6a.txt](live-run-6a.txt) |
 | Two-adjuster test, compose stack | [two-adjuster-live.txt](two-adjuster-live.txt), [two-adjuster-mock.txt](two-adjuster-mock.txt) |
 | Audit sample | [audit-sample.jsonl](audit-sample.jsonl): the trail from both two-adjuster runs. Its hash chain verifies. No token appears in it. |
 | Workflow lint | actionlint on `.github/workflows/ci.yml`: no findings (run locally by the engagement lead, 2026-11-11) |
@@ -31,7 +31,7 @@
 
 ## The result
 
-| Measure | Target | Live, through the door (run 5) | Milestone 3 |
+| Measure | Target | Live, through the door (runs 6a and 6b) | Milestone 3 |
 |---|---|---:|---:|
 | Decision accuracy | ≥ 85% (bar: 100%) | **100% of 22** | 100% of 22 |
 | Held-out | ≥ 80% (bar: 100%) | **100% of 6** | 100% of 6 |
@@ -43,8 +43,8 @@
 The case file is 25 cases: 22 decision cases (6 held out), plus 3 access-control cases. Only the
 access-control count changed, so the accuracy denominator matches Milestone 3 (D-038).
 
-An uncited verdict now counts as a miss even when its outcome is right (D-040). Run 5 and the mock gate
-had no uncited output, so the numbers above are the same under the old rule and the new one.
+An uncited verdict now counts as a miss even when its outcome is right (D-040). Runs 5, 6a and 6b and
+the mock gate are scored under that rule.
 
 ## How the live number moved
 
@@ -57,7 +57,11 @@ Each row is one live run of the full suite. Nothing was rerun to pick a better r
 | [3](live-run-3.txt) | `claim_id` bound by code, not shown to the model | 95.5% | 100% | fail: adversarial EV-018 | $0.71 |
 | [4](live-run-4.txt) | A Coverage Check prompt bullet (reverted after this run) | 95.5% | 83.3% | pass, under the bar | $0.69 |
 | [control](live-control-m3-code.txt) | The unchanged Milestone 3 code (`main`), the same day | 100% | 100% | pass | $0.71 |
-| **[5](live-gate-run.txt)** | The model-facing tool byte-identical to Milestone 3's; the prompt bullet removed | **100%** | **100%** | **pass** | **$0.73** |
+| [5](live-run-5.txt) | The model-facing tool byte-identical to Milestone 3's; the prompt bullet removed | 100% | 100% | pass | $0.73 |
+| CI, PR #7 | Run 5's code ([43123372074](https://github.com/adammazhar/claimsense-ai/actions/runs/43123372074)) | 100% | 100% | pass | $0.74 |
+| CI, PR #7 | Run 5's code again, after a docs-only commit ([43125077119](https://github.com/adammazhar/claimsense-ai/actions/runs/43125077119)) | 95.5% | 100% | **fail: adversarial EV-018**, but the job went green (D-041) | $0.74 |
+| [6a](live-run-6a.txt) | The general Coverage Check line restored (D-042); CI fixed to pipefail | 100% | 100% | pass | $0.74 |
+| **[6b](live-gate-run.txt)** | The same code, a second run, as required before pushing | **100%** | **100%** | **pass** | **$0.73** |
 
 **What the runs found.** Every miss in runs 1 to 4 was the same pattern: Coverage Check answered without
 searching the clauses, then cited an endorsement's form number or misread a fraud inconsistency as no
@@ -70,19 +74,54 @@ the model saw:
 - the schema lacked the SDK's `title` keys.
 
 Run 5's coverage-stage input is byte-identical to Milestone 3's, and its search count is back to 4
-(D-032). No prompt changed in this milestone, and no held-out case's content informed a fix.
+(D-032).
+
+**EV-018 then failed in CI on run 5's code** (43125077119). It flips between runs even with input
+identical to Milestone 3's, because the models run at temperature 0 with no seed: the Responses API has
+none (D-041). That's why D-042 restores the general Coverage Check line. Runs 6a and 6b, the two clean
+local runs required before pushing, both passed with it. No held-out case's content informed any fix.
+
+## Every CI live gate, read back from its log (D-041)
+
+Until D-041, the `live-eval-gate` job couldn't fail on a failed gate. Its step piped `run_evals.py`
+through `tee` under `bash -e` with no pipefail, so the job reported `tee`'s exit status. These are the
+results each run actually printed:
+
+| CI run | Date (UTC) | Branch, event | Commit | Job | Printed | Accuracy | Held-out | Fallbacks | Cost |
+|---|---|---|---|---|---|---:|---:|---:|---:|
+| [42405228638](https://github.com/adammazhar/claimsense-ai/actions/runs/42405228638) | 2026-11-07 19:14 | m3-ghcr-fix, PR | 090e838 | skipped (docs-only) | | | | | |
+| [42405384290](https://github.com/adammazhar/claimsense-ai/actions/runs/42405384290) | 2026-11-07 19:16 | m3-ghcr-fix, dispatch | 090e838 | success | GATE: PASSED | 100% of 22 | 100% of 6 | 0 | $0.74 |
+| [42406249709](https://github.com/adammazhar/claimsense-ai/actions/runs/42406249709) | 2026-11-07 19:26 | main, push | 365b28f | success | GATE: PASSED | 100% of 22 | 100% of 6 | 0 | $0.74 |
+| [42406993462](https://github.com/adammazhar/claimsense-ai/actions/runs/42406993462) | 2026-11-07 19:35 | m3-evidence, PR | 30c8e2b | skipped (docs-only) | | | | | |
+| [42407151574](https://github.com/adammazhar/claimsense-ai/actions/runs/42407151574) | 2026-11-07 19:37 | main, push | 4bdf889 | success | GATE: PASSED | 100% of 22 | 100% of 6 | 0 | $0.74 |
+| [42409075537](https://github.com/adammazhar/claimsense-ai/actions/runs/42409075537) | 2026-11-07 20:02 | m3-ci-protection, PR | 836076b | success | GATE: PASSED | 100% of 22 | 100% of 6 | 0 | $0.74 |
+| [42409592035](https://github.com/adammazhar/claimsense-ai/actions/runs/42409592035) | 2026-11-07 20:08 | main, push | 353f6fc | success | GATE: PASSED | 100% of 22 | 100% of 6 | 0 | $0.74 |
+| [42410792293](https://github.com/adammazhar/claimsense-ai/actions/runs/42410792293) | 2026-11-07 20:23 | m3-evidence-pr5, PR | 9d95fc7 | skipped (docs-only) | | | | | |
+| [42410945026](https://github.com/adammazhar/claimsense-ai/actions/runs/42410945026) | 2026-11-07 20:24 | main, push | c0668c5 | skipped (docs-only) | | | | | |
+| [43123372074](https://github.com/adammazhar/claimsense-ai/actions/runs/43123372074) | 2026-11-11 23:54 | m4-integration, PR | 229b24f | success | GATE: PASSED | 100% of 22 | 100% of 6 | 0 | $0.74 |
+| [43125077119](https://github.com/adammazhar/claimsense-ai/actions/runs/43125077119) | 2026-11-12 00:08 | m4-integration, PR | 6ad515f | **success (false)** | **GATE: FAILED** | 95.5% of 22 | 100% of 6 | 0 | $0.74 |
+
+Every green job before 43125077119 printed `GATE: PASSED`, so the Milestone 3 results and PR #7's
+first run are real. 43125077119 is the one false pass: EV-018 failed (D-042). The workflow now runs
+every step with pipefail. Run locally on a case file whose mock gate fails, the step's exact shape
+exits 0 under the old shell and 1 under the new one. `tests/test_ci_workflow.py` keeps it that way.
+
+That run also corrects a claim made earlier: a docs-only commit on a pull request that changes code
+does run the live gate, because D-030 compares the whole pull request with its base.
 
 ## Cost
 
 | | Cost |
 |---|---:|
-| Live gate runs 1 to 5 | $3.43 |
+| Local live gate runs 1 to 5 | $3.43 |
 | Control run (Milestone 3 code) | $0.71 |
 | Live two-adjuster run | $0.03 |
-| **Local total, 2026-11-11** | **$4.18** |
-| A live gate run (run 5) | $0.73, $0.033 per claim |
+| CI live gates on PR #7 (two runs) | $1.48 |
+| Local live gate runs 6a and 6b | $1.47 |
+| **Total so far, 2026-11-11 and 12** | **$7.13** |
+| A live gate run (run 6b) | $0.73, $0.033 per claim |
 
-The CI live gate on PR #7 cost $0.74. The merge to `main` runs it once more (D-030).
+Pushing this to PR #7 runs the CI live gate again (about $0.74), and so does the merge to `main` (D-030).
 
 ## Identity and the AWS account
 

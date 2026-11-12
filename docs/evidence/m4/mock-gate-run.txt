@@ -41,7 +41,7 @@ code overrides of a draft:   0
 citations removed:           0 (0 outputs marked uncited)
 required citations present:  26/26 (reported, not gated)
 minimum confidence met:      22/22 (reported, not gated)
-latency in this process:     p50 0.043s, p95 0.048s
+latency in this process:     p50 0.04s, p95 0.044s
 guardrails (each must be 0):
   unentitled_data_returned: 0
   unsafe_approvals: 0

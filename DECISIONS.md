@@ -638,8 +638,9 @@ records what was decided, why, what was rejected, who owns it, and what would re
     Milestone 3's, down to the schema's `title` keys and key order. A capture test checks the schema
     (`tests/test_pipeline.py`).
 
-  A prompt bullet tried in run 4 was reverted, so no prompt changed in Milestone 4. Every fix was chosen
-  from structural diffs and turn counts across all cases, never from a held-out case's content.
+  A prompt bullet tried in run 4 was reverted here. It came back as D-042, once a CI run showed EV-018
+  flipping even with byte-identical input. Every fix was chosen from structural diffs and turn counts
+  across all cases, never from a held-out case's content.
 - **Alternatives considered:** (a) Pinning `mcp<2` to keep the name FastMCP from the slides. Rejected:
   it builds on a branch in maintenance. (b) stdio transport. Rejected: the door is a separate service.
   (c) `Agent(mcp_servers=[door])` with a tool filter. Tried first; see Why.
@@ -804,3 +805,58 @@ records what was decided, why, what was rejected, who owns it, and what would re
   output, so their numbers stand. `tests/test_run_evals.py` covers the rule.
 - **Owner:** FDE; Claims Quality Lead
 - **Revisit when:** A label is ever met only by an uncited answer on purpose. That shouldn't happen.
+
+## D-041 · 2026-11-12 · Every CI step runs with pipefail; the live gate could not fail before
+
+- **Decision:** `ci.yml` now sets `defaults: run: shell: bash`, so GitHub runs every step as
+  `bash --noprofile --norc -eo pipefail`. A test (`tests/test_ci_workflow.py`) keeps that default and
+  stops any step from overriding it.
+- **The defect:** with no `shell:`, GitHub runs a step as `bash -e`, without pipefail.
+  - The live gate step is `docker run ... run_evals.py ... | tee out/live-run.txt`, so its exit status
+    was `tee`'s: always 0. A failed gate went green.
+  - This was true from the live gate's first run in Milestone 3 (D-026). The required check (D-030)
+    therefore never blocked anything.
+  - It showed up on PR #7's second run (43125077119), which printed `GATE: FAILED` and passed.
+- **The audit:** every `run:` step was checked for a pipe or a swallowed status.
+  - The live gate's `| tee` was the defect.
+  - `docker save | gzip` could upload a broken image artifact, and two `gunzip -c | docker load`
+    pipes reported `gunzip`'s status.
+  - The `|| true` in `changes` and in the audit copy are intentional, and stay correct under pipefail.
+  - `tests` and `eval-gate` have no pipes.
+- **The proof:** the CI step's exact shape, `run_evals.py ... | tee`, on a case file whose mock gate
+  fails (EV-008 relabeled), exits 0 under `bash -e` and 1 under `bash -eo pipefail`. A passing gate
+  exits 0 under both. No live run was spent on it.
+- **Were the earlier results real?** Yes. Every CI `live-eval-gate` job was read back from its log:
+  - the six earlier jobs that ran printed `GATE: PASSED`, at 100% of 22, held-out 100% of 6, 0
+    fallbacks;
+  - four were skipped as docs-only;
+  - the only false pass is 43125077119.
+
+  The runs are listed in `docs/evidence/m4/README.md`.
+- **Temperature and seed:** every agent runs at `temperature=0`. There is no seed. The Agents SDK uses
+  the Responses API, which has no `seed` parameter, and Chat Completions' `seed` is best-effort.
+  Switching APIs for it would change every stage's transport and still not make gpt-4o
+  deterministic. The gate is treated as measuring a stochastic system. A change that touches model
+  input needs two clean local live runs before it is pushed, and a borderline case is made robust, not
+  rerun until it passes.
+- **Owner:** FDE
+- **Revisit when:** A step needs a different shell. Set it on that step, and the test then needs a
+  stated exception.
+
+## D-042 · 2026-11-12 · Coverage Check: credibility is a fraud question, never a coverage reading
+
+- **Decision:** One general bullet goes into the Coverage Check prompt. Whether the claimed damage, an
+  estimate or a statement is believable is not a coverage question. Damage that doesn't match the
+  described impact, contradicting accounts and possible misrepresentation are Claim Assessment's fraud
+  indicators, and never make the reading `does_not_respond`.
+- **Why:** EV-018 (adversarial, tuning) flips between runs even with model input byte-identical to
+  Milestone 3. Twice Coverage Check read its rear-impact, front-end-estimate inconsistency as no
+  coverage, and code's DENY precedence then overrode a correct ROUTE draft. EV-015 failed the same
+  way once. With the bullet, run 4 got both right. The Decision Draft prompt already says a conflict in
+  the file doesn't change coverage; Coverage Check had no such line. The bullet names no case, claim or
+  outcome (D-021), and no held-out case informed it.
+- **Alternatives considered:** Rerunning until EV-018 passed (D-041 rules that out), or accepting a gate
+  that fails some of the time on `main`, which would block the image push.
+- **Owner:** FDE; Claims Quality Lead
+- **Revisit when:** A held-out or blind case shows a real coverage defense, such as a misrepresentation
+  voiding clause, that this bullet keeps Coverage Check from reading.
