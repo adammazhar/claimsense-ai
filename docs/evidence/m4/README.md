@@ -1,6 +1,8 @@
 # Milestone 4 evidence: integration and access control
 
-2026-11-11. All data is synthetic. Branch `m4-integration`. Decisions D-031 to D-039; the matrix is in
+2026-11-11 and 12. All data is synthetic. Merged to `main` in
+[PR #7](https://github.com/adammazhar/claimsense-ai/pull/7) (merge commit `d9df0ba`). Decisions D-031 to
+D-042; the matrix is in
 [access-control.md](../../engagement/access-control.md), and the diagram in
 [mcp-door.md](../../architecture/mcp-door.md).
 
@@ -27,7 +29,8 @@
 | Two-adjuster test, compose stack | [two-adjuster-live.txt](two-adjuster-live.txt), [two-adjuster-mock.txt](two-adjuster-mock.txt) |
 | Audit sample | [audit-sample.jsonl](audit-sample.jsonl): the trail from both two-adjuster runs. Its hash chain verifies. No token appears in it. |
 | Workflow lint | actionlint on `.github/workflows/ci.yml`: no findings (run locally by the engagement lead, 2026-11-11) |
-| CI run on the PR | [PR #7](https://github.com/adammazhar/claimsense-ai/pull/7), [run 43123372074](https://github.com/adammazhar/claimsense-ai/actions/runs/43123372074): `tests`, `eval-gate`, `build-image` (two-adjuster test and the network check, on the containers) and `live-eval-gate` all pass. Live gate in CI: 100% of 22, held-out 100% of 6, 0 fallbacks, $0.74. The audit trail and transcript are in the run's `two-adjuster` artifact. |
+| CI run on the PR | [PR #7](https://github.com/adammazhar/claimsense-ai/pull/7), final run [43129923917](https://github.com/adammazhar/claimsense-ai/actions/runs/43129923917) on `8eebe5e`: `tests`, `eval-gate`, `build-image` (two-adjuster test and the network check, on the containers) and `live-eval-gate` all pass, under the pipefail shell (D-041). Live gate: 100% of 22, held-out 100% of 6, 0 fallbacks, 8/8 adversarial, $0.73. The audit trail and transcript are in the run's `two-adjuster` artifact. |
+| CI run on `main` | [Run 43130785463](https://github.com/adammazhar/claimsense-ai/actions/runs/43130785463) on merge commit `d9df0ba`: all six jobs pass, including `push-image`. Live gate: 100% of 22, held-out 100% of 6, 0 fallbacks, 8/8 adversarial, $0.73. See [The image](#the-image). |
 
 ## The result
 
@@ -62,6 +65,8 @@ Each row is one live run of the full suite. Nothing was rerun to pick a better r
 | CI, PR #7 | Run 5's code again, after a docs-only commit ([43125077119](https://github.com/adammazhar/claimsense-ai/actions/runs/43125077119)) | 95.5% | 100% | **fail: adversarial EV-018**, but the job went green (D-041) | $0.74 |
 | [6a](live-run-6a.txt) | The general Coverage Check line restored (D-042); CI fixed to pipefail | 100% | 100% | pass | $0.74 |
 | **[6b](live-gate-run.txt)** | The same code, a second run, as required before pushing | **100%** | **100%** | **pass** | **$0.73** |
+| CI, PR #7 | Run 6b's code ([43129923917](https://github.com/adammazhar/claimsense-ai/actions/runs/43129923917)), under pipefail | 100% | 100% | pass | $0.73 |
+| CI, `main` | The merge commit `d9df0ba` ([43130785463](https://github.com/adammazhar/claimsense-ai/actions/runs/43130785463)) | 100% | 100% | pass | $0.73 |
 
 **What the runs found.** Every miss in runs 1 to 4 was the same pattern: Coverage Check answered without
 searching the clauses, then cited an endorsement's form number or misread a fraud inconsistency as no
@@ -100,6 +105,8 @@ results each run actually printed:
 | [42410945026](https://github.com/adammazhar/claimsense-ai/actions/runs/42410945026) | 2026-11-07 20:24 | main, push | c0668c5 | skipped (docs-only) | | | | | |
 | [43123372074](https://github.com/adammazhar/claimsense-ai/actions/runs/43123372074) | 2026-11-11 23:54 | m4-integration, PR | 229b24f | success | GATE: PASSED | 100% of 22 | 100% of 6 | 0 | $0.74 |
 | [43125077119](https://github.com/adammazhar/claimsense-ai/actions/runs/43125077119) | 2026-11-12 00:08 | m4-integration, PR | 6ad515f | **success (false)** | **GATE: FAILED** | 95.5% of 22 | 100% of 6 | 0 | $0.74 |
+| [43129923917](https://github.com/adammazhar/claimsense-ai/actions/runs/43129923917) | 2026-11-12 00:47 | m4-integration, PR | 8eebe5e | success (pipefail) | GATE: PASSED | 100% of 22 | 100% of 6 | 0 | $0.73 |
+| [43130785463](https://github.com/adammazhar/claimsense-ai/actions/runs/43130785463) | 2026-11-12 00:55 | main, push | d9df0ba | success (pipefail) | GATE: PASSED | 100% of 22 | 100% of 6 | 0 | $0.73 |
 
 Every green job before 43125077119 printed `GATE: PASSED`, so the Milestone 3 results and PR #7's
 first run are real. 43125077119 is the one false pass: EV-018 failed (D-042). The workflow now runs
@@ -109,19 +116,38 @@ exits 0 under the old shell and 1 under the new one. `tests/test_ci_workflow.py`
 That run also corrects a claim made earlier: a docs-only commit on a pull request that changes code
 does run the live gate, because D-030 compares the whole pull request with its base.
 
+## The image
+
+The `main` run pushed the image only after both gates passed, at the digest of the image the live gate
+ran in (D-029):
+
+```
+ghcr.io/adammazhar/claimsense-ai@sha256:76b7fe65e1b9c44cf2e005c4e754f0224ed034be2a1ea59397c192c9c187986b
+```
+
+It is tagged `d9df0ba640422b5813e44311e7c6d14f6dcece1a` and `latest`. The pushed manifest's config is
+the gated image's ID, so it is the same build that passed both gates.
+
 ## Cost
 
-| | Cost |
-|---|---:|
-| Local live gate runs 1 to 5 | $3.43 |
-| Control run (Milestone 3 code) | $0.71 |
-| Live two-adjuster run | $0.03 |
-| CI live gates on PR #7 (two runs) | $1.48 |
-| Local live gate runs 6a and 6b | $1.47 |
-| **Total so far, 2026-11-11 and 12** | **$7.13** |
-| A live gate run (run 6b) | $0.73, $0.033 per claim |
+Every live run of Milestone 4, from the totals each run printed. There were no rate-limit or quota
+errors.
 
-Pushing this to PR #7 runs the CI live gate again (about $0.74), and so does the merge to `main` (D-030).
+| | Runs | Cost |
+|---|---:|---:|
+| Local live gate runs 1 to 5 | 5 | $3.43 |
+| Control run (Milestone 3 code) | 1 | $0.71 |
+| Live two-adjuster run | 1 | $0.03 |
+| Local live gate runs 6a and 6b | 2 | $1.47 |
+| CI live gates on PR #7 | 3 | $2.21 |
+| CI live gate on `main` | 1 | $0.73 |
+| **Total, 2026-11-11 and 12** | **13** | **$8.57** |
+| A live gate run (run 6b) | | $0.73, $0.033 per claim |
+
+The rows are rounded; the total is the sum of the unrounded figures.
+
+This index was added in a docs-only pull request, so its live gate was skipped and its merge pushed no
+image (D-030).
 
 ## Identity and the AWS account
 
